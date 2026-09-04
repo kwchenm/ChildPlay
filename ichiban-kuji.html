@@ -253,18 +253,31 @@
     padding: 20px;
   }
   .reveal-stage { text-align: center; }
+  .drag-hint {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 14px;
+    animation: hintBounce 1.4s ease-in-out infinite;
+    transition: opacity 0.25s ease;
+  }
+  .drag-hint.faded { opacity: 0; }
+  @keyframes hintBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
   .ticket-wrap {
     position: relative;
     width: 260px; height: 320px;
     margin: 0 auto 22px;
+    cursor: grab;
+    touch-action: none;
+    animation: idleWiggle 2.6s ease-in-out infinite;
   }
-  .ticket-wrap.shake { animation: shake 0.35s ease; }
-  @keyframes shake {
-    0%,100% { transform: translateX(0) rotate(0); }
-    20% { transform: translateX(-6px) rotate(-2deg); }
-    40% { transform: translateX(6px) rotate(2deg); }
-    60% { transform: translateX(-5px) rotate(-1.5deg); }
-    80% { transform: translateX(5px) rotate(1.5deg); }
+  .ticket-wrap.dragging { animation: none; cursor: grabbing; }
+  @keyframes idleWiggle {
+    0%, 100% { transform: rotate(0); }
+    50% { transform: rotate(1.2deg); }
   }
   .prize-behind {
     position: absolute; inset: 0;
@@ -298,7 +311,7 @@
     background: repeating-linear-gradient(135deg, #fff8ea 0 10px, #f4e6c8 10px 20px);
     border: 3px solid var(--red);
     display: flex; align-items: center; justify-content: center;
-    transition: transform 0.65s cubic-bezier(.4,.6,.4,1), opacity 0.65s ease;
+    transition: transform 0.4s cubic-bezier(.4,.6,.4,1), opacity 0.4s ease;
     box-shadow: 0 8px 0 rgba(0,0,0,0.3);
   }
   .paper-half::after {
@@ -318,23 +331,7 @@
     transform-origin: bottom center;
   }
   .half-b::after { transform: translateY(24px); }
-  .half-a.torn-a { transform: translateY(-160%) rotate(-18deg); opacity: 0; }
-  .half-b.torn-b { transform: translateY(160%) rotate(18deg); opacity: 0; }
 
-  .tear-btn {
-    font-family: inherit;
-    font-weight: 800;
-    font-size: 17px;
-    color: var(--ink);
-    background: var(--gold);
-    border: none;
-    border-radius: 26px;
-    padding: 13px 30px;
-    cursor: pointer;
-    box-shadow: 0 5px 0 var(--gold-dark);
-  }
-  .tear-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-dark); }
-  .tear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .close-btn {
     font-family: inherit;
     font-weight: 800;
@@ -415,6 +412,7 @@
 <!-- Reveal overlay -->
 <div class="overlay hidden" id="overlay">
   <div class="reveal-stage">
+    <div class="drag-hint" id="dragHint">🤏 用手指或滑鼠拖拉籤紙,慢慢撕開看看藏著什麼獎!</div>
     <div class="ticket-wrap" id="ticketWrap">
       <div class="prize-behind" id="prizeBehind">
         <div class="tier-badge" id="tierBadge">SP賞</div>
@@ -424,7 +422,6 @@
       <div class="paper-half half-a" id="halfA"></div>
       <div class="paper-half half-b" id="halfB"></div>
     </div>
-    <button class="tear-btn" id="tearBtn">💪 用力撕開籤紙!</button>
     <button class="close-btn" id="closeBtn" hidden>收下獎品,繼續抽籤 ➜</button>
   </div>
 </div>
@@ -514,6 +511,10 @@
   let currentItem = null;
   let allDone = false;
   let muted = false;
+  let dragState = null;
+  let settling = false;
+  const DRAG_MAX = 140;
+  const COMPLETE_THRESHOLD = 0.65;
 
   // ---------- DOM refs ----------
   const grid = document.getElementById("grid");
@@ -528,7 +529,7 @@
   const prizeName = document.getElementById("prizeName");
   const halfA = document.getElementById("halfA");
   const halfB = document.getElementById("halfB");
-  const tearBtn = document.getElementById("tearBtn");
+  const dragHint = document.getElementById("dragHint");
   const closeBtn = document.getElementById("closeBtn");
   const randomDrawBtn = document.getElementById("randomDrawBtn");
   const resetBtn = document.getElementById("resetBtn");
@@ -573,7 +574,7 @@
     osc.start(t0); osc.stop(t0 + dur + 0.02);
   }
 
-  function playTear() {
+  function playTear(gainVal) {
     if (muted) return;
     const ctx = getCtx();
     if (!ctx) return;
@@ -584,7 +585,7 @@
     band.type = "bandpass"; band.frequency.value = 1800; band.Q.value = 0.7;
     const g = ctx.createGain();
     const t0 = ctx.currentTime;
-    g.gain.setValueAtTime(0.28, t0);
+    g.gain.setValueAtTime(gainVal || 0.28, t0);
     g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.3);
     src.connect(band); band.connect(g); g.connect(ctx.destination);
     src.start(t0); src.stop(t0 + 0.32);
@@ -786,39 +787,85 @@
   }
 
   // ---------- Draw / reveal flow ----------
+  function applyTearProgress(p) {
+    const cp = Math.max(0, Math.min(1, p));
+    const ty = cp * 160;
+    const rot = cp * 18;
+    halfA.style.transform = `translateY(${-ty}%) rotate(${-rot}deg)`;
+    halfB.style.transform = `translateY(${ty}%) rotate(${rot}deg)`;
+    halfA.style.opacity = `${1 - cp}`;
+    halfB.style.opacity = `${1 - cp}`;
+  }
+
+  function snapTear(target) {
+    halfA.style.transition = "";
+    halfB.style.transition = "";
+    void halfA.offsetWidth; // force reflow so the re-enabled transition animates this change
+    applyTearProgress(target);
+  }
+
   function openTicketByNo(no) {
     const item = box.find(x => x.ticketNo === no);
     if (!item || item.opened) return;
     currentItem = item;
+    dragState = null;
+    settling = false;
     tierBadge.className = "tier-badge";
     tierBadge.textContent = item.tierLabel;
     prizeBehind.className = `prize-behind tier-${item.tierId}`;
     prizeEmoji.textContent = item.emoji;
     prizeName.textContent = item.prizeName;
-    halfA.classList.remove("torn-a");
-    halfB.classList.remove("torn-b");
-    ticketWrap.classList.remove("shake");
-    tearBtn.disabled = false;
-    tearBtn.hidden = false;
+    halfA.style.transition = "none";
+    halfB.style.transition = "none";
+    applyTearProgress(0);
+    ticketWrap.classList.remove("dragging");
+    dragHint.classList.remove("faded");
     closeBtn.hidden = true;
     overlay.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      halfA.style.transition = "";
+      halfB.style.transition = "";
+    });
   }
 
-  function handleTear() {
-    if (!currentItem) return;
-    tearBtn.disabled = true;
-    ticketWrap.classList.add("shake");
-    playTear();
-    setTimeout(() => {
-      ticketWrap.classList.remove("shake");
-      halfA.classList.add("torn-a");
-      halfB.classList.add("torn-b");
-      playTear();
-      setTimeout(() => finalizeReveal(currentItem), 680);
-    }, 350);
+  function onTicketPointerDown(e) {
+    if (!currentItem || settling) return;
+    ticketWrap.setPointerCapture(e.pointerId);
+    halfA.style.transition = "none";
+    halfB.style.transition = "none";
+    dragState = { pointerId: e.pointerId, startY: e.clientY, lastTick: 0 };
+    ticketWrap.classList.add("dragging");
+    dragHint.classList.add("faded");
+  }
+
+  function onTicketPointerMove(e) {
+    if (!dragState || dragState.pointerId !== e.pointerId) return;
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    applyTearProgress(progress);
+    if (progress - dragState.lastTick > 0.22) {
+      dragState.lastTick = progress;
+      playTear(0.14);
+    }
+  }
+
+  function onTicketPointerUp(e) {
+    if (!dragState || dragState.pointerId !== e.pointerId) return;
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    dragState = null;
+    ticketWrap.classList.remove("dragging");
+    if (progress >= COMPLETE_THRESHOLD) {
+      settling = true;
+      snapTear(1);
+      playTear(0.32);
+      setTimeout(() => finalizeReveal(currentItem), 420);
+    } else {
+      snapTear(0);
+      dragHint.classList.remove("faded");
+    }
   }
 
   function finalizeReveal(item) {
+    settling = false;
     item.opened = true;
     openedCount++;
     loot.push(item);
@@ -826,7 +873,6 @@
     renderOdds();
     renderLoot();
     celebrate(item);
-    tearBtn.hidden = true;
     closeBtn.hidden = false;
     allDone = openedCount >= TOTAL_TICKETS;
     closeBtn.textContent = allDone ? "🎉 查看抽獎總結" : "收下獎品,繼續抽籤 ➜";
@@ -884,7 +930,10 @@
   summaryResetBtn.addEventListener("click", () => resetBox(true));
   summaryCloseBtn.addEventListener("click", () => summaryOverlay.classList.add("hidden"));
 
-  tearBtn.addEventListener("click", handleTear);
+  ticketWrap.addEventListener("pointerdown", onTicketPointerDown);
+  ticketWrap.addEventListener("pointermove", onTicketPointerMove);
+  ticketWrap.addEventListener("pointerup", onTicketPointerUp);
+  ticketWrap.addEventListener("pointercancel", onTicketPointerUp);
   closeBtn.addEventListener("click", handleClose);
 
   muteBtn.addEventListener("click", () => {
