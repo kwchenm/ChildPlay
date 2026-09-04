@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>一番賞線上抽籤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #b8232f;
+    --red-dark: #7d141d;
+    --gold: #f0c14b;
+    --gold-dark: #c79a2b;
+    --cream: #fff8ea;
+    --ink: #3a1418;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #7d141d 0%, #4a0e14 55%, #1c0507 100%);
+    color: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    overflow-x: hidden;
+  }
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  header {
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .home-link {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--red-dark);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: clamp(18px, 3.6vw, 26px);
+    margin: 0;
+    color: var(--gold);
+    text-align: center;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    flex: 1;
+  }
+  .remaining-pill {
+    font-weight: 800;
+    background: var(--red-dark);
+    border: 2px solid var(--gold-dark);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 14px;
+    white-space: nowrap;
+    color: var(--gold);
+  }
+  .mute-btn {
+    font-family: inherit;
+    border: 2px solid var(--gold-dark);
+    background: var(--red-dark);
+    color: var(--gold);
+    border-radius: 20px;
+    padding: 8px 12px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 820px;
+    background: #2a0a0e;
+    border: 2px solid var(--gold-dark);
+    border-radius: 22px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    margin-bottom: 16px;
+  }
+  .panel h2 {
+    margin: 0 0 12px;
+    font-size: 17px;
+    color: var(--gold);
+  }
+  .subtitle {
+    text-align: center;
+    color: #f0d5b8;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 16px;
+  }
+
+  /* ---- Odds / prize overview ---- */
+  .odds-row {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-bottom: 1px dashed rgba(240,193,75,0.25);
+  }
+  .odds-row:last-child { border-bottom: none; }
+  .odds-badge {
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 10px;
+    color: var(--ink);
+  }
+  .odds-main { min-width: 0; }
+  .odds-examples {
+    font-size: 12px;
+    color: #d8b98e;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .odds-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .odds-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    transition: width 0.3s ease;
+  }
+  .odds-count {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--gold);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .tier-SP { background: linear-gradient(135deg,#ffe37a,#ff8a3d); box-shadow: 0 0 10px rgba(255,180,60,0.7); }
+  .tier-A  { background: linear-gradient(135deg,#ffe9a8,#e8c25f); }
+  .tier-B  { background: linear-gradient(135deg,#d9bcff,#8a5cf6); color:#fff; }
+  .tier-C  { background: linear-gradient(135deg,#a9dcff,#4aa8ff); color:#fff; }
+  .tier-D  { background: linear-gradient(135deg,#bdf0cc,#4caf7d); color:#0e2318; }
+  .tier-E  { background: linear-gradient(135deg,#e2e2e2,#a3a3a3); color:#2a2a2a; }
+  .tier-SM { background: linear-gradient(135deg,#ffd3e6,#ff9ec7); color:#5a1030; }
+
+  /* ---- Controls ---- */
+  .controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    border-radius: 24px;
+    padding: 12px 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--gold-dark);
+    transition: transform 0.1s ease;
+  }
+  .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gold-dark); }
+  .action-btn.secondary {
+    background: #4a0e14;
+    color: var(--gold);
+    border: 2px solid var(--gold-dark);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.35);
+  }
+  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---- Ticket grid ---- */
+  .ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 6px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 4px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.2);
+  }
+  .tile {
+    font-family: inherit;
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    border: 2px solid var(--gold-dark);
+    background: repeating-linear-gradient(135deg, var(--red) 0 8px, #a91d28 8px 16px);
+    color: var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 800;
+    transition: transform 0.12s ease;
+  }
+  .tile:hover:not(:disabled) { transform: scale(1.08); }
+  .tile:active:not(:disabled) { transform: scale(0.94); }
+  .tile .tile-q { font-size: 16px; }
+  .tile .tile-no { font-size: 9px; opacity: 0.85; margin-top: 1px; }
+  .tile.opened { cursor: default; border-style: solid; }
+  .tile.opened .tile-emoji { font-size: 18px; }
+  .tile.opened.tier-SP, .tile.opened.tier-A, .tile.opened.tier-B,
+  .tile.opened.tier-C, .tile.opened.tier-D, .tile.opened.tier-E, .tile.opened.tier-SM {
+    color: inherit;
+  }
+
+  /* ---- Loot bag ---- */
+  #lootList { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+  .loot-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+  .loot-item .loot-emoji { font-size: 22px; }
+  .loot-item .loot-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .loot-empty { color: #d8b98e; font-size: 13px; text-align: center; padding: 10px; }
+
+  footer { margin-top: 6px; font-size: 12px; color: #d8b98e; text-align: center; max-width: 700px; opacity: 0.85; }
+
+  /* ---- Reveal overlay ---- */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,2,3,0.82);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500;
+    padding: 20px;
+  }
+  .reveal-stage { text-align: center; }
+  .ticket-wrap {
+    position: relative;
+    width: 260px; height: 320px;
+    margin: 0 auto 22px;
+  }
+  .ticket-wrap.shake { animation: shake 0.35s ease; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-6px) rotate(-2deg); }
+    40% { transform: translateX(6px) rotate(2deg); }
+    60% { transform: translateX(-5px) rotate(-1.5deg); }
+    80% { transform: translateX(5px) rotate(1.5deg); }
+  }
+  .prize-behind {
+    position: absolute; inset: 0;
+    border-radius: 22px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+  }
+  .prize-behind .tier-badge {
+    font-size: 15px;
+    font-weight: 800;
+    padding: 4px 16px;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  }
+  .prize-behind .prize-emoji { font-size: 64px; }
+  .prize-behind .prize-name {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.4;
+    max-width: 210px;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  }
+  .paper-half {
+    position: absolute; inset: 0;
+    border-radius: 22px;
+    background: repeating-linear-gradient(135deg, #fff8ea 0 10px, #f4e6c8 10px 20px);
+    border: 3px solid var(--red);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.65s cubic-bezier(.4,.6,.4,1), opacity 0.65s ease;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+  }
+  .paper-half::after {
+    content: '賞';
+    font-size: 46px;
+    font-weight: 800;
+    color: var(--red);
+    opacity: 0.85;
+  }
+  .half-a {
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+    transform-origin: top center;
+  }
+  .half-a::after { transform: translateY(-24px); }
+  .half-b {
+    clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+    transform-origin: bottom center;
+  }
+  .half-b::after { transform: translateY(24px); }
+  .half-a.torn-a { transform: translateY(-160%) rotate(-18deg); opacity: 0; }
+  .half-b.torn-b { transform: translateY(160%) rotate(18deg); opacity: 0; }
+
+  .tear-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--ink);
+    background: var(--gold);
+    border: none;
+    border-radius: 26px;
+    padding: 13px 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--gold-dark);
+  }
+  .tear-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-dark); }
+  .tear-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .close-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--gold);
+    background: transparent;
+    border: 2px solid var(--gold-dark);
+    border-radius: 24px;
+    padding: 11px 24px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+
+  #fx-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 600;
+  }
+  #flash-layer {
+    position: fixed; inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 590;
+  }
+  #flash-layer.flash { animation: flashPulse 0.5s ease; }
+  @keyframes flashPulse { 0% { opacity: 0; } 30% { opacity: 0.55; } 100% { opacity: 0; } }
+
+  .summary-panel { max-width: 420px; }
+  .summary-panel h2 { color: var(--gold); font-size: 22px; }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 4px; font-size: 14px; border-bottom: 1px dashed rgba(240,193,75,0.25);
+  }
+
+  [hidden], .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="fx-canvas"></canvas>
+<div id="flash-layer"></div>
+
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 回選單</a>
+    <h1>🎏 一番賞線上抽籤</h1>
+    <button class="mute-btn" id="muteBtn" title="靜音切換">🔊</button>
+  </header>
+  <div class="subtitle">
+    <span id="remainingText">共 100 抽・SP 賞 1 個・A 賞 2 個・獎不落空!</span>
+  </div>
+
+  <div class="panel">
+    <h2>📋 獎項總覽 &amp; 即時中獎機率</h2>
+    <div id="oddsBody"></div>
+  </div>
+
+  <div class="panel">
+    <div class="controls" style="margin-bottom: 14px;">
+      <button class="action-btn" id="randomDrawBtn">🎲 隨機抽一支籤</button>
+      <button class="action-btn secondary" id="resetBtn">🔁 重新開一箱</button>
+      <span class="remaining-pill" id="remainingPill">剩餘籤數 100 / 100</span>
+    </div>
+    <h2>🎟️ 抽獎籤筒(點選任一支籤開獎)</h2>
+    <div class="ticket-grid" id="grid"></div>
+  </div>
+
+  <div class="panel">
+    <h2>🎁 我的戰利品</h2>
+    <div id="lootList"></div>
+  </div>
+
+  <footer>
+    一番賞為模擬遊戲,獎品為虛構示意(iPad、公仔玩具等品牌名稱僅供遊戲趣味使用),不涉及真實購買或抽獎。純 HTML/CSS/JavaScript 製作,無需安裝。
+  </footer>
+</div>
+
+<!-- Reveal overlay -->
+<div class="overlay hidden" id="overlay">
+  <div class="reveal-stage">
+    <div class="ticket-wrap" id="ticketWrap">
+      <div class="prize-behind" id="prizeBehind">
+        <div class="tier-badge" id="tierBadge">SP賞</div>
+        <div class="prize-emoji" id="prizeEmoji">🎁</div>
+        <div class="prize-name" id="prizeName">獎品名稱</div>
+      </div>
+      <div class="paper-half half-a" id="halfA"></div>
+      <div class="paper-half half-b" id="halfB"></div>
+    </div>
+    <button class="tear-btn" id="tearBtn">💪 用力撕開籤紙!</button>
+    <button class="close-btn" id="closeBtn" hidden>收下獎品,繼續抽籤 ➜</button>
+  </div>
+</div>
+
+<!-- Summary overlay -->
+<div class="overlay hidden" id="summaryOverlay">
+  <div class="panel summary-panel">
+    <h2>🎊 抽獎箱已全部抽完!</h2>
+    <p style="color:#f0d5b8; font-size:14px;">恭喜完成這一箱 100 抽,以下是你的完整戰績:</p>
+    <div id="summaryBody"></div>
+    <div class="controls" style="margin-top: 16px;">
+      <button class="action-btn" id="summaryResetBtn">🔁 重新開一箱籤 (100 抽)</button>
+      <button class="action-btn secondary" id="summaryCloseBtn">關閉視窗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Prize / tier configuration ----------
+  const TIERS = [
+    { id: "SP", label: "SP賞", count: 1,
+      prizes: ["iPad Pro 13吋 (M4) 1TB 太空黑"] },
+    { id: "A", label: "A賞", count: 2,
+      prizes: ["iPad Air 11吋 (M2) 256GB", "Apple Watch Ultra 2 鈦金屬"] },
+    { id: "B", label: "B賞", count: 3,
+      prizes: ["航海王 魯夫 Figuarts ZERO 大型公仔", "鬼滅之刃 竈門炭治郎 一番賞公仔", "進擊的巨人 兵長 立體機動公仔"] },
+    { id: "C", label: "C賞", count: 4,
+      prizes: ["寶可夢 皮卡丘 絨毛玩偶(大)", "鏈鋸人 電次 公仔", "咒術迴戰 五條悟 公仔", "SPY×FAMILY 阿妮亞 公仔"] },
+    { id: "D", label: "D賞", count: 5,
+      prizes: ["航海王 喬巴 玩偶吊飾", "鬼滅之刃 禰豆子 玩偶吊飾", "寶可夢 傑尼龜 絨毛玩偶", "海賊王 索隆 鑰匙圈", "鏈鋸人 波奇塔 玩偶"] },
+    { id: "E", label: "E賞", count: 5,
+      prizes: ["一番賞限定 亞克力立牌 A 款", "一番賞限定 亞克力立牌 B 款", "限定徽章套組", "限定海報", "限定貼紙套組"] },
+    { id: "SM", label: "小賞", count: 80,
+      prizes: ["精美收藏卡片", "原創造型吊飾", "可愛橡皮擦套組", "限定貼紙包", "扭蛋小玩具", "療癒鑰匙圈", "迷你資料夾", "角色徽章"] }
+  ];
+  const TOTAL_TICKETS = TIERS.reduce((sum, t) => sum + t.count, 0); // 100
+  const BIG_TIERS = { SP: true, A: true, B: true };
+  const MED_TIERS = { C: true, D: true };
+
+  function emojiFor(name) {
+    if (name.includes("iPad")) return "📱";
+    if (name.includes("Watch")) return "⌚";
+    if (name.includes("公仔")) return "🎎";
+    if (name.includes("絨毛") || name.includes("玩偶")) return "🧸";
+    if (name.includes("吊飾") || name.includes("鑰匙圈")) return "🔑";
+    if (name.includes("資料夾")) return "📁";
+    if (name.includes("立牌") || name.includes("海報") || name.includes("徽章") || name.includes("貼紙")) return "🎫";
+    if (name.includes("卡片")) return "🃏";
+    if (name.includes("橡皮擦")) return "🧷";
+    return "🎁";
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildBox() {
+    let items = [];
+    TIERS.forEach(tier => {
+      for (let i = 0; i < tier.count; i++) {
+        const prizeName = tier.prizes[i % tier.prizes.length];
+        items.push({
+          tierId: tier.id,
+          tierLabel: tier.label,
+          prizeName,
+          emoji: emojiFor(prizeName),
+          opened: false
+        });
+      }
+    });
+    shuffle(items);
+    items.forEach((item, idx) => { item.ticketNo = idx + 1; });
+    return items;
+  }
+
+  // ---------- State ----------
+  let box = buildBox();
+  let openedCount = 0;
+  let loot = [];
+  let currentItem = null;
+  let allDone = false;
+  let muted = false;
+
+  // ---------- DOM refs ----------
+  const grid = document.getElementById("grid");
+  const oddsBody = document.getElementById("oddsBody");
+  const remainingPill = document.getElementById("remainingPill");
+  const lootList = document.getElementById("lootList");
+  const overlay = document.getElementById("overlay");
+  const ticketWrap = document.getElementById("ticketWrap");
+  const prizeBehind = document.getElementById("prizeBehind");
+  const tierBadge = document.getElementById("tierBadge");
+  const prizeEmoji = document.getElementById("prizeEmoji");
+  const prizeName = document.getElementById("prizeName");
+  const halfA = document.getElementById("halfA");
+  const halfB = document.getElementById("halfB");
+  const tearBtn = document.getElementById("tearBtn");
+  const closeBtn = document.getElementById("closeBtn");
+  const randomDrawBtn = document.getElementById("randomDrawBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const summaryOverlay = document.getElementById("summaryOverlay");
+  const summaryBody = document.getElementById("summaryBody");
+  const summaryResetBtn = document.getElementById("summaryResetBtn");
+  const summaryCloseBtn = document.getElementById("summaryCloseBtn");
+  const flashLayer = document.getElementById("flash-layer");
+
+  // ---------- Audio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function createNoiseBuffer(ctx, duration) {
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    return buffer;
+  }
+
+  function tone(freq, delay, dur, type, gainVal) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gainVal || 0.2, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+
+  function playTear() {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const noiseBuf = createNoiseBuffer(ctx, 0.3);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    const band = ctx.createBiquadFilter();
+    band.type = "bandpass"; band.frequency.value = 1800; band.Q.value = 0.7;
+    const g = ctx.createGain();
+    const t0 = ctx.currentTime;
+    g.gain.setValueAtTime(0.28, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.3);
+    src.connect(band); band.connect(g); g.connect(ctx.destination);
+    src.start(t0); src.stop(t0 + 0.32);
+  }
+
+  function playBoom(delay) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(150, t0);
+    osc.frequency.exponentialRampToValueAtTime(40, t0 + 0.3);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.5, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.4);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + 0.42);
+
+    const noiseBuf = createNoiseBuffer(ctx, 0.6);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass"; hp.frequency.value = 2500;
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.001, t0);
+    ng.gain.linearRampToValueAtTime(0.18, t0 + 0.05);
+    ng.gain.exponentialRampToValueAtTime(0.001, t0 + 0.6);
+    src.connect(hp); hp.connect(ng); ng.connect(ctx.destination);
+    src.start(t0); src.stop(t0 + 0.62);
+  }
+
+  function playFireworksSound(big) {
+    const boomCount = big ? 5 : 3;
+    for (let i = 0; i < boomCount; i++) {
+      playBoom(i * 0.28 + Math.random() * 0.1);
+    }
+  }
+
+  function playFanfare(big) {
+    const notes = big
+      ? [523.25, 659.25, 783.99, 1046.5, 1318.5]
+      : [523.25, 659.25, 783.99];
+    notes.forEach((f, i) => tone(f, i * 0.14, 0.28, "triangle", 0.2));
+    if (big) tone(1567.98, notes.length * 0.14 + 0.05, 0.5, "triangle", 0.22);
+  }
+
+  function playChime() {
+    tone(659.25, 0, 0.18, "sine", 0.16);
+    tone(880, 0.12, 0.24, "sine", 0.16);
+  }
+
+  function playSoftClick() {
+    tone(440, 0, 0.1, "sine", 0.12);
+  }
+
+  // ---------- Fireworks canvas ----------
+  const fxCanvas = document.getElementById("fx-canvas");
+  const fxCtx = fxCanvas.getContext("2d");
+  function resizeCanvas() {
+    fxCanvas.width = window.innerWidth;
+    fxCanvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  let particles = [];
+  let fxRunning = false;
+  const FX_COLORS = ["#ff6b6b", "#ffd166", "#06d6a0", "#4dabf7", "#c77dff", "#ff9ec7", "#f0c14b"];
+
+  function spawnBurst(x, y, count) {
+    const color = FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+      const speed = 2 + Math.random() * 3.5;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        maxLife: 50 + Math.random() * 30,
+        color,
+        size: 2 + Math.random() * 2
+      });
+    }
+  }
+
+  function stepParticles() {
+    fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.99; p.life++;
+      const alpha = Math.max(0, 1 - p.life / p.maxLife);
+      fxCtx.globalAlpha = alpha;
+      fxCtx.fillStyle = p.color;
+      fxCtx.beginPath();
+      fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      fxCtx.fill();
+    });
+    fxCtx.globalAlpha = 1;
+    particles = particles.filter(p => p.life < p.maxLife);
+    if (particles.length > 0) {
+      requestAnimationFrame(stepParticles);
+    } else {
+      fxRunning = false;
+    }
+  }
+
+  function ensureFxLoop() {
+    if (!fxRunning) { fxRunning = true; requestAnimationFrame(stepParticles); }
+  }
+
+  function launchFireworks(big) {
+    const bursts = big ? 6 : 3;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = fxCanvas.width * (0.15 + Math.random() * 0.7);
+        const y = fxCanvas.height * (0.15 + Math.random() * 0.35);
+        spawnBurst(x, y, big ? 70 : 45);
+        ensureFxLoop();
+      }, i * 280 + Math.random() * 120);
+    }
+  }
+
+  function launchSparkle() {
+    spawnBurst(fxCanvas.width / 2, fxCanvas.height * 0.55, 18);
+    ensureFxLoop();
+  }
+
+  function flashScreen() {
+    flashLayer.classList.remove("flash");
+    void flashLayer.offsetWidth;
+    flashLayer.classList.add("flash");
+  }
+
+  function celebrate(item) {
+    if (item.tierId === "SP") {
+      launchFireworks(true); playFireworksSound(true); playFanfare(true); flashScreen();
+    } else if (item.tierId === "A") {
+      launchFireworks(true); playFireworksSound(true); playFanfare(false);
+    } else if (item.tierId === "B") {
+      launchFireworks(false); playFireworksSound(false); playFanfare(false);
+    } else if (MED_TIERS[item.tierId]) {
+      launchSparkle(); playChime();
+    } else {
+      playSoftClick();
+    }
+  }
+
+  // ---------- Rendering ----------
+  function renderGrid() {
+    grid.innerHTML = box.map(item => {
+      const cls = item.opened ? `tile opened tier-${item.tierId}` : "tile";
+      const inner = item.opened
+        ? `<span class="tile-emoji">${item.emoji}</span>`
+        : `<span class="tile-q">?</span>`;
+      return `<button class="${cls}" data-no="${item.ticketNo}" ${item.opened ? "disabled" : ""}>${inner}<span class="tile-no">${item.ticketNo}</span></button>`;
+    }).join("");
+  }
+
+  function renderOdds() {
+    const remainingTotal = box.filter(t => !t.opened).length;
+    oddsBody.innerHTML = TIERS.map(t => {
+      const remain = box.filter(x => x.tierId === t.id && !x.opened).length;
+      const pct = remainingTotal ? (remain / remainingTotal * 100).toFixed(1) : "0.0";
+      const drawnPct = t.count ? ((t.count - remain) / t.count * 100) : 0;
+      return `<div class="odds-row">
+        <span class="odds-badge tier-${t.id}">${t.label}</span>
+        <span class="odds-main">
+          <div class="odds-examples">${t.prizes.join("、")}</div>
+          <div class="odds-bar-track"><div class="odds-bar-fill" style="width:${drawnPct}%"></div></div>
+        </span>
+        <span class="odds-count">剩 ${remain}/${t.count}<br>機率 ${pct}%</span>
+      </div>`;
+    }).join("");
+    remainingPill.textContent = `剩餘籤數 ${remainingTotal} / ${TOTAL_TICKETS}`;
+  }
+
+  function renderLoot() {
+    if (loot.length === 0) {
+      lootList.innerHTML = `<div class="loot-empty">還沒有抽到獎品,快去抽籤筒抽一支吧!</div>`;
+      return;
+    }
+    lootList.innerHTML = loot.slice().reverse().map(item => `
+      <div class="loot-item">
+        <span class="loot-emoji">${item.emoji}</span>
+        <span class="loot-name">${item.tierLabel}・${item.prizeName}</span>
+      </div>
+    `).join("");
+  }
+
+  function updateTile(item) {
+    const tileBtn = grid.querySelector(`.tile[data-no="${item.ticketNo}"]`);
+    if (tileBtn) {
+      tileBtn.classList.add("opened", `tier-${item.tierId}`);
+      tileBtn.disabled = true;
+      tileBtn.innerHTML = `<span class="tile-emoji">${item.emoji}</span><span class="tile-no">${item.ticketNo}</span>`;
+    }
+  }
+
+  // ---------- Draw / reveal flow ----------
+  function openTicketByNo(no) {
+    const item = box.find(x => x.ticketNo === no);
+    if (!item || item.opened) return;
+    currentItem = item;
+    tierBadge.className = "tier-badge";
+    tierBadge.textContent = item.tierLabel;
+    prizeBehind.className = `prize-behind tier-${item.tierId}`;
+    prizeEmoji.textContent = item.emoji;
+    prizeName.textContent = item.prizeName;
+    halfA.classList.remove("torn-a");
+    halfB.classList.remove("torn-b");
+    ticketWrap.classList.remove("shake");
+    tearBtn.disabled = false;
+    tearBtn.hidden = false;
+    closeBtn.hidden = true;
+    overlay.classList.remove("hidden");
+  }
+
+  function handleTear() {
+    if (!currentItem) return;
+    tearBtn.disabled = true;
+    ticketWrap.classList.add("shake");
+    playTear();
+    setTimeout(() => {
+      ticketWrap.classList.remove("shake");
+      halfA.classList.add("torn-a");
+      halfB.classList.add("torn-b");
+      playTear();
+      setTimeout(() => finalizeReveal(currentItem), 680);
+    }, 350);
+  }
+
+  function finalizeReveal(item) {
+    item.opened = true;
+    openedCount++;
+    loot.push(item);
+    updateTile(item);
+    renderOdds();
+    renderLoot();
+    celebrate(item);
+    tearBtn.hidden = true;
+    closeBtn.hidden = false;
+    allDone = openedCount >= TOTAL_TICKETS;
+    closeBtn.textContent = allDone ? "🎉 查看抽獎總結" : "收下獎品,繼續抽籤 ➜";
+  }
+
+  function handleClose() {
+    overlay.classList.add("hidden");
+    currentItem = null;
+    if (allDone) showSummary();
+  }
+
+  function showSummary() {
+    summaryBody.innerHTML = TIERS.map(t => {
+      const got = loot.filter(x => x.tierId === t.id).length;
+      return `<div class="summary-row"><span>${t.label}</span><span>${got} / ${t.count}</span></div>`;
+    }).join("");
+    summaryOverlay.classList.remove("hidden");
+  }
+
+  function resetBox(fromSummary) {
+    if (!fromSummary && openedCount > 0 && openedCount < TOTAL_TICKETS) {
+      const ok = window.confirm("目前這箱籤還沒抽完,確定要重新開一箱新的嗎?已抽的戰績會被清空。");
+      if (!ok) return;
+    }
+    box = buildBox();
+    openedCount = 0;
+    loot = [];
+    allDone = false;
+    currentItem = null;
+    overlay.classList.add("hidden");
+    summaryOverlay.classList.add("hidden");
+    renderGrid();
+    renderOdds();
+    renderLoot();
+  }
+
+  // ---------- Event wiring ----------
+  grid.addEventListener("click", e => {
+    const btn = e.target.closest(".tile");
+    if (!btn || btn.disabled) return;
+    openTicketByNo(parseInt(btn.dataset.no, 10));
+  });
+
+  randomDrawBtn.addEventListener("click", () => {
+    const avail = box.filter(x => !x.opened);
+    if (avail.length === 0) {
+      window.alert("這箱籤已經全部抽完囉!請重新開一箱。");
+      return;
+    }
+    const pick = avail[Math.floor(Math.random() * avail.length)];
+    openTicketByNo(pick.ticketNo);
+  });
+
+  resetBtn.addEventListener("click", () => resetBox(false));
+  summaryResetBtn.addEventListener("click", () => resetBox(true));
+  summaryCloseBtn.addEventListener("click", () => summaryOverlay.classList.add("hidden"));
+
+  tearBtn.addEventListener("click", handleTear);
+  closeBtn.addEventListener("click", handleClose);
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  // ---------- Init ----------
+  renderGrid();
+  renderOdds();
+  renderLoot();
+})();
+</script>
+</body>
+</html>
