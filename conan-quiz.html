@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>名偵探問答大挑戰</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2233;
+    --navy-light: #263349;
+    --gold: #e8c25f;
+    --gold-dark: #c79f3a;
+    --red: #d64545;
+    --green: #4caf7d;
+    --paper: #f4ecd8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 20% 0%, #2c3a54 0%, var(--navy) 55%, #10141d 100%);
+    color: var(--paper);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    overflow-x: hidden;
+  }
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  header {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+  .home-link {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: clamp(18px, 3.6vw, 26px);
+    margin: 0;
+    color: var(--gold);
+    text-align: center;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+  }
+  .score-pill {
+    font-weight: 800;
+    background: var(--navy-light);
+    border: 2px solid var(--gold-dark);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 760px;
+    background: var(--navy-light);
+    border: 2px solid var(--gold-dark);
+    border-radius: 24px;
+    padding: 28px 22px;
+    box-shadow: 0 10px 0 rgba(0,0,0,0.3);
+  }
+
+  /* ---- Start screen ---- */
+  .start-screen { text-align: center; }
+  .start-screen .big-emoji { font-size: 64px; margin-bottom: 8px; }
+  .start-screen h2 { color: var(--gold); font-size: clamp(20px, 4vw, 28px); margin: 0 0 10px; }
+  .start-screen p { color: #cbb98a; line-height: 1.6; margin: 0 0 24px; }
+  .start-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--navy);
+    background: var(--gold);
+    border: none;
+    border-radius: 30px;
+    padding: 14px 40px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--gold-dark);
+    transition: transform 0.12s ease;
+  }
+  .start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-dark); }
+
+  /* ---- Quiz screen ---- */
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #cbb98a;
+    font-weight: 700;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #10141d;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    transition: width 0.3s ease;
+  }
+  .question-text {
+    font-size: clamp(17px, 3.4vw, 22px);
+    font-weight: 800;
+    color: var(--paper);
+    line-height: 1.5;
+    margin-bottom: 20px;
+    min-height: 3em;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 480px) {
+    .options { grid-template-columns: 1fr; }
+  }
+  .option-btn {
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--navy);
+    border: 2px solid #3a4a68;
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: var(--paper);
+    font-size: clamp(14px, 2.6vw, 16px);
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .option-btn:active { transform: scale(0.98); }
+  .option-btn .opt-icon { font-size: 26px; flex-shrink: 0; }
+  .option-btn.correct { background: var(--green); border-color: #2e7d54; color: #0e2318; }
+  .option-btn.wrong { background: var(--red); border-color: #8f2b2b; color: #350c0c; }
+  .option-btn.disabled { pointer-events: none; opacity: 0.55; }
+  .option-btn.disabled.correct, .option-btn.disabled.wrong { opacity: 1; }
+
+  .feedback {
+    margin-top: 16px;
+    min-height: 28px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 16px;
+  }
+  .feedback.correct-text { color: var(--green); }
+  .feedback.wrong-text { color: #ff8f8f; }
+
+  /* ---- Result screen ---- */
+  .result-screen { text-align: center; }
+  .grade-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--gold) 0%, var(--gold-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.35);
+  }
+  .grade-circle .grade-letter {
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .result-screen .result-score {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .result-screen .result-comment {
+    color: #cbb98a;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .retry-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--navy);
+    background: var(--gold);
+    border: none;
+    border-radius: 24px;
+    padding: 12px 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--gold-dark);
+  }
+  .retry-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gold-dark); }
+
+  footer { margin-top: 22px; font-size: 12px; color: #7a6b4e; text-align: center; max-width: 700px; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🕵️ 名偵探問答大挑戰</h1>
+    <div class="score-pill" id="scorePill">分數 0</div>
+  </header>
+
+  <div class="panel">
+    <!-- Start screen -->
+    <div class="start-screen" id="startScreen">
+      <div class="big-emoji">🔍🎩</div>
+      <h2>歡迎來到名偵探問答大挑戰!</h2>
+      <p>
+        題庫共 100 題,每次隨機挑戰 10 題。<br>
+        答對一題 <b style="color:#4caf7d">+10 分</b>,答錯一題 <b style="color:#ff8f8f">-5 分</b>。<br>
+        全部答完後,看看你能拿到 S / A / B / C / D / E 哪個等級!
+      </p>
+      <button class="start-btn" id="startBtn">開始挑戰 ▶</button>
+    </div>
+
+    <!-- Quiz screen -->
+    <div id="quizScreen" hidden>
+      <div class="progress-row">
+        <span id="progressText">第 1 / 10 題</span>
+        <span id="livePill">目前分數:0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:10%"></div></div>
+      <div class="question-text" id="questionText"></div>
+      <div class="options" id="optionsBox"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- Result screen -->
+    <div class="result-screen" id="resultScreen" hidden>
+      <div class="grade-circle"><span class="grade-letter" id="gradeLetter">S</span></div>
+      <div class="result-score" id="resultScore">分數:0 / 100</div>
+      <div class="result-comment" id="resultComment"></div>
+      <div class="result-actions">
+        <button class="retry-btn" id="retryBtn">🔁 再挑戰一次</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>柯南主題問答題庫為原創題目,僅供家庭同樂使用;所有相關角色版權皆屬原作者青山剛昌與小學館所有。</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Icon dictionary (generic emoji, no copyrighted artwork) ----------
+  var ICONS = {
+    "工藤新一":"🕵️‍♂️","服部平次":"⚔️","京極真":"🥋","黑羽快斗":"🎭","怪盜基德":"🎩",
+    "毛利蘭":"🎀","毛利小五郎":"😴","灰原哀":"🧪","宮野志保":"🧪","阿笠博士":"🔬",
+    "妃英理":"⚖️","工藤優作":"✍️","工藤有希子":"🎬","遠山和葉":"🗡️","羽田秀吉":"🎓",
+    "目暗十三":"👮","目暗十五郎":"👮","高木涉":"👮‍♂️","佐藤美和子":"👮‍♀️","白鳥任三郎":"🕴️",
+    "千葉和伸":"👮‍♂️","橫溝參悟":"👮‍♂️","圓谷光彥":"👓","小嶋元太":"🍔","吉田步美":"🎒",
+    "鈴木園子":"💎","世良真純":"🎽","伊織無我":"🎓","安室透":"☕","降谷零":"🕶️",
+    "赤井秀一":"🎯","沖矢昴":"🧥","水無怜奈":"🕵️‍♀️",
+    "Gin":"🖤","Vodka":"🖤","Vermouth":"🍷","Sherry":"❄️","Bourbon":"☕","Rum":"🥃","Scotch":"🥃","Rye":"🥃",
+    "琴酒":"🖤","伏特加":"🖤","貝爾摩德":"🍷","雪莉":"❄️","波本":"☕","蘭姆":"🥃","蘇格蘭":"🥃","黑麥":"🥃",
+    "APTX4869":"💊","帝丹小學":"🏫","目暗小學":"🏫","帝丹高中":"🏫","少年偵探團":"🔍",
+    "毛利偵探事務所":"🏢","黑衣組織":"🖤","蝴蝶結型變聲器":"🎀","手錶型麻醉槍":"⌚",
+    "噴射滑板鞋":"🛹","特製高爾夫球鞋":"⛳","保時捷356A":"🚗","真相只有一個!":"💬",
+    "青山剛昌":"✏️","魔術快斗":"🎩","Poirot":"☕","週刊少年Sunday":"📖","夏洛克·福爾摩斯":"🎩",
+    "江戶川亂步":"📚","柯南·道爾":"📚","黃色":"🚗","足球":"⚽","預告信":"✉️","白色披風":"🧥",
+    "沉睡的小五郎":"😴","沉睡的名偵探":"🕵️","搜查一課":"👮","東京":"🗼","大阪":"🏯"
+  };
+  var CAT_FALLBACK = { person: "🧑", org: "🖤", place: "📍", gadget: "🔧", quote: "💬" };
+  function getIcon(text, cat) {
+    return ICONS[text] || CAT_FALLBACK[cat] || "❓";
+  }
+
+  // ---------- 100-question bank (original trivia, no copyrighted text/art) ----------
+  var BANK = [
+    { q: "「江戶川柯南」的本名是誰?", opts: ["工藤新一","服部平次","京極真","黑羽快斗"], correct: 0, cat: "person" },
+    { q: "使工藤新一變成小學生的神秘組織稱為?", opts: ["黑衣組織","白衣組織","紅心組織","暗夜組織"], correct: 0, cat: "org" },
+    { q: "柯南平常住在誰家、掛名「小小偵探」幫忙辦案?", opts: ["毛利小五郎","目暗十三","阿笠博士","服部平藏"], correct: 0, cat: "person" },
+    { q: "柯南心儀的青梅竹馬是誰?", opts: ["毛利蘭","灰原哀","鈴木園子","遠山和葉"], correct: 0, cat: "person" },
+    { q: "常幫柯南製作各種偵探道具的科學家是?", opts: ["阿笠博士","目暗十三","工藤優作","白鳥任三郎"], correct: 0, cat: "person" },
+    { q: "柯南所屬偵探事務所的正式名稱是?", opts: ["毛利偵探事務所","工藤偵探事務所","帝丹偵探社","少年偵探社"], correct: 0, cat: "org" },
+    { q: "灰原哀原本在組織裡使用的真實姓名是?", opts: ["宮野志保","世良真純","鈴木園子","吉田步美"], correct: 0, cat: "person" },
+    { q: "讓工藤新一變小的神秘藥物代號是?", opts: ["APTX4869","PTX4896","AXPT9846","TX4869A"], correct: 0, cat: "gadget" },
+    { q: "柯南就讀的小學名稱是?", opts: ["帝丹小學","目暗小學","東都小學","江戶川小學"], correct: 0, cat: "place" },
+    { q: "柯南、光彥、元太、步美等人組成的兒童偵探社團叫做?", opts: ["少年偵探團","名偵探俱樂部","小小名偵探社","帝丹偵探隊"], correct: 0, cat: "org" },
+
+    { q: "少年偵探團中戴著厚眼鏡、博學多聞的男孩是?", opts: ["圓谷光彥","小嶋元太","吉田步美","灰原哀"], correct: 0, cat: "person" },
+    { q: "少年偵探團中體型壯碩、食量驚人的男孩是?", opts: ["小嶋元太","圓谷光彥","羽田秀吉","伊織無我"], correct: 0, cat: "person" },
+    { q: "少年偵探團裡最早加入的女生是?", opts: ["吉田步美","毛利蘭","鈴木園子","灰原哀"], correct: 0, cat: "person" },
+    { q: "阿笠博士的招牌座車是什麼顏色的金龜車?", opts: ["黃色","紅色","藍色","綠色"], correct: 0, cat: "gadget" },
+    { q: "柯南最常用來麻醉毛利小五郎、再模仿聲音推理的道具是?", opts: ["手錶型麻醉槍","眼鏡型雷射筆","蝴蝶結變聲器","萬能鑰匙"], correct: 0, cat: "gadget" },
+
+    { q: "毛利蘭的父親、私家偵探的名字是?", opts: ["毛利小五郎","目暗十三","白鳥任三郎","佐藤浩一"], correct: 0, cat: "person" },
+    { q: "毛利小五郎的妻子、同時也是知名律師的人是?", opts: ["妃英理","世良britannia","吉田茂子","鈴木依子"], correct: 0, cat: "person" },
+    { q: "毛利小五郎因為總在推理時打瞌睡,常被戲稱為?", opts: ["沉睡的小五郎","打盹的名偵探","夢遊神探","午睡偵探"], correct: 0, cat: "quote" },
+    { q: "毛利蘭擅長哪一種武術?", opts: ["空手道","柔道","劍道","合氣道"], correct: 0, cat: "person" },
+    { q: "柯南用來射門昏迷犯人的腳上,穿著什麼特製裝備?", opts: ["特製高爾夫球鞋","噴射滑板鞋","彈簧高蹺","飛毛腿護具"], correct: 0, cat: "gadget" },
+
+    { q: "黑衣組織的成員之一,代號取自英文「琴酒(Gin)」的是?", opts: ["Gin","Vodka","Vermouth","Rum"], correct: 0, cat: "org" },
+    { q: "常與代號「Gin」搭檔行動的組織成員代號是?", opts: ["Vodka","Sherry","Bourbon","Scotch"], correct: 0, cat: "org" },
+    { q: "黑衣組織中神秘的女性成員,代號取自苦艾酒「Vermouth」的是誰?", opts: ["Vermouth","Sherry","Rum","Chianti"], correct: 0, cat: "org" },
+    { q: "灰原哀在組織裡原本使用的代號是?", opts: ["Sherry","Bourbon","Gin","Vodka"], correct: 0, cat: "org" },
+    { q: "代號「Bourbon」的另一個身分、經營咖啡廳兼私家偵探社的角色是?", opts: ["安室透","赤井秀一","京極真","羽田秀吉"], correct: 0, cat: "person" },
+    { q: "傳說開著一輛黑色保時捷356A跑車的組織成員代號是?", opts: ["Gin","Vodka","Vermouth","Rum"], correct: 0, cat: "org" },
+    { q: "赤井秀一曾在組織裡使用過的代號是?", opts: ["Scotch","Rum","Gin","Vodka"], correct: 0, cat: "org" },
+
+    { q: "目暗十三隸屬警視廳的哪個部門?", opts: ["搜查一課","交通課","鑑識課","公安部"], correct: 0, cat: "place" },
+    { q: "常與目暗警官一起出現在案發現場的年輕刑警是?", opts: ["高木涉","白鳥任三郎","千葉和伸","橫溝參悟"], correct: 0, cat: "person" },
+    { q: "暗戀高木刑警、個性溫柔的女警官是?", opts: ["佐藤美和子","妃英理","風見裕美","宮本由美"], correct: 0, cat: "person" },
+    { q: "大阪府警的天才高中生偵探,是柯南的好朋友,名叫?", opts: ["服部平次","京極真","羽田秀吉","伊織無我"], correct: 0, cat: "person" },
+    { q: "服部平次的青梅竹馬女友是誰?", opts: ["遠山和葉","毛利蘭","鈴木園子","世良真純"], correct: 0, cat: "person" },
+
+    { q: "阿笠博士發明、能將柯南的聲音變成任何人的道具是?", opts: ["蝴蝶結型變聲器","手錶型麻醉槍","萬能鑰匙","追蹤徽章"], correct: 0, cat: "gadget" },
+    { q: "柯南用來快速移動、鞋底可以噴射滑行的道具叫做?", opts: ["噴射滑板鞋","彈簧高蹺","飛天腳踏車","特製高爾夫球鞋"], correct: 0, cat: "gadget" },
+    { q: "少年偵探團身上配戴、可以定位與通話的徽章,是誰發明的?", opts: ["阿笠博士","工藤優作","目暗十三","灰原哀"], correct: 0, cat: "person" },
+
+    { q: "有「平成福爾摩斯」稱號的高中生名偵探是誰?", opts: ["工藤新一","服部平次","京極真","羽田秀吉"], correct: 0, cat: "person" },
+    { q: "神出鬼沒、擅長變裝與魔術,常留下預告信的怪盜是?", opts: ["怪盜基德","京極真","赤井秀一","羽田秀吉"], correct: 0, cat: "person" },
+    { q: "怪盜基德的真實身分(白天是普通高中生)是誰?", opts: ["黑羽快斗","工藤新一","服部平次","京極真"], correct: 0, cat: "person" },
+    { q: "空手道冠軍、個性沉穩寡言,是毛利蘭的空手道對手的角色是?", opts: ["京極真","服部平次","羽田秀吉","伊織無我"], correct: 0, cat: "person" },
+    { q: "眾議院議員之子,同時也是柯南朋友之一的角色是?", opts: ["羽田秀吉","京極真","伊織無我","風見裕也"], correct: 0, cat: "person" },
+
+    { q: "柯南推理完畢、道出真凶時常說的經典台詞是?", opts: ["真相只有一個!","正義必勝!","事實勝於雄辯!","一切都在我的計算之中!"], correct: 0, cat: "quote" },
+    { q: "工藤新一的父親、知名推理小說家的名字是?", opts: ["工藤優作","工藤有希子","目暗十三","阿笠博士"], correct: 0, cat: "person" },
+    { q: "工藤新一的母親、曾經是知名女演員的人是?", opts: ["工藤有希子","妃英理","鈴木依子","世良britannia"], correct: 0, cat: "person" },
+    { q: "鈴木園子是哪個知名財團的千金?", opts: ["鈴木財閥","毛利集團","帝丹集團","妃氏集團"], correct: 0, cat: "org" },
+    { q: "鈴木園子暗戀的對象是誰?", opts: ["服部平次","工藤新一","京極真","高木涉"], correct: 0, cat: "person" },
+
+    { q: "蘭曾經打工、柯南和少年偵探團也常光顧的咖啡廳名字是?", opts: ["Poirot","Sherlock","Agatha","Holmes"], correct: 0, cat: "place" },
+    { q: "「名偵探柯南」的原作漫畫作者是誰?", opts: ["青山剛昌","尾田榮一郎","鳥山明","井上雄彥"], correct: 0, cat: "person" },
+    { q: "柯南所居住、故事主要舞台的城市是?", opts: ["東京","大阪","名古屋","橫濱"], correct: 0, cat: "place" },
+    { q: "服部平次的故鄉、也是他常辦案的城市是?", opts: ["大阪","京都","神戶","奈良"], correct: 0, cat: "place" },
+    { q: "工藤新一與毛利蘭從小的約定,是新一將來要當上什麼?", opts: ["名偵探","律師","醫生","警察"], correct: 0, cat: "person" },
+
+    { q: "佐藤美和子刑警最愛吃的食物,常因為這個立刻答應幫忙辦案是?", opts: ["燒肉","壽司","拉麵","咖哩飯"], correct: 0, cat: "person" },
+    { q: "柯南裝成毛利小五郎推理時使用的麻醉針,通常從哪裡發射?", opts: ["手錶","眼鏡","領帶","鞋子"], correct: 0, cat: "gadget" },
+    { q: "灰原哀加入少年偵探團之前,在黑衣組織裡的身分是?", opts: ["藥物研發科學家","狙擊手","情報販子","殺手"], correct: 0, cat: "person" },
+    { q: "世良真純轉學到帝丹小學後,她的身分後來被揭曉與誰有關?", opts: ["赤井秀一","安室透","京極真","服部平次"], correct: 0, cat: "person" },
+    { q: "安室透除了是臥底公安警察,還有另一個身分是?", opts: ["私家偵探","律師","記者","醫生"], correct: 0, cat: "person" },
+
+    { q: "工藤新一與毛利蘭從小就認識,是因為兩家是?", opts: ["鄰居","親戚","同班同學","遠房表親"], correct: 0, cat: "person" },
+    { q: "阿笠博士曾發明過、讓少年偵探團加速移動的高速交通工具是?", opts: ["噴射腳踏車","飛天掃把","滑翔翼","獨輪車"], correct: 0, cat: "gadget" },
+    { q: "「名偵探柯南」最初是連載於哪一本日本漫畫雜誌?", opts: ["週刊少年Sunday","週刊少年Jump","週刊少年Magazine","月刊Afternoon"], correct: 0, cat: "place" },
+    { q: "柯南的姓氏「江戶川」,是向哪位知名推理作家致敬?", opts: ["江戶川亂步","阿嘉莎·克莉絲蒂","柯南·道爾","松本清張"], correct: 0, cat: "person" },
+    { q: "而「柯南」這個名字,則是向哪位推理小說家致敬?", opts: ["柯南·道爾","阿嘉莎·克莉絲蒂","愛倫·坡","江戶川亂步"], correct: 0, cat: "person" },
+
+    { q: "工藤新一非常崇拜、常引用其推理名言的偵探角色是?", opts: ["夏洛克·福爾摩斯","白羅","金田一","亞森羅蘋"], correct: 0, cat: "person" },
+    { q: "怪盜基德犯案前,常會寄出什麼東西給警方或目標?", opts: ["預告信","錄音帶","電報","傳真"], correct: 0, cat: "gadget" },
+    { q: "怪盜基德的招牌配件,除了高帽和單片眼鏡,還有一項是?", opts: ["白色披風","黑色手套","金色懷錶","紅色領結"], correct: 0, cat: "gadget" },
+    { q: "京極真的身分是哪個空手道館的接班人/選手?", opts: ["京極流空手道館","服部流柔道館","毛利道場","目暗武館"], correct: 0, cat: "person" },
+    { q: "服部平次的父親服部平藏,在大阪府警擔任的職位是?", opts: ["警視總監","巡查部長","鑑識課長","交通課長"], correct: 0, cat: "person" },
+
+    { q: "目暗警官的正式全名是?", opts: ["目暗十三","目暗十五郎","目暗一朗","目暗次郎"], correct: 0, cat: "person" },
+    { q: "白鳥任三郎在搜查一課中,常和誰互相較勁、關係微妙?", opts: ["目暗十三","高木涉","千葉和伸","橫溝參悟"], correct: 0, cat: "person" },
+    { q: "少年偵探團中,吉田步美的興趣包含?", opts: ["做便當、料理","踢足球","劍道","下棋"], correct: 0, cat: "person" },
+    { q: "小嶋元太的興趣、除了吃東西外還喜歡?", opts: ["足球","劍道","鋼琴","繪畫"], correct: 0, cat: "person" },
+    { q: "圓谷光彥最大的興趣是?", opts: ["閱讀、百科知識","運動","音樂","烹飪"], correct: 0, cat: "person" },
+
+    { q: "蘭的母親妃英理的職業是?", opts: ["律師","法官","警察","記者"], correct: 0, cat: "person" },
+    { q: "毛利小五郎原本的職業是?", opts: ["警官,後來辭職開偵探社","一直都是私家偵探","律師","記者"], correct: 0, cat: "person" },
+    { q: "名偵探柯南裡,毛利小五郎因柯南幫助破案,獲得了什麼美稱?", opts: ["沉睡的名偵探","平成的福爾摩斯","推理之王","正義使者"], correct: 0, cat: "person" },
+    { q: "名偵探柯南的作者青山剛昌,擅長的漫畫類型是?", opts: ["本格推理解謎","校園愛情","運動競技","奇幻冒險"], correct: 0, cat: "person" },
+    { q: "小嶋元太在少年偵探團裡,常自封什麼職位、個性比較衝動?", opts: ["隊長","副隊長","軍師","顧問"], correct: 0, cat: "person" },
+
+    { q: "灰原哀加入毛利偵探事務所生活圈後,借住在誰家隔壁的公寓?", opts: ["阿笠博士家隔壁","蘭家隔壁","警察局宿舍","學校宿舍"], correct: 0, cat: "place" },
+    { q: "柯南目前在帝丹小學就讀幾年級?", opts: ["一年級","二年級","三年級","四年級"], correct: 0, cat: "place" },
+    { q: "工藤新一原本是幾年級的高中生偵探?", opts: ["高中二年級","高中一年級","高中三年級","國中三年級"], correct: 0, cat: "person" },
+    { q: "毛利蘭與工藤新一同班就讀的高中名稱是?", opts: ["帝丹高中","目暗高中","東都高中","私立青海高中"], correct: 0, cat: "place" },
+    { q: "名偵探柯南的劇場版(電影版),長年固定於每年哪個季節在日本上映?", opts: ["春天","夏天","秋天","冬天"], correct: 0, cat: "org" },
+
+    { q: "柯南解謎後擊昏犯人的經典畫面,常用什麼運動器材當武器?", opts: ["足球","棒球","籃球","排球"], correct: 0, cat: "gadget" },
+    { q: "灰原哀是少年偵探團裡,第幾位加入的成員?", opts: ["最後加入的成員","第一位","第二位","第三位"], correct: 0, cat: "person" },
+    { q: "工藤新一被灌藥縮小後,他的推理能力有什麼變化?", opts: ["完全沒有改變","跟著變小、變笨","反而變得更強","暫時完全喪失"], correct: 0, cat: "gadget" },
+    { q: "阿笠博士家中最大的興趣、也常造成許多烏龍事件的是?", opts: ["發明各種道具","收集古董車","園藝","釣魚"], correct: 0, cat: "person" },
+    { q: "黑衣組織成員彼此之間互相稱呼時,都使用什麼類型的代號?", opts: ["各種酒的名稱","各種顏色","各種動物","各種數字"], correct: 0, cat: "org" },
+
+    { q: "代號「Rum」在黑衣組織中的地位,被認為僅次於誰?", opts: ["組織的老大(首領)","琴酒","伏特加","貝爾摩德"], correct: 0, cat: "org" },
+    { q: "灰原哀研發的解藥,理論上可以做到什麼事?", opts: ["讓縮小的人恢復原狀","讓人長生不老","讓人失去記憶","讓人隱形"], correct: 0, cat: "gadget" },
+    { q: "黑羽快斗假扮怪盜基德犯案時,他所展現的招牌技藝是?", opts: ["魔術","劍術","棋藝","烹飪"], correct: 0, cat: "person" },
+    { q: "赤井秀一的狙擊技術非常高超,他過去曾隸屬於哪個國家的情報機構?", opts: ["美國(FBI/CIA)","英國","法國","德國"], correct: 0, cat: "org" },
+    { q: "安室透身為公安警察時所使用的真實姓名是?", opts: ["降谷零","沖矢昴","羽田秀吉","伊織無我"], correct: 0, cat: "person" },
+
+    { q: "「沖矢昴」這個角色,後來被揭露其實是誰假扮的?", opts: ["赤井秀一","安室透","京極真","羽田秀吉"], correct: 0, cat: "person" },
+    { q: "名偵探柯南中,經常出現的鈴木家族,主要經營什麼樣的產業?", opts: ["多角化財團企業","餐飲業","出版業","銀行業"], correct: 0, cat: "org" },
+    { q: "世良真純轉學到帝丹小學,主要是為了尋找誰?", opts: ["她的哥哥赤井秀一","她的父親","她的男朋友","她的老師"], correct: 0, cat: "person" },
+    { q: "名偵探柯南的故事中,毛利蘭對柯南的真實身分,長期抱持什麼態度?", opts: ["懷疑柯南可能就是新一","完全不知道也不曾懷疑","一開始就知道真相","毫不在意這件事"], correct: 0, cat: "person" },
+    { q: "名偵探柯南的作者青山剛昌,同時也是哪一部漫畫的作者(怪盜基德最初就登場於此)?", opts: ["魔術快斗","航海王","灌籃高手","獵人"], correct: 0, cat: "person" },
+
+    { q: "「魔術快斗」與「名偵探柯南」的關聯是?", opts: ["怪盜基德是兩部作品共通的角色","兩者其實是同一部作品改名","完全沒有任何關聯","只是致敬,沒有實際登場"], correct: 0, cat: "org" },
+    { q: "毛利小五郎的偵探事務所,同時也是誰的住家?", opts: ["毛利蘭與柯南","阿笠博士","警察局宿舍","學校宿舍"], correct: 0, cat: "place" },
+    { q: "「名偵探柯南」中,除了赤井秀一外,還有一位FBI女性角色是誰?", opts: ["水無怜奈","灰原哀","妃英理","遠山和葉"], correct: 0, cat: "person" },
+    { q: "名偵探柯南這部作品,主要被歸類為哪一種漫畫類型?", opts: ["推理、偵探漫畫","戀愛漫畫","運動漫畫","奇幻冒險漫畫"], correct: 0, cat: "org" },
+    { q: "少年偵探團成員裡,個性文靜、常常提出關鍵百科知識線索的成員是?", opts: ["圓谷光彥","小嶋元太","吉田步美","灰原哀"], correct: 0, cat: "person" }
+  ];
+
+  var ROUND_SIZE = 10;
+  var CORRECT_POINTS = 10;
+  var WRONG_POINTS = -5;
+
+  // ---------- State ----------
+  var roundQuestions = [];
+  var currentIndex = 0;
+  var score = 0;
+  var locked = false;
+
+  // ---------- DOM ----------
+  var startScreen = document.getElementById("startScreen");
+  var quizScreen = document.getElementById("quizScreen");
+  var resultScreen = document.getElementById("resultScreen");
+  var startBtn = document.getElementById("startBtn");
+  var retryBtn = document.getElementById("retryBtn");
+  var progressText = document.getElementById("progressText");
+  var progressFill = document.getElementById("progressFill");
+  var livePill = document.getElementById("livePill");
+  var scorePill = document.getElementById("scorePill");
+  var questionText = document.getElementById("questionText");
+  var optionsBox = document.getElementById("optionsBox");
+  var feedback = document.getElementById("feedback");
+  var gradeLetter = document.getElementById("gradeLetter");
+  var resultScore = document.getElementById("resultScore");
+  var resultComment = document.getElementById("resultComment");
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function buildRound() {
+    var picked = shuffle(BANK).slice(0, ROUND_SIZE);
+    roundQuestions = picked.map(function (item) {
+      var opts = item.opts.map(function (text, idx) {
+        return { text: text, isCorrect: idx === item.correct };
+      });
+      opts = shuffle(opts);
+      return { q: item.q, cat: item.cat, opts: opts };
+    });
+  }
+
+  function startQuiz() {
+    buildRound();
+    currentIndex = 0;
+    score = 0;
+    updateScorePill();
+    startScreen.hidden = true;
+    resultScreen.hidden = true;
+    quizScreen.hidden = false;
+    renderQuestion();
+  }
+
+  function updateScorePill() {
+    scorePill.textContent = "分數 " + score;
+    livePill.textContent = "目前分數:" + score;
+  }
+
+  function renderQuestion() {
+    locked = false;
+    feedback.textContent = "";
+    feedback.className = "feedback";
+    var total = roundQuestions.length;
+    var qd = roundQuestions[currentIndex];
+    progressText.textContent = "第 " + (currentIndex + 1) + " / " + total + " 題";
+    progressFill.style.width = Math.round(((currentIndex + 1) / total) * 100) + "%";
+    questionText.textContent = qd.q;
+    optionsBox.innerHTML = "";
+    qd.opts.forEach(function (opt) {
+      var btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = '<span class="opt-icon">' + getIcon(opt.text, qd.cat) + '</span><span>' + opt.text + '</span>';
+      btn.addEventListener("click", function () { onAnswer(opt, btn); });
+      optionsBox.appendChild(btn);
+    });
+  }
+
+  function onAnswer(opt, btnEl) {
+    if (locked) return;
+    locked = true;
+    var allBtns = optionsBox.querySelectorAll(".option-btn");
+    allBtns.forEach(function (b) { b.classList.add("disabled"); });
+
+    if (opt.isCorrect) {
+      btnEl.classList.add("correct");
+      score += CORRECT_POINTS;
+      feedback.textContent = "✅ 答對了!+10 分";
+      feedback.className = "feedback correct-text";
+    } else {
+      btnEl.classList.add("wrong");
+      score += WRONG_POINTS;
+      feedback.textContent = "❌ 答錯了,-5 分";
+      feedback.className = "feedback wrong-text";
+      allBtns.forEach(function (b, idx) {
+        if (roundQuestions[currentIndex].opts[idx].isCorrect) {
+          b.classList.add("correct");
+        }
+      });
+    }
+    updateScorePill();
+
+    setTimeout(function () {
+      currentIndex += 1;
+      if (currentIndex >= roundQuestions.length) {
+        showResult();
+      } else {
+        renderQuestion();
+      }
+    }, 1300);
+  }
+
+  function gradeFor(finalScore) {
+    var s = Math.max(0, finalScore);
+    if (s >= 90) return { letter: "S", comment: "神級柯南迷!你的推理力根本就是名偵探等級,江戶川柯南看到你都要甘拜下風!" };
+    if (s >= 75) return { letter: "A", comment: "超強柯南通!對案件的細節瞭若指掌,已經是少年偵探團的核心戰力了。" };
+    if (s >= 60) return { letter: "B", comment: "資深柯南迷!大部分的線索都難不倒你,再累積一些細節就能更上一層樓。" };
+    if (s >= 45) return { letter: "C", comment: "普通柯南觀眾,基本劇情都知道,再多看幾集、多留意細節就能進步!" };
+    if (s >= 30) return { letter: "D", comment: "入門柯南迷,對主要角色還算熟悉,建議再多認識一下黑衣組織的成員們。" };
+    return { letter: "E", comment: "看來需要重新回去複習案件囉!找時間再多看幾集名偵探柯南,下次一定會更好!" };
+  }
+
+  function showResult() {
+    quizScreen.hidden = true;
+    resultScreen.hidden = false;
+    var maxScore = ROUND_SIZE * CORRECT_POINTS;
+    var g = gradeFor(score);
+    gradeLetter.textContent = g.letter;
+    resultScore.textContent = "分數:" + score + " / " + maxScore;
+    resultComment.textContent = g.comment;
+  }
+
+  startBtn.addEventListener("click", startQuiz);
+  retryBtn.addEventListener("click", startQuiz);
+})();
+</script>
+</body>
+</html>

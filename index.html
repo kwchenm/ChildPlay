@@ -3,609 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>叮咚配對樂園 Ding Dong Match</title>
+<title>ChildPlay 遊戲選單</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --pink: #ff8fab;
-    --yellow: #ffd166;
-    --blue: #6ec6ff;
-    --green: #8de29a;
-    --purple: #c9a6ff;
-    --orange: #ffb26b;
-    --card-colors: var(--pink), var(--yellow), var(--blue), var(--green), var(--purple), var(--orange);
-  }
-
   * { box-sizing: border-box; }
-
   html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden;
+    margin: 0; padding: 0; min-height: 100%;
     font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     background: linear-gradient(160deg, #fff3d6 0%, #cdeeff 50%, #ffe0ec 100%);
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
   }
-
   #app {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px;
+    justify-content: center;
+    padding: 24px;
   }
-
-  header {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
   h1 {
-    font-size: clamp(20px, 4vw, 32px);
+    font-size: clamp(24px, 5vw, 36px);
     color: #6b3f2a;
     text-shadow: 2px 2px 0 #fff8ea;
-    margin: 0;
-  }
-
-  .icon-btn {
-    font-size: 26px;
-    background: #fff;
-    border: 3px solid #fff;
-    border-radius: 50%;
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
-    cursor: pointer;
-    transition: transform 0.12s ease;
-    flex-shrink: 0;
-  }
-  .icon-btn:active { transform: scale(0.9); }
-
-  .stars {
-    font-size: clamp(16px, 3vw, 22px);
-    background: #fff;
-    border-radius: 30px;
-    padding: 8px 16px;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
-    color: #b8860b;
-    font-weight: 800;
-    white-space: nowrap;
-  }
-
-  .mode-bar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  .mode-btn {
-    font-family: inherit;
-    font-weight: 800;
-    font-size: clamp(14px, 2.6vw, 18px);
-    padding: 10px 20px;
-    border-radius: 30px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
-    transition: transform 0.12s ease;
-  }
-  .mode-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
-  .mode-btn.active { background: #6b3f2a; color: #fff; }
-  .mode-btn:not(.active) { background: #fff; color: #6b3f2a; }
-
-  .prompt {
-    width: 100%;
-    max-width: 900px;
-    background: #fff;
-    border-radius: 24px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
-    margin-bottom: 20px;
-    min-height: 70px;
-  }
-
-  .prompt-emoji {
-    font-size: clamp(36px, 6vw, 48px);
-    animation: floaty 2.4s ease-in-out infinite;
-  }
-
-  @keyframes floaty {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-
-  .prompt-text {
-    font-size: clamp(16px, 3.4vw, 24px);
-    font-weight: 800;
-    color: #6b3f2a;
+    margin: 0 0 6px;
     text-align: center;
-    line-height: 1.35;
   }
-  .prompt-text .en {
-    display: block;
-    font-size: 0.7em;
+  .subtitle {
     color: #9c7a5e;
-    font-weight: 600;
+    font-weight: 700;
+    margin-bottom: 32px;
+    text-align: center;
   }
-
-  .replay-btn {
-    font-size: 22px;
-    background: var(--blue);
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    cursor: pointer;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.1);
-    flex-shrink: 0;
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    max-width: 800px;
   }
-  .replay-btn:active { transform: scale(0.9); }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    width: 100%;
-    max-width: 900px;
-  }
-
-  @media (max-width: 520px) {
-    .grid { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  .card {
-    aspect-ratio: 1 / 1;
-    border-radius: 26px;
+  .game-card {
+    text-decoration: none;
+    width: 280px;
+    border-radius: 28px;
+    padding: 28px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    padding: 8px;
-  }
-  .card:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
-
-  .card .emoji {
-    font-size: clamp(40px, 9vw, 64px);
-    line-height: 1;
-  }
-
-  .card .label {
-    font-size: clamp(11px, 2vw, 14px);
-    font-weight: 700;
-    color: rgba(0,0,0,0.55);
-    text-align: center;
-  }
-  .card .label .en { display: block; font-weight: 600; opacity: 0.8; }
-
-  .card.correct-pulse {
-    animation: correctPulse 0.7s ease;
-  }
-  @keyframes correctPulse {
-    0% { transform: scale(1); }
-    30% { transform: scale(1.18) rotate(-3deg); }
-    60% { transform: scale(1.1) rotate(3deg); }
-    100% { transform: scale(1); }
-  }
-
-  .card.wrong-shake {
-    animation: wrongShake 0.4s ease;
-  }
-  @keyframes wrongShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    75% { transform: translateX(8px); }
-  }
-
-  .card.dim {
-    filter: grayscale(0.3) brightness(0.92);
-  }
-
-  footer {
-    margin-top: 22px;
-    font-size: 13px;
-    color: #9c7a5e;
-    text-align: center;
-  }
-
-  #confetti-layer {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 50;
-  }
-
-  .confetti-piece {
-    position: absolute;
-    top: -20px;
-    border-radius: 3px;
-    animation: fall linear forwards;
-  }
-
-  @keyframes fall {
-    to {
-      transform: translateY(110vh) rotate(540deg);
-      opacity: 0.9;
-    }
-  }
-
-  .celebrate-banner {
-    position: fixed;
-    top: 18%;
-    left: 50%;
-    transform: translate(-50%, -20px) scale(0.6);
-    background: #fff;
-    padding: 18px 34px;
-    border-radius: 30px;
+    gap: 10px;
     box-shadow: 0 8px 0 rgba(0,0,0,0.12);
-    font-size: clamp(24px, 5vw, 40px);
-    font-weight: 800;
-    color: #ff6b6b;
-    z-index: 60;
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    text-align: center;
-    pointer-events: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .celebrate-banner.show {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
-  .celebrate-banner .en {
-    display: block;
-    font-size: 0.55em;
-    color: #ffa06b;
-  }
+  .game-card:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.12); }
+  .game-card .emoji { font-size: 56px; }
+  .game-card .title { font-size: 22px; font-weight: 800; text-align: center; }
+  .game-card .desc { font-size: 14px; text-align: center; opacity: 0.85; font-weight: 600; }
+
+  .card-toddler { background: #fff2c9; color: #6b3f2a; }
+  .card-conan { background: #1f2733; color: #f4e7c9; }
+  .card-conan .desc { color: #cbb98a; }
+
+  footer { margin-top: 32px; font-size: 13px; color: #9c7a5e; text-align: center; }
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>🎈 叮咚配對樂園</h1>
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div class="stars" id="starCount">⭐ 0</div>
-      <button class="icon-btn" id="muteBtn" title="靜音 Mute">🔊</button>
-    </div>
-  </header>
-
-  <div class="mode-bar">
-    <button class="mode-btn active" id="matchModeBtn">🎯 配對 Match</button>
-    <button class="mode-btn" id="exploreModeBtn">🔍 探索 Explore</button>
+  <h1>🎮 ChildPlay 遊戲選單</h1>
+  <div class="subtitle">選一個適合的遊戲開始玩吧!</div>
+  <div class="cards">
+    <a class="game-card card-toddler" href="toddler-match.html">
+      <span class="emoji">🎈</span>
+      <span class="title">叮咚配對樂園</span>
+      <span class="desc">適合 4 歲・雙語配對遊戲<br>動物 / 海洋生物 / 交通工具</span>
+    </a>
+    <a class="game-card card-conan" href="conan-quiz.html">
+      <span class="emoji">🕵️</span>
+      <span class="title">名偵探問答大挑戰</span>
+      <span class="desc">適合 12 歲・柯南主題問答<br>100 題題庫・每次挑戰 10 題</span>
+    </a>
   </div>
-
-  <div class="prompt" id="promptBox">
-    <span class="prompt-emoji" id="promptEmoji">🐶</span>
-    <div class="prompt-text" id="promptText">
-      找找看,小狗在哪裡?
-      <span class="en">Find the dog!</span>
-    </div>
-    <button class="replay-btn" id="replayBtn" title="再聽一次">🔁</button>
-  </div>
-
-  <div class="grid" id="grid"></div>
-
-  <footer>四歲小朋友的雙語點點小遊戲 · 點卡片就會有聲音喔 🎵</footer>
+  <footer>點選卡片進入遊戲 🎲</footer>
 </div>
-
-<div id="confetti-layer"></div>
-<div class="celebrate-banner" id="banner">太棒了! <span class="en">Great job!</span></div>
-
-<script>
-(function () {
-  "use strict";
-
-  // ---------- Data ----------
-  const ITEMS = [
-    // Farm animals
-    { emoji: "🐶", zh: "小狗", en: "Dog" },
-    { emoji: "🐱", zh: "小貓", en: "Cat" },
-    { emoji: "🐮", zh: "乳牛", en: "Cow" },
-    { emoji: "🐷", zh: "小豬", en: "Pig" },
-    { emoji: "🐔", zh: "小雞", en: "Chicken" },
-    { emoji: "🐑", zh: "綿羊", en: "Sheep" },
-    { emoji: "🐴", zh: "小馬", en: "Horse" },
-    { emoji: "🐰", zh: "兔子", en: "Rabbit" },
-    // Sea creatures
-    { emoji: "🐟", zh: "小魚", en: "Fish" },
-    { emoji: "🐠", zh: "熱帶魚", en: "Tropical Fish" },
-    { emoji: "🐳", zh: "鯨魚", en: "Whale" },
-    { emoji: "🐬", zh: "海豚", en: "Dolphin" },
-    { emoji: "🦀", zh: "螃蟹", en: "Crab" },
-    { emoji: "🐙", zh: "章魚", en: "Octopus" },
-    { emoji: "🦈", zh: "鯊魚", en: "Shark" },
-    // Vehicles
-    { emoji: "🚗", zh: "汽車", en: "Car" },
-    { emoji: "🚌", zh: "公車", en: "Bus" },
-    { emoji: "🚒", zh: "消防車", en: "Fire Truck" },
-    { emoji: "🚓", zh: "警車", en: "Police Car" },
-    { emoji: "🚕", zh: "計程車", en: "Taxi" },
-    { emoji: "✈️", zh: "飛機", en: "Airplane" },
-    { emoji: "🚂", zh: "火車", en: "Train" },
-    { emoji: "🚲", zh: "腳踏車", en: "Bicycle" },
-  ];
-
-  const CARD_COLORS = ["#ff8fab", "#ffd166", "#6ec6ff", "#8de29a", "#c9a6ff", "#ffb26b"];
-  const ROUND_SIZE = 6;
-
-  // ---------- State ----------
-  let mode = "match"; // "match" | "explore"
-  let currentSet = [];
-  let targetIndex = -1;
-  let stars = 0;
-  let locked = false;
-  let muted = false;
-
-  // ---------- DOM ----------
-  const grid = document.getElementById("grid");
-  const promptBox = document.getElementById("promptBox");
-  const promptEmoji = document.getElementById("promptEmoji");
-  const promptText = document.getElementById("promptText");
-  const replayBtn = document.getElementById("replayBtn");
-  const starCountEl = document.getElementById("starCount");
-  const muteBtn = document.getElementById("muteBtn");
-  const matchModeBtn = document.getElementById("matchModeBtn");
-  const exploreModeBtn = document.getElementById("exploreModeBtn");
-  const confettiLayer = document.getElementById("confetti-layer");
-  const banner = document.getElementById("banner");
-
-  // ---------- Audio: simple tones via WebAudio ----------
-  let audioCtx = null;
-  function getCtx() {
-    if (!audioCtx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) audioCtx = new AC();
-    }
-    return audioCtx;
-  }
-
-  function beep(freq, duration, type, delay, gainVal) {
-    if (muted) return;
-    const ctx = getCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type || "sine";
-    osc.frequency.value = freq;
-    gain.gain.value = gainVal != null ? gainVal : 0.15;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    const startAt = ctx.currentTime + (delay || 0);
-    osc.start(startAt);
-    gain.gain.setValueAtTime(gain.gain.value, startAt);
-    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
-    osc.stop(startAt + duration + 0.02);
-  }
-
-  function playTapSound() {
-    beep(520, 0.12, "triangle", 0, 0.12);
-  }
-
-  function playCorrectSound() {
-    beep(523.25, 0.14, "sine", 0, 0.18);
-    beep(659.25, 0.14, "sine", 0.12, 0.18);
-    beep(783.99, 0.22, "sine", 0.24, 0.2);
-  }
-
-  function playGentleOops() {
-    beep(300, 0.16, "sine", 0, 0.1);
-    beep(240, 0.2, "sine", 0.12, 0.09);
-  }
-
-  // ---------- Speech ----------
-  function speak(text, lang) {
-    if (muted) return;
-    if (!("speechSynthesis" in window)) return;
-    try {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = lang;
-      utter.rate = 0.95;
-      utter.pitch = 1.15;
-      window.speechSynthesis.speak(utter);
-    } catch (e) { /* speech not available, ignore */ }
-  }
-
-  function speakBilingual(zhText, enText) {
-    if (muted || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
-    const zhUtter = new SpeechSynthesisUtterance(zhText);
-    zhUtter.lang = "zh-TW";
-    zhUtter.rate = 0.95;
-    zhUtter.pitch = 1.15;
-    const enUtter = new SpeechSynthesisUtterance(enText);
-    enUtter.lang = "en-US";
-    enUtter.rate = 0.9;
-    enUtter.pitch = 1.15;
-    window.speechSynthesis.speak(zhUtter);
-    window.speechSynthesis.speak(enUtter);
-  }
-
-  // ---------- Helpers ----------
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-
-  function pickRoundItems() {
-    const shuffled = shuffle(ITEMS);
-    return shuffled.slice(0, ROUND_SIZE);
-  }
-
-  // ---------- Rendering ----------
-  function renderGrid() {
-    grid.innerHTML = "";
-    currentSet.forEach((item, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "card";
-      btn.style.background = CARD_COLORS[idx % CARD_COLORS.length];
-      btn.dataset.index = String(idx);
-      btn.innerHTML =
-        '<span class="emoji">' + item.emoji + '</span>' +
-        '<span class="label">' + item.zh + '<span class="en">' + item.en + '</span></span>';
-      btn.addEventListener("click", () => onCardTap(idx, btn));
-      grid.appendChild(btn);
-    });
-  }
-
-  function renderPrompt() {
-    if (mode === "explore") {
-      promptEmoji.textContent = "🔍";
-      promptText.innerHTML = '點點看,聽聽這是什麼! <span class="en">Tap and listen!</span>';
-      replayBtn.style.visibility = "hidden";
-      return;
-    }
-    replayBtn.style.visibility = "visible";
-    const target = currentSet[targetIndex];
-    promptEmoji.textContent = "❓";
-    promptText.innerHTML =
-      "找找看," + target.zh + "在哪裡?" +
-      '<span class="en">Find the ' + target.en + '!</span>';
-  }
-
-  function announceTarget() {
-    if (mode !== "match") return;
-    const target = currentSet[targetIndex];
-    speakBilingual(
-      "找找看," + target.zh + "在哪裡?",
-      "Find the " + target.en + "!"
-    );
-  }
-
-  function newRound() {
-    locked = false;
-    currentSet = pickRoundItems();
-    targetIndex = Math.floor(Math.random() * currentSet.length);
-    renderGrid();
-    renderPrompt();
-    setTimeout(announceTarget, 300);
-  }
-
-  function newExploreSet() {
-    currentSet = pickRoundItems();
-    targetIndex = -1;
-    renderGrid();
-    renderPrompt();
-  }
-
-  // ---------- Interaction ----------
-  function onCardTap(idx, btnEl) {
-    if (mode === "explore") {
-      const item = currentSet[idx];
-      playTapSound();
-      btnEl.classList.remove("correct-pulse");
-      void btnEl.offsetWidth;
-      btnEl.classList.add("correct-pulse");
-      speakBilingual(item.zh, item.en);
-      return;
-    }
-
-    // match mode
-    if (locked) return;
-    if (idx === targetIndex) {
-      locked = true;
-      btnEl.classList.add("correct-pulse");
-      playCorrectSound();
-      celebrate();
-      stars += 1;
-      starCountEl.textContent = "⭐ " + stars;
-      setTimeout(newRound, 1500);
-    } else {
-      btnEl.classList.add("wrong-shake");
-      playGentleOops();
-      setTimeout(() => btnEl.classList.remove("wrong-shake"), 400);
-    }
-  }
-
-  function celebrate() {
-    const phrases = [
-      ["太棒了!", "Great job!"],
-      ["你好棒!", "Awesome!"],
-      ["答對了!", "You got it!"],
-      ["好厲害!", "Well done!"],
-    ];
-    const pick = phrases[Math.floor(Math.random() * phrases.length)];
-    banner.innerHTML = pick[0] + ' <span class="en">' + pick[1] + '</span>';
-    banner.classList.add("show");
-    setTimeout(() => banner.classList.remove("show"), 1200);
-    spawnConfetti();
-  }
-
-  function spawnConfetti() {
-    const colors = CARD_COLORS;
-    const count = 26;
-    for (let i = 0; i < count; i++) {
-      const piece = document.createElement("div");
-      piece.className = "confetti-piece";
-      const size = 6 + Math.random() * 8;
-      piece.style.width = size + "px";
-      piece.style.height = (size * 1.6) + "px";
-      piece.style.left = Math.random() * 100 + "vw";
-      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-      const duration = 1.6 + Math.random() * 1.2;
-      piece.style.animationDuration = duration + "s";
-      piece.style.opacity = "0.95";
-      confettiLayer.appendChild(piece);
-      setTimeout(() => piece.remove(), duration * 1000 + 100);
-    }
-  }
-
-  // ---------- Mode switching ----------
-  function setMode(newMode) {
-    mode = newMode;
-    matchModeBtn.classList.toggle("active", mode === "match");
-    exploreModeBtn.classList.toggle("active", mode === "explore");
-    if (mode === "match") {
-      newRound();
-    } else {
-      newExploreSet();
-    }
-  }
-
-  matchModeBtn.addEventListener("click", () => setMode("match"));
-  exploreModeBtn.addEventListener("click", () => setMode("explore"));
-  replayBtn.addEventListener("click", announceTarget);
-
-  muteBtn.addEventListener("click", () => {
-    muted = !muted;
-    muteBtn.textContent = muted ? "🔇" : "🔊";
-    if (muted && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  });
-
-  // Some browsers require a user gesture before audio/speech works.
-  document.body.addEventListener("click", function unlockAudioOnce() {
-    getCtx();
-    document.body.removeEventListener("click", unlockAudioOnce);
-  }, { once: true });
-
-  // ---------- Init ----------
-  setMode("match");
-})();
-</script>
 </body>
 </html>
