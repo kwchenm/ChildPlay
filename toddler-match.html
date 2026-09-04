@@ -251,6 +251,11 @@
   .mem-card.hidden-face .emoji { font-size: clamp(28px, 6vw, 40px); }
   .mem-card.matched { opacity: 0.5; cursor: default; }
 
+  .prompt-emoji.silhouette {
+    filter: brightness(0) saturate(0);
+    opacity: 0.82;
+  }
+
   .card.correct-pulse {
     animation: correctPulse 0.7s ease;
   }
@@ -393,6 +398,11 @@
     <button class="mode-btn" id="colorModeBtn">🎨 顏色 Color</button>
     <button class="mode-btn" id="countModeBtn">🔢 數量 Count</button>
     <button class="mode-btn" id="memoryModeBtn">🧩 記憶 Memory</button>
+    <button class="mode-btn" id="shapeModeBtn">🔷 形狀 Shape</button>
+    <button class="mode-btn" id="letterModeBtn">🔤 字母 Letter</button>
+    <button class="mode-btn" id="sizeModeBtn">📏 大小 Size</button>
+    <button class="mode-btn" id="shadowModeBtn">🌑 影子 Shadow</button>
+    <button class="mode-btn" id="soundModeBtn">🔊 聲音 Sound</button>
   </div>
 
   <div class="prompt" id="promptBox">
@@ -406,7 +416,7 @@
 
   <div class="grid" id="grid"></div>
 
-  <footer>四歲小朋友的雙語小遊戲 · 五種玩法一起認知學習 🎵</footer>
+  <footer>四歲小朋友的雙語小遊戲 · 十種玩法一起認知學習 🎵</footer>
 </div>
 
 <div id="confetti-layer"></div>
@@ -429,6 +439,7 @@
     { emoji: "🐑", zh: "綿羊", en: "Sheep" },
     { emoji: "🐴", zh: "小馬", en: "Horse" },
     { emoji: "🐰", zh: "兔子", en: "Rabbit" },
+    { emoji: "🦆", zh: "鴨子", en: "Duck" },
     // Sea creatures
     { emoji: "🐟", zh: "小魚", en: "Fish" },
     { emoji: "🐠", zh: "熱帶魚", en: "Tropical Fish" },
@@ -461,15 +472,41 @@
 
   const COUNT_EMOJIS = ["🍎", "⭐", "🎈", "🍪", "⚽", "🐝", "🌸", "🚗"];
 
+  const SHAPES = [
+    { emoji: "⭐", zh: "星星", en: "Star" },
+    { emoji: "🔵", zh: "圓形", en: "Circle" },
+    { emoji: "🟦", zh: "正方形", en: "Square" },
+    { emoji: "🔺", zh: "三角形", en: "Triangle" },
+    { emoji: "🔶", zh: "菱形", en: "Diamond" },
+    { emoji: "❤️", zh: "愛心", en: "Heart" },
+  ];
+
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  const SIZE_EMOJIS = ["🐘", "⭐", "🎈", "🍎", "🐟", "🚗", "🌟", "🎀"];
+
+  const SOUND_ITEMS = [
+    { emoji: "🐶", zh: "小狗", en: "Dog", soundZh: "汪汪!", soundEn: "Woof woof!" },
+    { emoji: "🐱", zh: "小貓", en: "Cat", soundZh: "喵喵!", soundEn: "Meow meow!" },
+    { emoji: "🐮", zh: "乳牛", en: "Cow", soundZh: "哞~", soundEn: "Moo!" },
+    { emoji: "🐷", zh: "小豬", en: "Pig", soundZh: "呼嚕呼嚕!", soundEn: "Oink oink!" },
+    { emoji: "🐔", zh: "小雞", en: "Chicken", soundZh: "咕咕咕!", soundEn: "Cluck cluck!" },
+    { emoji: "🐑", zh: "綿羊", en: "Sheep", soundZh: "咩咩!", soundEn: "Baa baa!" },
+    { emoji: "🐴", zh: "小馬", en: "Horse", soundZh: "噠噠噠!", soundEn: "Neigh!" },
+    { emoji: "🦆", zh: "鴨子", en: "Duck", soundZh: "呱呱!", soundEn: "Quack quack!" },
+  ];
+
   const CARD_COLORS = ["#ff8fab", "#ffd166", "#6ec6ff", "#8de29a", "#c9a6ff", "#ffb26b"];
   const ROUND_SIZE = 6;
   const MEMORY_PAIR_COUNT = 4;
+  const FIND_MODES = ["match", "color", "count", "shape", "letter", "size", "shadow", "sound"];
 
   // ---------- State ----------
-  let mode = "match"; // "match" | "explore" | "color" | "count" | "memory"
+  let mode = "match"; // one of FIND_MODES, plus "explore" | "memory"
   let currentSet = [];
   let targetIndex = -1;
   let promptEmojiText = "❓";
+  let promptSilhouette = false;
   let promptZhText = "";
   let promptEnText = "";
   let stars = 0;
@@ -493,6 +530,11 @@
   const colorModeBtn = document.getElementById("colorModeBtn");
   const countModeBtn = document.getElementById("countModeBtn");
   const memoryModeBtn = document.getElementById("memoryModeBtn");
+  const shapeModeBtn = document.getElementById("shapeModeBtn");
+  const letterModeBtn = document.getElementById("letterModeBtn");
+  const sizeModeBtn = document.getElementById("sizeModeBtn");
+  const shadowModeBtn = document.getElementById("shadowModeBtn");
+  const soundModeBtn = document.getElementById("soundModeBtn");
   const confettiLayer = document.getElementById("confetti-layer");
   const fireworksLayer = document.getElementById("fireworks-layer");
   const banner = document.getElementById("banner");
@@ -504,6 +546,11 @@
     color: colorModeBtn,
     count: countModeBtn,
     memory: memoryModeBtn,
+    shape: shapeModeBtn,
+    letter: letterModeBtn,
+    size: sizeModeBtn,
+    shadow: shadowModeBtn,
+    sound: soundModeBtn,
   };
 
   // ---------- Audio: simple tones via WebAudio ----------
@@ -644,9 +691,87 @@
     };
   }
 
+  function shapeRoundData() {
+    const cards = shuffle(SHAPES);
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🔷",
+      promptZh: "找找看," + target.zh + "在哪裡?",
+      promptEn: "Find the " + target.en + "!",
+    };
+  }
+
+  function letterRoundData() {
+    const letters = shuffle(LETTERS).slice(0, ROUND_SIZE);
+    const cards = letters.map((ch) => ({ emoji: ch, zh: "字母 " + ch, en: "Letter " + ch }));
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🔤",
+      promptZh: "找找看,字母 " + target.emoji + " 在哪裡?",
+      promptEn: "Find the letter " + target.emoji + "!",
+    };
+  }
+
+  function sizeRoundData() {
+    const emoji = SIZE_EMOJIS[Math.floor(Math.random() * SIZE_EMOJIS.length)];
+    const factors = shuffle([0.5, 0.65, 0.8, 0.95, 1.1, 1.3]);
+    const cards = factors.map((f) => ({ emoji, factor: f }));
+    const askBiggest = Math.random() < 0.5;
+    let idx = 0;
+    cards.forEach((c, i) => {
+      const better = askBiggest ? c.factor > cards[idx].factor : c.factor < cards[idx].factor;
+      if (better) idx = i;
+    });
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: askBiggest ? "⬆️" : "⬇️",
+      promptZh: askBiggest ? "找找看,哪一個最大?" : "找找看,哪一個最小?",
+      promptEn: askBiggest ? "Find the biggest one!" : "Find the smallest one!",
+    };
+  }
+
+  function shadowRoundData() {
+    const cards = pickRoundItems();
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: target.emoji,
+      silhouette: true,
+      promptZh: "找找看,這是誰的影子?",
+      promptEn: "Whose shadow is this?",
+    };
+  }
+
+  function soundRoundData() {
+    const cards = shuffle(SOUND_ITEMS).slice(0, ROUND_SIZE);
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🔊",
+      promptZh: target.soundZh + " 是誰在說話?",
+      promptEn: target.soundEn + " Who says that?",
+    };
+  }
+
   function buildRoundData(m) {
     if (m === "color") return colorRoundData();
     if (m === "count") return countRoundData();
+    if (m === "shape") return shapeRoundData();
+    if (m === "letter") return letterRoundData();
+    if (m === "size") return sizeRoundData();
+    if (m === "shadow") return shadowRoundData();
+    if (m === "sound") return soundRoundData();
     return matchRoundData();
   }
 
@@ -660,9 +785,13 @@
       for (let i = 0; i < item.count; i++) spans += "<span>" + item.emoji + "</span>";
       return '<div class="count-wrap">' + spans + '</div><span class="count-num">' + item.count + '</span>';
     }
-    // match / explore
-    return '<span class="emoji">' + item.emoji + '</span>' +
-      '<span class="label">' + item.zh + '<span class="en">' + item.en + '</span></span>';
+    // match / explore / shape / letter / size / shadow / sound share this layout;
+    // "size" cards scale via item.factor and skip the label to avoid giving away the answer.
+    const style = item.factor ? ' style="font-size:' + Math.round(44 * item.factor) + 'px"' : "";
+    const label = item.zh != null
+      ? '<span class="label">' + item.zh + (item.en != null ? '<span class="en">' + item.en + '</span>' : '') + '</span>'
+      : "";
+    return '<span class="emoji"' + style + '>' + item.emoji + '</span>' + label;
   }
 
   // ---------- Rendering (match / explore / color / count) ----------
@@ -693,11 +822,12 @@
     }
     replayBtn.style.visibility = "visible";
     promptEmoji.textContent = promptEmojiText;
+    promptEmoji.classList.toggle("silhouette", promptSilhouette);
     promptText.innerHTML = promptZhText + '<span class="en">' + promptEnText + '</span>';
   }
 
   function announceTarget() {
-    if (mode === "match" || mode === "color" || mode === "count") {
+    if (FIND_MODES.indexOf(mode) !== -1) {
       speakBilingual(promptZhText, promptEnText);
     }
   }
@@ -708,6 +838,7 @@
     currentSet = data.cards;
     targetIndex = data.targetIndex;
     promptEmojiText = data.promptEmoji;
+    promptSilhouette = !!data.silhouette;
     promptZhText = data.promptZh;
     promptEnText = data.promptEn;
     renderGrid();
@@ -929,6 +1060,11 @@
   colorModeBtn.addEventListener("click", () => setMode("color"));
   countModeBtn.addEventListener("click", () => setMode("count"));
   memoryModeBtn.addEventListener("click", () => setMode("memory"));
+  shapeModeBtn.addEventListener("click", () => setMode("shape"));
+  letterModeBtn.addEventListener("click", () => setMode("letter"));
+  sizeModeBtn.addEventListener("click", () => setMode("size"));
+  shadowModeBtn.addEventListener("click", () => setMode("shadow"));
+  soundModeBtn.addEventListener("click", () => setMode("sound"));
   replayBtn.addEventListener("click", announceTarget);
 
   muteBtn.addEventListener("click", () => {
