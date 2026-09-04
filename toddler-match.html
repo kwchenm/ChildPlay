@@ -98,20 +98,23 @@
 
   .mode-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 14px;
+    justify-content: center;
   }
 
   .mode-btn {
     font-family: inherit;
     font-weight: 800;
-    font-size: clamp(14px, 2.6vw, 18px);
-    padding: 10px 20px;
+    font-size: clamp(13px, 2.4vw, 17px);
+    padding: 10px 18px;
     border-radius: 30px;
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 0 rgba(0,0,0,0.12);
     transition: transform 0.12s ease;
+    white-space: nowrap;
   }
   .mode-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
   .mode-btn.active { background: #6b3f2a; color: #fff; }
@@ -177,8 +180,13 @@
     max-width: 900px;
   }
 
+  .grid.memory-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   @media (max-width: 520px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
+    .grid.memory-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
   .card {
@@ -210,6 +218,39 @@
   }
   .card .label .en { display: block; font-weight: 600; opacity: 0.8; }
 
+  .color-blob {
+    width: 46%;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.15), 0 3px 0 rgba(255,255,255,0.5);
+  }
+
+  .count-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    gap: 2px;
+    width: 100%;
+    height: 68%;
+  }
+  .count-wrap span {
+    font-size: clamp(16px, 4.6vw, 26px);
+    line-height: 1;
+  }
+  .count-num {
+    font-size: clamp(12px, 2vw, 15px);
+    font-weight: 800;
+    color: rgba(0,0,0,0.55);
+    background: rgba(255,255,255,0.75);
+    border-radius: 10px;
+    padding: 1px 10px;
+  }
+
+  .mem-card.hidden-face .emoji { font-size: clamp(28px, 6vw, 40px); }
+  .mem-card.matched { opacity: 0.5; cursor: default; }
+
   .card.correct-pulse {
     animation: correctPulse 0.7s ease;
   }
@@ -240,13 +281,14 @@
     text-align: center;
   }
 
-  #confetti-layer {
+  #confetti-layer, #fireworks-layer {
     position: fixed;
     inset: 0;
     pointer-events: none;
     overflow: hidden;
-    z-index: 50;
   }
+  #confetti-layer { z-index: 50; }
+  #fireworks-layer { z-index: 70; }
 
   .confetti-piece {
     position: absolute;
@@ -260,6 +302,20 @@
       transform: translateY(110vh) rotate(540deg);
       opacity: 0.9;
     }
+  }
+
+  .fw-particle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    animation: fwPop 900ms ease-out forwards;
+  }
+  @keyframes fwPop {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
   }
 
   .celebrate-banner {
@@ -289,6 +345,35 @@
     font-size: 0.55em;
     color: #ffa06b;
   }
+
+  .milestone-banner {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -10px) scale(0.5);
+    background: linear-gradient(135deg, #ffe08a, #ffb347);
+    padding: 20px 36px;
+    border-radius: 30px;
+    box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+    font-size: clamp(20px, 4.6vw, 32px);
+    font-weight: 800;
+    color: #6b3f2a;
+    z-index: 80;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .milestone-banner.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .milestone-banner .en {
+    display: block;
+    font-size: 0.55em;
+    color: #8a5a2b;
+  }
 </style>
 </head>
 <body>
@@ -305,6 +390,9 @@
   <div class="mode-bar">
     <button class="mode-btn active" id="matchModeBtn">🎯 配對 Match</button>
     <button class="mode-btn" id="exploreModeBtn">🔍 探索 Explore</button>
+    <button class="mode-btn" id="colorModeBtn">🎨 顏色 Color</button>
+    <button class="mode-btn" id="countModeBtn">🔢 數量 Count</button>
+    <button class="mode-btn" id="memoryModeBtn">🧩 記憶 Memory</button>
   </div>
 
   <div class="prompt" id="promptBox">
@@ -318,11 +406,13 @@
 
   <div class="grid" id="grid"></div>
 
-  <footer>四歲小朋友的雙語點點小遊戲 · 點卡片就會有聲音喔 🎵</footer>
+  <footer>四歲小朋友的雙語小遊戲 · 五種玩法一起認知學習 🎵</footer>
 </div>
 
 <div id="confetti-layer"></div>
+<div id="fireworks-layer"></div>
 <div class="celebrate-banner" id="banner">太棒了! <span class="en">Great job!</span></div>
+<div class="milestone-banner" id="milestoneBanner"></div>
 
 <script>
 (function () {
@@ -358,20 +448,41 @@
     { emoji: "🚲", zh: "腳踏車", en: "Bicycle" },
   ];
 
+  const COLORS = [
+    { zh: "紅色", en: "Red", hex: "#ef5350" },
+    { zh: "黃色", en: "Yellow", hex: "#ffd166" },
+    { zh: "藍色", en: "Blue", hex: "#4dabf7" },
+    { zh: "綠色", en: "Green", hex: "#66bb6a" },
+    { zh: "紫色", en: "Purple", hex: "#ab7df0" },
+    { zh: "橘色", en: "Orange", hex: "#ffa552" },
+    { zh: "粉紅色", en: "Pink", hex: "#ff8fab" },
+    { zh: "棕色", en: "Brown", hex: "#a9744f" },
+  ];
+
+  const COUNT_EMOJIS = ["🍎", "⭐", "🎈", "🍪", "⚽", "🐝", "🌸", "🚗"];
+
   const CARD_COLORS = ["#ff8fab", "#ffd166", "#6ec6ff", "#8de29a", "#c9a6ff", "#ffb26b"];
   const ROUND_SIZE = 6;
+  const MEMORY_PAIR_COUNT = 4;
 
   // ---------- State ----------
-  let mode = "match"; // "match" | "explore"
+  let mode = "match"; // "match" | "explore" | "color" | "count" | "memory"
   let currentSet = [];
   let targetIndex = -1;
+  let promptEmojiText = "❓";
+  let promptZhText = "";
+  let promptEnText = "";
   let stars = 0;
   let locked = false;
   let muted = false;
 
+  // memory-mode state
+  let memoryCards = [];
+  let memFlipped = [];
+  let memLocked = false;
+
   // ---------- DOM ----------
   const grid = document.getElementById("grid");
-  const promptBox = document.getElementById("promptBox");
   const promptEmoji = document.getElementById("promptEmoji");
   const promptText = document.getElementById("promptText");
   const replayBtn = document.getElementById("replayBtn");
@@ -379,8 +490,21 @@
   const muteBtn = document.getElementById("muteBtn");
   const matchModeBtn = document.getElementById("matchModeBtn");
   const exploreModeBtn = document.getElementById("exploreModeBtn");
+  const colorModeBtn = document.getElementById("colorModeBtn");
+  const countModeBtn = document.getElementById("countModeBtn");
+  const memoryModeBtn = document.getElementById("memoryModeBtn");
   const confettiLayer = document.getElementById("confetti-layer");
+  const fireworksLayer = document.getElementById("fireworks-layer");
   const banner = document.getElementById("banner");
+  const milestoneBanner = document.getElementById("milestoneBanner");
+
+  const MODE_BUTTONS = {
+    match: matchModeBtn,
+    explore: exploreModeBtn,
+    color: colorModeBtn,
+    count: countModeBtn,
+    memory: memoryModeBtn,
+  };
 
   // ---------- Audio: simple tones via WebAudio ----------
   let audioCtx = null;
@@ -415,14 +539,25 @@
   }
 
   function playCorrectSound() {
-    beep(523.25, 0.14, "sine", 0, 0.18);
-    beep(659.25, 0.14, "sine", 0.12, 0.18);
-    beep(783.99, 0.22, "sine", 0.24, 0.2);
+    // a brighter, more festive "ta-da + sparkle" chime
+    beep(523.25, 0.10, "triangle", 0.00, 0.16);  // C5
+    beep(659.25, 0.10, "triangle", 0.09, 0.16);  // E5
+    beep(783.99, 0.10, "triangle", 0.18, 0.18);  // G5
+    beep(1046.50, 0.18, "triangle", 0.27, 0.20); // C6
+    beep(1318.51, 0.10, "sine", 0.42, 0.12);     // E6 sparkle
+    beep(1567.98, 0.14, "sine", 0.50, 0.12);     // G6 sparkle
   }
 
   function playGentleOops() {
     beep(300, 0.16, "sine", 0, 0.1);
     beep(240, 0.2, "sine", 0.12, 0.09);
+  }
+
+  function playFireworkBoom(delay) {
+    beep(90, 0.35, "sine", delay, 0.22);
+    beep(70, 0.4, "sine", delay + 0.03, 0.15);
+    beep(1568, 0.12, "triangle", delay + 0.12, 0.14);
+    beep(2093, 0.10, "triangle", delay + 0.22, 0.12);
   }
 
   // ---------- Speech ----------
@@ -464,21 +599,80 @@
   }
 
   function pickRoundItems() {
-    const shuffled = shuffle(ITEMS);
-    return shuffled.slice(0, ROUND_SIZE);
+    return shuffle(ITEMS).slice(0, ROUND_SIZE);
   }
 
-  // ---------- Rendering ----------
+  // ---------- Round builders (match / color / count share one "find the target" flow) ----------
+  function matchRoundData() {
+    const cards = pickRoundItems();
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "❓",
+      promptZh: "找找看," + target.zh + "在哪裡?",
+      promptEn: "Find the " + target.en + "!",
+    };
+  }
+
+  function colorRoundData() {
+    const cards = shuffle(COLORS).slice(0, ROUND_SIZE);
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🎨",
+      promptZh: "找找看," + target.zh + "在哪裡?",
+      promptEn: "Find " + target.en + "!",
+    };
+  }
+
+  function countRoundData() {
+    const emoji = COUNT_EMOJIS[Math.floor(Math.random() * COUNT_EMOJIS.length)];
+    const counts = shuffle([1, 2, 3, 4, 5, 6]);
+    const cards = counts.map((c) => ({ emoji, count: c }));
+    const idx = Math.floor(Math.random() * cards.length);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🔢",
+      promptZh: "找找看,哪裡有" + target.count + "個?",
+      promptEn: "Find the group of " + target.count + "!",
+    };
+  }
+
+  function buildRoundData(m) {
+    if (m === "color") return colorRoundData();
+    if (m === "count") return countRoundData();
+    return matchRoundData();
+  }
+
+  function cardInnerHTML(m, item) {
+    if (m === "color") {
+      return '<span class="color-blob" style="background:' + item.hex + '"></span>' +
+        '<span class="label">' + item.zh + '<span class="en">' + item.en + '</span></span>';
+    }
+    if (m === "count") {
+      let spans = "";
+      for (let i = 0; i < item.count; i++) spans += "<span>" + item.emoji + "</span>";
+      return '<div class="count-wrap">' + spans + '</div><span class="count-num">' + item.count + '</span>';
+    }
+    // match / explore
+    return '<span class="emoji">' + item.emoji + '</span>' +
+      '<span class="label">' + item.zh + '<span class="en">' + item.en + '</span></span>';
+  }
+
+  // ---------- Rendering (match / explore / color / count) ----------
   function renderGrid() {
     grid.innerHTML = "";
     currentSet.forEach((item, idx) => {
       const btn = document.createElement("button");
       btn.className = "card";
       btn.style.background = CARD_COLORS[idx % CARD_COLORS.length];
-      btn.dataset.index = String(idx);
-      btn.innerHTML =
-        '<span class="emoji">' + item.emoji + '</span>' +
-        '<span class="label">' + item.zh + '<span class="en">' + item.en + '</span></span>';
+      btn.innerHTML = cardInnerHTML(mode, item);
       btn.addEventListener("click", () => onCardTap(idx, btn));
       grid.appendChild(btn);
     });
@@ -491,27 +685,31 @@
       replayBtn.style.visibility = "hidden";
       return;
     }
+    if (mode === "memory") {
+      promptEmoji.textContent = "🧩";
+      promptText.innerHTML = '翻翻看,找出一樣的圖案吧! <span class="en">Flip and find the matching pairs!</span>';
+      replayBtn.style.visibility = "hidden";
+      return;
+    }
     replayBtn.style.visibility = "visible";
-    const target = currentSet[targetIndex];
-    promptEmoji.textContent = "❓";
-    promptText.innerHTML =
-      "找找看," + target.zh + "在哪裡?" +
-      '<span class="en">Find the ' + target.en + '!</span>';
+    promptEmoji.textContent = promptEmojiText;
+    promptText.innerHTML = promptZhText + '<span class="en">' + promptEnText + '</span>';
   }
 
   function announceTarget() {
-    if (mode !== "match") return;
-    const target = currentSet[targetIndex];
-    speakBilingual(
-      "找找看," + target.zh + "在哪裡?",
-      "Find the " + target.en + "!"
-    );
+    if (mode === "match" || mode === "color" || mode === "count") {
+      speakBilingual(promptZhText, promptEnText);
+    }
   }
 
-  function newRound() {
+  function newTargetRound(m) {
     locked = false;
-    currentSet = pickRoundItems();
-    targetIndex = Math.floor(Math.random() * currentSet.length);
+    const data = buildRoundData(m);
+    currentSet = data.cards;
+    targetIndex = data.targetIndex;
+    promptEmojiText = data.promptEmoji;
+    promptZhText = data.promptZh;
+    promptEnText = data.promptEn;
     renderGrid();
     renderPrompt();
     setTimeout(announceTarget, 300);
@@ -524,32 +722,12 @@
     renderPrompt();
   }
 
-  // ---------- Interaction ----------
-  function onCardTap(idx, btnEl) {
-    if (mode === "explore") {
-      const item = currentSet[idx];
-      playTapSound();
-      btnEl.classList.remove("correct-pulse");
-      void btnEl.offsetWidth;
-      btnEl.classList.add("correct-pulse");
-      speakBilingual(item.zh, item.en);
-      return;
-    }
-
-    // match mode
-    if (locked) return;
-    if (idx === targetIndex) {
-      locked = true;
-      btnEl.classList.add("correct-pulse");
-      playCorrectSound();
-      celebrate();
-      stars += 1;
-      starCountEl.textContent = "⭐ " + stars;
-      setTimeout(newRound, 1500);
-    } else {
-      btnEl.classList.add("wrong-shake");
-      playGentleOops();
-      setTimeout(() => btnEl.classList.remove("wrong-shake"), 400);
+  // ---------- Scoring / celebration ----------
+  function registerCorrect() {
+    stars += 1;
+    starCountEl.textContent = "⭐ " + stars;
+    if (stars % 5 === 0) {
+      setTimeout(fireworksCelebration, 500);
     }
   }
 
@@ -586,20 +764,171 @@
     }
   }
 
+  function spawnFirework(x, y, color) {
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement("div");
+      p.className = "fw-particle";
+      const angle = (Math.PI * 2 * i) / count;
+      const dist = 70 + Math.random() * 70;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.left = x + "px";
+      p.style.top = y + "px";
+      p.style.background = color;
+      fireworksLayer.appendChild(p);
+      setTimeout(() => p.remove(), 950);
+    }
+  }
+
+  function fireworksCelebration() {
+    const fwColors = ["#ff5c5c", "#ffd166", "#4dabf7", "#66bb6a", "#ab7df0", "#ff8fab", "#ffa552"];
+    const bursts = 4;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = window.innerWidth * (0.2 + Math.random() * 0.6);
+        const y = window.innerHeight * (0.15 + Math.random() * 0.35);
+        const color = fwColors[Math.floor(Math.random() * fwColors.length)];
+        spawnFirework(x, y, color);
+        playFireworkBoom(0);
+      }, i * 260);
+    }
+    const msgs = [
+      ["太厲害了!你連續答對好多題!", "Amazing! You are on a roll!"],
+      ["哇!你是小小天才!", "Wow! You are a superstar!"],
+      ["繼續加油,你做得好棒!", "Keep going, great job!"],
+    ];
+    const pick = msgs[Math.floor(Math.random() * msgs.length)];
+    milestoneBanner.innerHTML = "🎆 " + pick[0] + ' <span class="en">' + pick[1] + '</span> 🎆';
+    milestoneBanner.classList.add("show");
+    speakBilingual(pick[0], pick[1]);
+    setTimeout(() => milestoneBanner.classList.remove("show"), 2200);
+  }
+
+  // ---------- Interaction: match / explore / color / count ----------
+  function onCardTap(idx, btnEl) {
+    if (mode === "explore") {
+      const item = currentSet[idx];
+      playTapSound();
+      btnEl.classList.remove("correct-pulse");
+      void btnEl.offsetWidth;
+      btnEl.classList.add("correct-pulse");
+      speakBilingual(item.zh, item.en);
+      return;
+    }
+
+    if (locked) return;
+    if (idx === targetIndex) {
+      locked = true;
+      btnEl.classList.add("correct-pulse");
+      playCorrectSound();
+      celebrate();
+      registerCorrect();
+      setTimeout(() => newTargetRound(mode), 1500);
+    } else {
+      btnEl.classList.add("wrong-shake");
+      playGentleOops();
+      setTimeout(() => btnEl.classList.remove("wrong-shake"), 400);
+    }
+  }
+
+  // ---------- Memory mode ----------
+  function newMemoryRound() {
+    const chosenItems = shuffle(ITEMS).slice(0, MEMORY_PAIR_COUNT);
+    let cards = [];
+    chosenItems.forEach((it, i) => {
+      cards.push({ item: it, uid: i + "-a", revealed: false, matched: false });
+      cards.push({ item: it, uid: i + "-b", revealed: false, matched: false });
+    });
+    memoryCards = shuffle(cards);
+    memFlipped = [];
+    memLocked = false;
+    grid.classList.add("memory-grid");
+    renderMemoryGrid();
+    renderPrompt();
+    speakBilingual("翻翻看,找出一樣的圖案吧!", "Flip and find the matching pairs!");
+  }
+
+  function renderMemoryGrid() {
+    grid.innerHTML = "";
+    memoryCards.forEach((card, idx) => {
+      const shown = card.revealed || card.matched;
+      const btn = document.createElement("button");
+      btn.className = "card mem-card" + (card.matched ? " matched" : "") + (shown ? "" : " hidden-face");
+      btn.style.background = shown ? "#fff7e0" : "#c9a6ff";
+      btn.innerHTML = shown
+        ? '<span class="emoji">' + card.item.emoji + '</span>'
+        : '<span class="emoji">❓</span>';
+      btn.addEventListener("click", () => onMemoryCardTap(idx));
+      grid.appendChild(btn);
+    });
+  }
+
+  function onMemoryCardTap(idx) {
+    if (memLocked) return;
+    const card = memoryCards[idx];
+    if (card.matched || card.revealed) return;
+
+    card.revealed = true;
+    playTapSound();
+    renderMemoryGrid();
+    memFlipped.push(idx);
+
+    if (memFlipped.length === 2) {
+      memLocked = true;
+      const c1 = memoryCards[memFlipped[0]];
+      const c2 = memoryCards[memFlipped[1]];
+      if (c1.item.emoji === c2.item.emoji) {
+        c1.matched = true;
+        c2.matched = true;
+        playCorrectSound();
+        speakBilingual(c1.item.zh, c1.item.en);
+        registerCorrect();
+        memFlipped = [];
+        memLocked = false;
+        renderMemoryGrid();
+        if (memoryCards.every((c) => c.matched)) {
+          setTimeout(() => {
+            celebrate();
+            fireworksCelebration();
+            setTimeout(newMemoryRound, 1900);
+          }, 300);
+        }
+      } else {
+        playGentleOops();
+        setTimeout(() => {
+          c1.revealed = false;
+          c2.revealed = false;
+          memFlipped = [];
+          memLocked = false;
+          renderMemoryGrid();
+        }, 800);
+      }
+    }
+  }
+
   // ---------- Mode switching ----------
   function setMode(newMode) {
     mode = newMode;
-    matchModeBtn.classList.toggle("active", mode === "match");
-    exploreModeBtn.classList.toggle("active", mode === "explore");
-    if (mode === "match") {
-      newRound();
-    } else {
+    Object.keys(MODE_BUTTONS).forEach((key) => {
+      MODE_BUTTONS[key].classList.toggle("active", key === newMode);
+    });
+    grid.classList.remove("memory-grid");
+
+    if (newMode === "explore") {
       newExploreSet();
+    } else if (newMode === "memory") {
+      newMemoryRound();
+    } else {
+      newTargetRound(newMode);
     }
   }
 
   matchModeBtn.addEventListener("click", () => setMode("match"));
   exploreModeBtn.addEventListener("click", () => setMode("explore"));
+  colorModeBtn.addEventListener("click", () => setMode("color"));
+  countModeBtn.addEventListener("click", () => setMode("count"));
+  memoryModeBtn.addEventListener("click", () => setMode("memory"));
   replayBtn.addEventListener("click", announceTarget);
 
   muteBtn.addEventListener("click", () => {
