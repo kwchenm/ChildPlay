@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>升級挑戰樂園 Level Up Land</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #ff8fab;
+    --yellow: #ffd166;
+    --blue: #6ec6ff;
+    --green: #8de29a;
+    --purple: #c9a6ff;
+    --orange: #ffb26b;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(160deg, #d6f3ff 0%, #d8ffe9 45%, #ecdcff 100%);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .home-link {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2a4d6b;
+    background: #fff;
+    border-radius: 20px;
+    padding: 8px 14px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    white-space: nowrap;
+  }
+
+  h1 {
+    font-size: clamp(19px, 3.8vw, 30px);
+    color: #2a4d6b;
+    text-shadow: 2px 2px 0 #ffffff;
+    margin: 0;
+  }
+
+  .icon-btn {
+    font-size: 26px;
+    background: #fff;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+    flex-shrink: 0;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  .stars {
+    font-size: clamp(16px, 3vw, 22px);
+    background: #fff;
+    border-radius: 30px;
+    padding: 8px 16px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    color: #b8860b;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .mode-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    justify-content: center;
+  }
+
+  .mode-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(12.5px, 2.3vw, 16px);
+    padding: 9px 16px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    transition: transform 0.12s ease;
+    white-space: nowrap;
+  }
+  .mode-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .mode-btn.active { background: #2a4d6b; color: #fff; }
+  .mode-btn:not(.active) { background: #fff; color: #2a4d6b; }
+
+  .prompt {
+    width: 100%;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 24px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    min-height: 70px;
+  }
+
+  .prompt-emoji {
+    font-size: clamp(34px, 5.6vw, 46px);
+    animation: floaty 2.4s ease-in-out infinite;
+    line-height: 1;
+  }
+
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .prompt-text {
+    font-size: clamp(16px, 3.2vw, 23px);
+    font-weight: 800;
+    color: #2a4d6b;
+    text-align: center;
+    line-height: 1.35;
+  }
+  .prompt-text .en {
+    display: block;
+    font-size: 0.7em;
+    color: #6b8caa;
+    font-weight: 600;
+  }
+  .prompt-text .seq-line {
+    display: block;
+    font-size: 1.25em;
+    letter-spacing: 5px;
+    margin-bottom: 6px;
+    font-weight: 800;
+    color: #ff7a4d;
+  }
+
+  .replay-btn {
+    font-size: 22px;
+    background: var(--blue);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+  .replay-btn:active { transform: scale(0.9); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .grid.memory-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 520px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .grid.memory-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .card {
+    aspect-ratio: 1 / 1;
+    border-radius: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    padding: 8px;
+  }
+  .card:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+
+  .card .emoji {
+    font-size: clamp(36px, 8.5vw, 58px);
+    line-height: 1;
+  }
+
+  .card .label {
+    font-size: clamp(11px, 2vw, 14px);
+    font-weight: 700;
+    color: rgba(0,0,0,0.55);
+    text-align: center;
+  }
+  .card .label .en { display: block; font-weight: 600; opacity: 0.8; }
+
+  .card.correct-pulse {
+    animation: correctPulse 0.7s ease;
+  }
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.18) rotate(-3deg); }
+    60% { transform: scale(1.1) rotate(3deg); }
+    100% { transform: scale(1); }
+  }
+
+  .card.wrong-shake {
+    animation: wrongShake 0.4s ease;
+  }
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  .mem-card.hidden-face .emoji { font-size: clamp(24px, 5.4vw, 36px); }
+  .mem-card.matched { opacity: 0.5; cursor: default; }
+
+  footer {
+    margin-top: 22px;
+    font-size: 13px;
+    color: #4d7091;
+    text-align: center;
+  }
+
+  #confetti-layer, #fireworks-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #confetti-layer { z-index: 50; }
+  #fireworks-layer { z-index: 70; }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    border-radius: 3px;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(540deg);
+      opacity: 0.9;
+    }
+  }
+
+  .fw-particle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    animation: fwPop 900ms ease-out forwards;
+  }
+  @keyframes fwPop {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+  }
+
+  .celebrate-banner {
+    position: fixed;
+    top: 18%;
+    left: 50%;
+    transform: translate(-50%, -20px) scale(0.6);
+    background: #fff;
+    padding: 18px 34px;
+    border-radius: 30px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.12);
+    font-size: clamp(24px, 5vw, 40px);
+    font-weight: 800;
+    color: #ff6b6b;
+    z-index: 60;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+    pointer-events: none;
+  }
+  .celebrate-banner.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .celebrate-banner .en {
+    display: block;
+    font-size: 0.55em;
+    color: #ffa06b;
+  }
+
+  .milestone-banner {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -10px) scale(0.5);
+    background: linear-gradient(135deg, #ffe08a, #ffb347);
+    padding: 20px 36px;
+    border-radius: 30px;
+    box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+    font-size: clamp(20px, 4.6vw, 32px);
+    font-weight: 800;
+    color: #6b3f2a;
+    z-index: 80;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .milestone-banner.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .milestone-banner .en {
+    display: block;
+    font-size: 0.55em;
+    color: #8a5a2b;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🚀 升級挑戰樂園</h1>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="stars" id="starCount">⭐ 0</div>
+      <button class="icon-btn" id="muteBtn" title="靜音 Mute">🔊</button>
+    </div>
+  </header>
+
+  <div class="mode-bar">
+    <button class="mode-btn active" id="addModeBtn">➕ 加法 Add</button>
+    <button class="mode-btn" id="subModeBtn">➖ 減法 Sub</button>
+    <button class="mode-btn" id="compareModeBtn">🔢 比大小 Compare</button>
+    <button class="mode-btn" id="orderModeBtn">🧮 數字排序 Order</button>
+    <button class="mode-btn" id="caseModeBtn">🔡 大小寫 Case</button>
+    <button class="mode-btn" id="wordModeBtn">🔤 單字 Word</button>
+    <button class="mode-btn" id="rhymeModeBtn">🎵 押韻 Rhyme</button>
+    <button class="mode-btn" id="patternModeBtn">🧠 找規律 Pattern</button>
+    <button class="mode-btn" id="oddModeBtn">🔍 找不同 Odd One</button>
+    <button class="mode-btn" id="memoryModeBtn">🧩 進階記憶 Memory+</button>
+  </div>
+
+  <div class="prompt" id="promptBox">
+    <span class="prompt-emoji" id="promptEmoji">➕</span>
+    <div class="prompt-text" id="promptText"></div>
+    <button class="replay-btn" id="replayBtn" title="再聽一次">🔁</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>五歲升級版・10 種更有挑戰性的玩法:數學、閱讀、邏輯、進階記憶 🚀</footer>
+</div>
+
+<div id="confetti-layer"></div>
+<div id="fireworks-layer"></div>
+<div class="celebrate-banner" id="banner">太棒了! <span class="en">Great job!</span></div>
+<div class="milestone-banner" id="milestoneBanner"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Data ----------
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  const WORD_ITEMS = [
+    { emoji: "🐱", zh: "貓", en: "CAT" },
+    { emoji: "🐶", zh: "狗", en: "DOG" },
+    { emoji: "☀️", zh: "太陽", en: "SUN" },
+    { emoji: "🎩", zh: "帽子", en: "HAT" },
+    { emoji: "🛏️", zh: "床", en: "BED" },
+    { emoji: "☕", zh: "杯子", en: "CUP" },
+    { emoji: "🐷", zh: "豬", en: "PIG" },
+    { emoji: "🚌", zh: "公車", en: "BUS" },
+    { emoji: "📦", zh: "箱子", en: "BOX" },
+    { emoji: "🥚", zh: "蛋", en: "EGG" },
+    { emoji: "👜", zh: "包包", en: "BAG" },
+    { emoji: "🦊", zh: "狐狸", en: "FOX" },
+    { emoji: "🐝", zh: "蜜蜂", en: "BEE" },
+    { emoji: "🧸", zh: "泰迪熊", en: "TOY" },
+    { emoji: "🌟", zh: "星星", en: "STAR" },
+    { emoji: "🌙", zh: "月亮", en: "MOON" },
+    { emoji: "📖", zh: "書", en: "BOOK" },
+    { emoji: "⚽", zh: "球", en: "BALL" },
+    { emoji: "🦆", zh: "鴨子", en: "DUCK" },
+    { emoji: "🐟", zh: "魚", en: "FISH" },
+  ];
+
+  const RHYME_ITEMS = [
+    { emoji: "🐱", en: "CAT", fam: "AT" },
+    { emoji: "🎩", en: "HAT", fam: "AT" },
+    { emoji: "🦇", en: "BAT", fam: "AT" },
+    { emoji: "🐀", en: "RAT", fam: "AT" },
+    { emoji: "🐶", en: "DOG", fam: "OG" },
+    { emoji: "🐸", en: "FROG", fam: "OG" },
+    { emoji: "🪵", en: "LOG", fam: "OG" },
+    { emoji: "☀️", en: "SUN", fam: "UN" },
+    { emoji: "🥯", en: "BUN", fam: "UN" },
+    { emoji: "🐝", en: "BEE", fam: "EE" },
+    { emoji: "🌳", en: "TREE", fam: "EE" },
+    { emoji: "🔑", en: "KEY", fam: "EE" },
+    { emoji: "🐔", en: "HEN", fam: "EN" },
+    { emoji: "🖊️", en: "PEN", fam: "EN" },
+    { emoji: "🔟", en: "TEN", fam: "EN" },
+  ];
+
+  const CATEGORY_SETS = {
+    "動物": ["🐶", "🐱", "🐮", "🐷", "🐔", "🐑", "🐴", "🐰", "🦆"],
+    "交通工具": ["🚗", "🚌", "🚒", "🚓", "🚕", "✈️", "🚂", "🚲"],
+    "水果": ["🍎", "🍌", "🍇", "🍊", "🍓", "🍉", "🍑", "🥝"],
+    "形狀": ["⭐", "🔵", "🟦", "🔺", "🔶", "❤️"],
+  };
+
+  const PATTERN_POOL = ["🔴", "🔵", "🟡", "🟢", "🟣", "🟠", "⭐", "🔺", "🟦", "❤️"];
+
+  const MEMORY_ITEMS = [
+    { emoji: "🐶", zh: "小狗", en: "Dog" },
+    { emoji: "🐱", zh: "小貓", en: "Cat" },
+    { emoji: "🐮", zh: "乳牛", en: "Cow" },
+    { emoji: "🐷", zh: "小豬", en: "Pig" },
+    { emoji: "🐔", zh: "小雞", en: "Chicken" },
+    { emoji: "🐑", zh: "綿羊", en: "Sheep" },
+    { emoji: "🐴", zh: "小馬", en: "Horse" },
+    { emoji: "🐰", zh: "兔子", en: "Rabbit" },
+    { emoji: "🦆", zh: "鴨子", en: "Duck" },
+    { emoji: "🐟", zh: "小魚", en: "Fish" },
+    { emoji: "🐳", zh: "鯨魚", en: "Whale" },
+    { emoji: "🦀", zh: "螃蟹", en: "Crab" },
+  ];
+
+  const CARD_COLORS = ["#ff8fab", "#ffd166", "#6ec6ff", "#8de29a", "#c9a6ff", "#ffb26b"];
+  const ROUND_SIZE = 6;
+  const MEMORY_PAIR_COUNT = 6;
+  const FIND_MODES = ["add", "sub", "compare", "order", "case", "word", "rhyme", "pattern", "odd"];
+
+  // ---------- State ----------
+  let mode = "add";
+  let currentSet = [];
+  let targetIndex = -1;
+  let promptEmojiText = "➕";
+  let promptExtraText = "";
+  let promptZhText = "";
+  let promptEnText = "";
+  let stars = 0;
+  let locked = false;
+  let muted = false;
+
+  // memory-mode state
+  let memoryCards = [];
+  let memFlipped = [];
+  let memLocked = false;
+
+  // ---------- DOM ----------
+  const grid = document.getElementById("grid");
+  const promptEmoji = document.getElementById("promptEmoji");
+  const promptText = document.getElementById("promptText");
+  const replayBtn = document.getElementById("replayBtn");
+  const starCountEl = document.getElementById("starCount");
+  const muteBtn = document.getElementById("muteBtn");
+  const addModeBtn = document.getElementById("addModeBtn");
+  const subModeBtn = document.getElementById("subModeBtn");
+  const compareModeBtn = document.getElementById("compareModeBtn");
+  const orderModeBtn = document.getElementById("orderModeBtn");
+  const caseModeBtn = document.getElementById("caseModeBtn");
+  const wordModeBtn = document.getElementById("wordModeBtn");
+  const rhymeModeBtn = document.getElementById("rhymeModeBtn");
+  const patternModeBtn = document.getElementById("patternModeBtn");
+  const oddModeBtn = document.getElementById("oddModeBtn");
+  const memoryModeBtn = document.getElementById("memoryModeBtn");
+  const confettiLayer = document.getElementById("confetti-layer");
+  const fireworksLayer = document.getElementById("fireworks-layer");
+  const banner = document.getElementById("banner");
+  const milestoneBanner = document.getElementById("milestoneBanner");
+
+  const MODE_BUTTONS = {
+    add: addModeBtn,
+    sub: subModeBtn,
+    compare: compareModeBtn,
+    order: orderModeBtn,
+    case: caseModeBtn,
+    word: wordModeBtn,
+    rhyme: rhymeModeBtn,
+    pattern: patternModeBtn,
+    odd: oddModeBtn,
+    memory: memoryModeBtn,
+  };
+
+  // ---------- Audio: simple tones via WebAudio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+
+  function beep(freq, duration, type, delay, gainVal) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = gainVal != null ? gainVal : 0.15;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const startAt = ctx.currentTime + (delay || 0);
+    osc.start(startAt);
+    gain.gain.setValueAtTime(gain.gain.value, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    osc.stop(startAt + duration + 0.02);
+  }
+
+  function playTapSound() {
+    beep(520, 0.12, "triangle", 0, 0.12);
+  }
+
+  function playCorrectSound() {
+    beep(523.25, 0.10, "triangle", 0.00, 0.16);
+    beep(659.25, 0.10, "triangle", 0.09, 0.16);
+    beep(783.99, 0.10, "triangle", 0.18, 0.18);
+    beep(1046.50, 0.18, "triangle", 0.27, 0.20);
+    beep(1318.51, 0.10, "sine", 0.42, 0.12);
+    beep(1567.98, 0.14, "sine", 0.50, 0.12);
+  }
+
+  function playGentleOops() {
+    beep(300, 0.16, "sine", 0, 0.1);
+    beep(240, 0.2, "sine", 0.12, 0.09);
+  }
+
+  function playFireworkBoom(delay) {
+    beep(90, 0.35, "sine", delay, 0.22);
+    beep(70, 0.4, "sine", delay + 0.03, 0.15);
+    beep(1568, 0.12, "triangle", delay + 0.12, 0.14);
+    beep(2093, 0.10, "triangle", delay + 0.22, 0.12);
+  }
+
+  // ---------- Speech ----------
+  function speakBilingual(zhText, enText) {
+    if (muted || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const zhUtter = new SpeechSynthesisUtterance(zhText);
+    zhUtter.lang = "zh-TW";
+    zhUtter.rate = 0.95;
+    zhUtter.pitch = 1.1;
+    const enUtter = new SpeechSynthesisUtterance(enText);
+    enUtter.lang = "en-US";
+    enUtter.rate = 0.9;
+    enUtter.pitch = 1.1;
+    window.speechSynthesis.speak(zhUtter);
+    window.speechSynthesis.speak(enUtter);
+  }
+
+  // ---------- Helpers ----------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function randInt(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
+
+  // ---------- Round builders ----------
+  function additionRoundData() {
+    const a = randInt(1, 6);
+    const b = randInt(1, 10 - a);
+    const sum = a + b;
+    const pool = [];
+    for (let n = 0; n <= 12; n++) if (n !== sum) pool.push(n);
+    const distractors = shuffle(pool).slice(0, 5);
+    const options = shuffle([sum, ...distractors]);
+    const idx = options.indexOf(sum);
+    return {
+      cards: options.map((n) => ({ emoji: String(n) })),
+      targetIndex: idx,
+      promptEmoji: "➕",
+      promptZh: "找找看," + a + " 加 " + b + " 等於多少?",
+      promptEn: "What is " + a + " plus " + b + "?",
+    };
+  }
+
+  function subtractionRoundData() {
+    const a = randInt(3, 10);
+    const b = randInt(1, a);
+    const diff = a - b;
+    const pool = [];
+    for (let n = 0; n <= 10; n++) if (n !== diff) pool.push(n);
+    const distractors = shuffle(pool).slice(0, 5);
+    const options = shuffle([diff, ...distractors]);
+    const idx = options.indexOf(diff);
+    return {
+      cards: options.map((n) => ({ emoji: String(n) })),
+      targetIndex: idx,
+      promptEmoji: "➖",
+      promptZh: "找找看," + a + " 減 " + b + " 等於多少?",
+      promptEn: "What is " + a + " minus " + b + "?",
+    };
+  }
+
+  function compareRoundData() {
+    const nums = shuffle(Array.from({ length: 20 }, (_, i) => i + 1)).slice(0, ROUND_SIZE);
+    const askBiggest = Math.random() < 0.5;
+    let idx = 0;
+    nums.forEach((n, i) => {
+      const better = askBiggest ? n > nums[idx] : n < nums[idx];
+      if (better) idx = i;
+    });
+    return {
+      cards: nums.map((n) => ({ emoji: String(n) })),
+      targetIndex: idx,
+      promptEmoji: askBiggest ? "⬆️" : "⬇️",
+      promptZh: askBiggest ? "找找看,哪一個數字最大?" : "找找看,哪一個數字最小?",
+      promptEn: askBiggest ? "Find the biggest number!" : "Find the smallest number!",
+    };
+  }
+
+  function orderRoundData() {
+    const start = randInt(1, 11);
+    const seq = [start, start + 1, start + 2, start + 3, start + 4];
+    const missingPos = randInt(1, 3);
+    const missingNum = seq[missingPos];
+    const displaySeq = seq.map((n, i) => (i === missingPos ? "❓" : String(n))).join("  ,  ");
+    const pool = [];
+    for (let n = Math.max(1, start - 3); n <= start + 7; n++) if (!seq.includes(n)) pool.push(n);
+    const distractors = shuffle(pool).slice(0, 5);
+    const options = shuffle([missingNum, ...distractors]);
+    const idx = options.indexOf(missingNum);
+    return {
+      cards: options.map((n) => ({ emoji: String(n) })),
+      targetIndex: idx,
+      promptEmoji: "🧮",
+      extra: displaySeq,
+      promptZh: "找找看,問號是哪個數字?",
+      promptEn: "Which number is the question mark?",
+    };
+  }
+
+  function caseRoundData() {
+    const target = LETTERS[randInt(0, 25)];
+    const correctLower = target.toLowerCase();
+    const otherLowers = LETTERS.map((c) => c.toLowerCase()).filter((c) => c !== correctLower);
+    const distractors = shuffle(otherLowers).slice(0, 5);
+    const options = shuffle([correctLower, ...distractors]);
+    const idx = options.indexOf(correctLower);
+    return {
+      cards: options.map((c) => ({ emoji: c })),
+      targetIndex: idx,
+      promptEmoji: target,
+      promptZh: "找找看,誰是它的小寫字母?",
+      promptEn: "Find its lowercase letter!",
+    };
+  }
+
+  function wordRoundData() {
+    const cards = shuffle(WORD_ITEMS).slice(0, ROUND_SIZE);
+    const idx = randInt(0, cards.length - 1);
+    const target = cards[idx];
+    return {
+      cards,
+      targetIndex: idx,
+      promptEmoji: "🔤",
+      promptZh: "找找看,哪一個是 " + target.en + "?",
+      promptEn: "Find the picture for " + target.en + "!",
+    };
+  }
+
+  function rhymeRoundData() {
+    const target = RHYME_ITEMS[randInt(0, RHYME_ITEMS.length - 1)];
+    const sameFam = RHYME_ITEMS.filter((w) => w.fam === target.fam && w.en !== target.en);
+    const correct = sameFam[randInt(0, sameFam.length - 1)];
+    const otherFam = RHYME_ITEMS.filter((w) => w.fam !== target.fam);
+    const distractors = shuffle(otherFam).slice(0, 5);
+    const options = shuffle([correct, ...distractors]);
+    const idx = options.findIndex((w) => w.en === correct.en);
+    return {
+      cards: options.map((w) => ({ emoji: w.emoji, zh: w.en })),
+      targetIndex: idx,
+      promptEmoji: target.emoji,
+      promptZh: "找找看,哪一個跟 " + target.en + " 押韻?",
+      promptEn: "Find the word that rhymes with " + target.en + "!",
+    };
+  }
+
+  function patternRoundData() {
+    const unitLen = Math.random() < 0.5 ? 2 : 3;
+    const unit = shuffle(PATTERN_POOL).slice(0, unitLen);
+    const totalLen = unitLen === 2 ? 5 : 7;
+    const seq = [];
+    for (let i = 0; i < totalLen; i++) seq.push(unit[i % unitLen]);
+    const nextEmoji = unit[totalLen % unitLen];
+    const distractPool = PATTERN_POOL.filter((e) => e !== nextEmoji);
+    const distractors = shuffle(distractPool).slice(0, 5);
+    const options = shuffle([nextEmoji, ...distractors]);
+    const idx = options.indexOf(nextEmoji);
+    return {
+      cards: options.map((e) => ({ emoji: e })),
+      targetIndex: idx,
+      promptEmoji: "🧠",
+      extra: seq.join(" ") + " ❓",
+      promptZh: "找找看,接下來是什麼?",
+      promptEn: "What comes next?",
+    };
+  }
+
+  function oddOneOutRoundData() {
+    const catNames = Object.keys(CATEGORY_SETS);
+    const mainCat = catNames[randInt(0, catNames.length - 1)];
+    let oddCat = mainCat;
+    while (oddCat === mainCat) oddCat = catNames[randInt(0, catNames.length - 1)];
+    const mainItems = shuffle(CATEGORY_SETS[mainCat]).slice(0, 5);
+    const oddItem = CATEGORY_SETS[oddCat][randInt(0, CATEGORY_SETS[oddCat].length - 1)];
+    const cardEmojis = shuffle([...mainItems, oddItem]);
+    const idx = cardEmojis.indexOf(oddItem);
+    return {
+      cards: cardEmojis.map((e) => ({ emoji: e })),
+      targetIndex: idx,
+      promptEmoji: "🔍",
+      promptZh: "找找看,哪一個不一樣?",
+      promptEn: "Which one doesn't belong?",
+    };
+  }
+
+  function buildRoundData(m) {
+    if (m === "sub") return subtractionRoundData();
+    if (m === "compare") return compareRoundData();
+    if (m === "order") return orderRoundData();
+    if (m === "case") return caseRoundData();
+    if (m === "word") return wordRoundData();
+    if (m === "rhyme") return rhymeRoundData();
+    if (m === "pattern") return patternRoundData();
+    if (m === "odd") return oddOneOutRoundData();
+    return additionRoundData();
+  }
+
+  function cardInnerHTML(item) {
+    const label = item.zh != null
+      ? '<span class="label">' + item.zh + (item.en != null ? '<span class="en">' + item.en + '</span>' : '') + '</span>'
+      : "";
+    return '<span class="emoji">' + item.emoji + '</span>' + label;
+  }
+
+  // ---------- Rendering ----------
+  function renderGrid() {
+    grid.innerHTML = "";
+    currentSet.forEach((item, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "card";
+      btn.style.background = CARD_COLORS[idx % CARD_COLORS.length];
+      btn.innerHTML = cardInnerHTML(item);
+      btn.addEventListener("click", () => onCardTap(idx, btn));
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderPrompt() {
+    replayBtn.style.visibility = "visible";
+    promptEmoji.textContent = promptEmojiText;
+    const seqLine = promptExtraText ? '<span class="seq-line">' + promptExtraText + '</span>' : "";
+    promptText.innerHTML = seqLine + promptZhText + '<span class="en">' + promptEnText + '</span>';
+  }
+
+  function announceTarget() {
+    if (FIND_MODES.indexOf(mode) !== -1) {
+      speakBilingual(promptZhText, promptEnText);
+    }
+  }
+
+  function newTargetRound(m) {
+    locked = false;
+    const data = buildRoundData(m);
+    currentSet = data.cards;
+    targetIndex = data.targetIndex;
+    promptEmojiText = data.promptEmoji;
+    promptExtraText = data.extra || "";
+    promptZhText = data.promptZh;
+    promptEnText = data.promptEn;
+    renderGrid();
+    renderPrompt();
+    setTimeout(announceTarget, 300);
+  }
+
+  // ---------- Scoring / celebration ----------
+  function registerCorrect() {
+    stars += 1;
+    starCountEl.textContent = "⭐ " + stars;
+    if (stars % 5 === 0) {
+      setTimeout(fireworksCelebration, 500);
+    }
+  }
+
+  function celebrate() {
+    const phrases = [
+      ["太棒了!", "Great job!"],
+      ["你好棒!", "Awesome!"],
+      ["答對了!", "You got it!"],
+      ["好厲害!", "Well done!"],
+    ];
+    const pick = phrases[randInt(0, phrases.length - 1)];
+    banner.innerHTML = pick[0] + ' <span class="en">' + pick[1] + '</span>';
+    banner.classList.add("show");
+    setTimeout(() => banner.classList.remove("show"), 1200);
+    spawnConfetti();
+  }
+
+  function spawnConfetti() {
+    const colors = CARD_COLORS;
+    const count = 26;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const size = 6 + Math.random() * 8;
+      piece.style.width = size + "px";
+      piece.style.height = (size * 1.6) + "px";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.background = colors[randInt(0, colors.length - 1)];
+      const duration = 1.6 + Math.random() * 1.2;
+      piece.style.animationDuration = duration + "s";
+      piece.style.opacity = "0.95";
+      confettiLayer.appendChild(piece);
+      setTimeout(() => piece.remove(), duration * 1000 + 100);
+    }
+  }
+
+  function spawnFirework(x, y, color) {
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement("div");
+      p.className = "fw-particle";
+      const angle = (Math.PI * 2 * i) / count;
+      const dist = 70 + Math.random() * 70;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.left = x + "px";
+      p.style.top = y + "px";
+      p.style.background = color;
+      fireworksLayer.appendChild(p);
+      setTimeout(() => p.remove(), 950);
+    }
+  }
+
+  function fireworksCelebration() {
+    const fwColors = ["#ff5c5c", "#ffd166", "#4dabf7", "#66bb6a", "#ab7df0", "#ff8fab", "#ffa552"];
+    const bursts = 4;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = window.innerWidth * (0.2 + Math.random() * 0.6);
+        const y = window.innerHeight * (0.15 + Math.random() * 0.35);
+        const color = fwColors[randInt(0, fwColors.length - 1)];
+        spawnFirework(x, y, color);
+        playFireworkBoom(0);
+      }, i * 260);
+    }
+    const msgs = [
+      ["太厲害了!你連續答對好多題!", "Amazing! You are on a roll!"],
+      ["哇!你是小小天才!", "Wow! You are a superstar!"],
+      ["繼續加油,你做得好棒!", "Keep going, great job!"],
+    ];
+    const pick = msgs[randInt(0, msgs.length - 1)];
+    milestoneBanner.innerHTML = "🎆 " + pick[0] + ' <span class="en">' + pick[1] + '</span> 🎆';
+    milestoneBanner.classList.add("show");
+    speakBilingual(pick[0], pick[1]);
+    setTimeout(() => milestoneBanner.classList.remove("show"), 2200);
+  }
+
+  // ---------- Interaction ----------
+  function onCardTap(idx, btnEl) {
+    if (locked) return;
+    if (idx === targetIndex) {
+      locked = true;
+      btnEl.classList.add("correct-pulse");
+      playCorrectSound();
+      celebrate();
+      registerCorrect();
+      setTimeout(() => newTargetRound(mode), 1500);
+    } else {
+      btnEl.classList.add("wrong-shake");
+      playGentleOops();
+      setTimeout(() => btnEl.classList.remove("wrong-shake"), 400);
+    }
+  }
+
+  // ---------- Memory+ mode ----------
+  function newMemoryRound() {
+    const chosenItems = shuffle(MEMORY_ITEMS).slice(0, MEMORY_PAIR_COUNT);
+    let cards = [];
+    chosenItems.forEach((it, i) => {
+      cards.push({ item: it, uid: i + "-a", revealed: false, matched: false });
+      cards.push({ item: it, uid: i + "-b", revealed: false, matched: false });
+    });
+    memoryCards = shuffle(cards);
+    memFlipped = [];
+    memLocked = false;
+    grid.classList.add("memory-grid");
+    renderMemoryGrid();
+    promptEmoji.textContent = "🧩";
+    promptText.innerHTML = '翻翻看,找出一樣的圖案吧! <span class="en">Flip and find all the matching pairs!</span>';
+    replayBtn.style.visibility = "hidden";
+    speakBilingual("翻翻看,找出一樣的圖案吧!", "Flip and find all the matching pairs!");
+  }
+
+  function renderMemoryGrid() {
+    grid.innerHTML = "";
+    memoryCards.forEach((card, idx) => {
+      const shown = card.revealed || card.matched;
+      const btn = document.createElement("button");
+      btn.className = "card mem-card" + (card.matched ? " matched" : "") + (shown ? "" : " hidden-face");
+      btn.style.background = shown ? "#fff7e0" : "#c9a6ff";
+      btn.innerHTML = shown
+        ? '<span class="emoji">' + card.item.emoji + '</span>'
+        : '<span class="emoji">❓</span>';
+      btn.addEventListener("click", () => onMemoryCardTap(idx));
+      grid.appendChild(btn);
+    });
+  }
+
+  function onMemoryCardTap(idx) {
+    if (memLocked) return;
+    const card = memoryCards[idx];
+    if (card.matched || card.revealed) return;
+
+    card.revealed = true;
+    playTapSound();
+    renderMemoryGrid();
+    memFlipped.push(idx);
+
+    if (memFlipped.length === 2) {
+      memLocked = true;
+      const c1 = memoryCards[memFlipped[0]];
+      const c2 = memoryCards[memFlipped[1]];
+      if (c1.item.emoji === c2.item.emoji) {
+        c1.matched = true;
+        c2.matched = true;
+        playCorrectSound();
+        speakBilingual(c1.item.zh, c1.item.en);
+        registerCorrect();
+        memFlipped = [];
+        memLocked = false;
+        renderMemoryGrid();
+        if (memoryCards.every((c) => c.matched)) {
+          setTimeout(() => {
+            celebrate();
+            fireworksCelebration();
+            setTimeout(newMemoryRound, 1900);
+          }, 300);
+        }
+      } else {
+        playGentleOops();
+        setTimeout(() => {
+          c1.revealed = false;
+          c2.revealed = false;
+          memFlipped = [];
+          memLocked = false;
+          renderMemoryGrid();
+        }, 800);
+      }
+    }
+  }
+
+  // ---------- Mode switching ----------
+  function setMode(newMode) {
+    mode = newMode;
+    Object.keys(MODE_BUTTONS).forEach((key) => {
+      MODE_BUTTONS[key].classList.toggle("active", key === newMode);
+    });
+    grid.classList.remove("memory-grid");
+
+    if (newMode === "memory") {
+      newMemoryRound();
+    } else {
+      newTargetRound(newMode);
+    }
+  }
+
+  addModeBtn.addEventListener("click", () => setMode("add"));
+  subModeBtn.addEventListener("click", () => setMode("sub"));
+  compareModeBtn.addEventListener("click", () => setMode("compare"));
+  orderModeBtn.addEventListener("click", () => setMode("order"));
+  caseModeBtn.addEventListener("click", () => setMode("case"));
+  wordModeBtn.addEventListener("click", () => setMode("word"));
+  rhymeModeBtn.addEventListener("click", () => setMode("rhyme"));
+  patternModeBtn.addEventListener("click", () => setMode("pattern"));
+  oddModeBtn.addEventListener("click", () => setMode("odd"));
+  memoryModeBtn.addEventListener("click", () => setMode("memory"));
+  replayBtn.addEventListener("click", announceTarget);
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+    if (muted && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  });
+
+  document.body.addEventListener("click", function unlockAudioOnce() {
+    getCtx();
+    document.body.removeEventListener("click", unlockAudioOnce);
+  }, { once: true });
+
+  // ---------- Init ----------
+  setMode("add");
+})();
+</script>
+</body>
+</html>
