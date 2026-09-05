@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>盲盒收藏樂園</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violet: #6c4fd1;
+    --violet-dark: #4a34a0;
+    --pink: #ff8fc7;
+    --cream: #fff8f0;
+    --ink: #2c1650;
+    --gold: #ffe37a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #4a34a0 0%, #2c1650 55%, #150a2b 100%);
+    color: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    overflow-x: hidden;
+  }
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  header {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .home-link {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--violet-dark);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-size: clamp(18px, 3.6vw, 26px);
+    margin: 0;
+    color: var(--gold);
+    text-align: center;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.4);
+    flex: 1;
+  }
+  .header-btns { display: flex; gap: 8px; }
+  .icon-btn {
+    font-family: inherit;
+    border: 2px solid var(--violet-dark);
+    background: #3a2270;
+    color: var(--gold);
+    border-radius: 20px;
+    padding: 8px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 900px;
+    background: #241454;
+    border: 2px solid var(--violet-dark);
+    border-radius: 22px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    margin-bottom: 16px;
+  }
+  .panel h2 { margin: 0 0 12px; font-size: 17px; color: var(--gold); }
+  .subtitle { text-align: center; color: #d9c9ff; font-size: 14px; font-weight: 700; margin: 0 0 16px; }
+
+  /* ---- Series select grid ---- */
+  .series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .series-card {
+    border: none;
+    border-radius: 18px;
+    padding: 14px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+    transition: transform 0.12s ease;
+    font-family: inherit;
+    color: #fff;
+  }
+  .series-card:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+  .series-card .series-figure { width: 78px; height: 100px; }
+  .series-card .series-name { font-size: 14px; font-weight: 800; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.35); }
+  .series-card .series-progress {
+    font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.28);
+    border-radius: 10px; padding: 3px 10px;
+  }
+
+  /* ---- Box view ---- */
+  .box-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+  .box-title { font-size: 18px; font-weight: 800; color: var(--gold); }
+  .box-progress-pill {
+    font-weight: 800; background: var(--violet-dark); border: 2px solid #7a5cf0;
+    border-radius: 20px; padding: 7px 14px; font-size: 13px; color: var(--gold);
+  }
+  .controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .action-btn {
+    font-family: inherit; font-weight: 800; font-size: 15px; color: var(--ink);
+    background: var(--gold); border: none; border-radius: 24px; padding: 12px 22px;
+    cursor: pointer; box-shadow: 0 4px 0 #c7a83f; transition: transform 0.1s ease;
+  }
+  .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c7a83f; }
+  .action-btn.secondary { background: #3a2270; color: var(--gold); border: 2px solid var(--violet-dark); box-shadow: 0 4px 0 rgba(0,0,0,0.35); }
+  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .box-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 8px;
+    padding: 4px;
+  }
+  .box-tile {
+    font-family: inherit;
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 14px;
+    border: 2px solid var(--violet-dark);
+    background: linear-gradient(150deg, #7a5cf0 0%, #4a34a0 100%);
+    color: var(--gold);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; font-weight: 800; transition: transform 0.12s ease;
+  }
+  .box-tile::before { content: "🎀"; position:absolute; top:4px; font-size: 12px; }
+  .box-tile:hover:not(:disabled) { transform: scale(1.08); }
+  .box-tile:active:not(:disabled) { transform: scale(0.94); }
+  .box-tile .tile-q { font-size: 22px; }
+  .box-tile.opened { cursor: default; background: #1b0f3d; border-style: dashed; opacity: 0.7; }
+  .box-tile.opened.got-hidden { background: linear-gradient(150deg, #ffe37a, #ff8fc7); border-style: solid; opacity: 1; }
+  .box-tile .tile-mini { font-size: 20px; }
+  .box-tile .tile-no { position: absolute; bottom: 3px; font-size: 9px; opacity: 0.8; }
+
+  footer { margin-top: 6px; font-size: 12px; color: #cbb8ee; text-align: center; max-width: 760px; opacity: 0.9; }
+
+  /* ---- Overlay base ---- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(8,3,20,0.86);
+    display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px;
+  }
+  .close-btn {
+    font-family: inherit; font-weight: 800; font-size: 15px; color: var(--gold);
+    background: transparent; border: 2px solid var(--violet-dark); border-radius: 24px;
+    padding: 11px 24px; cursor: pointer; margin-top: 12px;
+  }
+
+  /* ---- Tear phase (seal sticker on a blind box) ---- */
+  .reveal-stage { text-align: center; }
+  .drag-hint {
+    font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 14px;
+    animation: hintBounce 1.4s ease-in-out infinite; transition: opacity 0.25s ease;
+  }
+  .drag-hint.faded { opacity: 0; }
+  @keyframes hintBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+  .box-wrap {
+    position: relative; width: 240px; height: 280px; margin: 0 auto 22px;
+    cursor: grab; touch-action: none; animation: idleWiggle 2.6s ease-in-out infinite;
+  }
+  .box-wrap.dragging { animation: none; cursor: grabbing; }
+  @keyframes idleWiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(1.2deg); } }
+
+  .box-cube {
+    position: absolute; inset: 0; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    background: linear-gradient(150deg, var(--box-a, #7a5cf0), var(--box-b, #4a34a0));
+    border: 3px solid rgba(255,255,255,0.25);
+  }
+  .box-cube .box-ribbon-v { position: absolute; top:0; bottom:0; left: 50%; width: 22px; margin-left: -11px; background: rgba(255,255,255,0.35); }
+  .box-cube .box-ribbon-h { position: absolute; left:0; right:0; top: 50%; height: 22px; margin-top: -11px; background: rgba(255,255,255,0.35); }
+  .box-cube .box-icon { font-size: 54px; z-index: 1; }
+  .box-cube .box-caption { font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); z-index: 1; }
+
+  .seal {
+    position: absolute; inset: 0; border-radius: 20px;
+    background: repeating-linear-gradient(135deg, #fff8f0 0 10px, #f0d9ff 10px 20px);
+    border: 3px solid var(--pink);
+    transition: clip-path 0.4s cubic-bezier(.4,.6,.4,1);
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    clip-path: circle(420px at 0% 100%);
+  }
+  .seal .seal-glyph {
+    position: absolute; left: 24%; top: 76%; transform: translate(-50%, -50%);
+    font-size: 40px; font-weight: 800; color: var(--pink); opacity: 0.85;
+  }
+  .corner-hint {
+    position: absolute; top: 2px; right: 2px; font-size: 24px; z-index: 5;
+    animation: cornerBounce 1.2s ease-in-out infinite; transition: opacity 0.25s ease; pointer-events: none;
+  }
+  .corner-hint.faded { opacity: 0; }
+  @keyframes cornerBounce { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 5px); } }
+
+  /* ---- Reveal / 360 turntable phase ---- */
+  #revealPhase { display: none; }
+  #revealPhase.show { display: block; }
+  .rarity-badge {
+    display: inline-block; font-size: 14px; font-weight: 800; padding: 5px 16px;
+    border-radius: 14px; background: var(--violet-dark); color: var(--gold); margin-bottom: 6px;
+  }
+  .rarity-badge.hidden-rarity {
+    background: linear-gradient(90deg, #ffe37a, #ff8fc7, #8fd6ff, #b98fff);
+    color: #2c1650;
+  }
+  .turntable-stage { perspective: 900px; width: 210px; height: 260px; margin: 6px auto 0; }
+  .turntable-figure {
+    width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform;
+  }
+  .figure-svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
+  .figure-svg.is-hidden { filter: drop-shadow(0 0 18px rgba(255,215,100,0.9)) drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
+  .pedestal { width: 160px; height: 22px; border-radius: 50%; margin: -6px auto 0;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,0.4), rgba(0,0,0,0.1) 70%); }
+  .drag-rotate-hint { font-size: 12px; color: #d9c9ff; margin-top: 6px; }
+  .item-name { font-size: 18px; font-weight: 800; margin-top: 10px; color: #fff; }
+  .item-series { font-size: 12px; color: #d9c9ff; margin-top: 2px; }
+  .tw { animation: twinkle 1.6s ease-in-out infinite; transform-origin: center; }
+  .tw2 { animation-delay: 0.4s; } .tw3 { animation-delay: 0.8s; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.25); } }
+  .sparkle-ring { animation: ringSpin 4s linear infinite; transform-origin: 100px 150px; }
+  @keyframes ringSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+  /* ---- Summary overlay ---- */
+  .summary-panel { max-width: 460px; }
+  .summary-panel h2 { color: var(--gold); font-size: 22px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 10px; }
+  .summary-cell { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px 4px; text-align: center; }
+  .summary-cell.hidden-cell { background: linear-gradient(150deg, #ffe37a, #ff8fc7); color: #2c1650; }
+  .summary-cell .sc-figure { width: 44px; height: 56px; margin: 0 auto; }
+  .summary-cell .sc-name { font-size: 10px; font-weight: 700; margin-top: 2px; line-height: 1.2; }
+
+  /* ---- Collection (圖鑑) overlay ---- */
+  .collection-panel { max-width: 900px; max-height: 88vh; overflow-y: auto; }
+  .collection-series-block { margin-bottom: 18px; }
+  .collection-series-title { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .collection-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
+  .mini-slot {
+    aspect-ratio: 1; border-radius: 10px; background: rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    border: 2px solid rgba(255,255,255,0.08); position: relative;
+  }
+  .mini-slot.collected { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
+  .mini-slot.collected.is-hidden-slot { background: linear-gradient(150deg, #ffe37a, #ff8fc7); border-color: #fff; }
+  .mini-slot .mini-figure { width: 34px; height: 44px; }
+  .mini-slot.locked .mini-q { color: rgba(255,255,255,0.35); font-weight: 800; }
+
+  [hidden], .hidden { display: none !important; }
+
+  #fx-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 600; }
+</style>
+</head>
+<body>
+<canvas id="fx-canvas"></canvas>
+
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 回選單</a>
+    <h1>🎁 盲盒收藏樂園</h1>
+    <div class="header-btns">
+      <button class="icon-btn" id="collectionBtn" title="收藏圖鑑">📖 圖鑑</button>
+      <button class="icon-btn" id="muteBtn" title="靜音切換">🔊</button>
+    </div>
+  </header>
+  <div class="subtitle">10 大系列・每盒 12 抽・每抽有 5% 機率開出隱藏款!</div>
+
+  <!-- Series select view -->
+  <div class="panel" id="seriesListView">
+    <h2>🎪 選一個系列開始拆盲盒</h2>
+    <div class="series-grid" id="seriesGrid"></div>
+  </div>
+
+  <!-- Box view -->
+  <div class="panel hidden" id="boxView">
+    <div class="box-header">
+      <span class="box-title" id="boxTitle"></span>
+      <span class="box-progress-pill" id="boxProgressPill"></span>
+    </div>
+    <div class="controls" style="margin-bottom: 14px;">
+      <button class="action-btn" id="randomOpenBtn">🎲 隨機拆一個</button>
+      <button class="action-btn secondary" id="newBoxBtn">🔁 開新的一盒</button>
+      <button class="action-btn secondary" id="backToListBtn">↩️ 返回系列列表</button>
+    </div>
+    <div class="box-grid" id="boxGrid"></div>
+  </div>
+
+  <footer>
+    盲盒收藏樂園為模擬遊戲,所有系列與角色皆為原創示意設計(靈感取材自熱門動漫類型,但造型、姓名皆為原創繪製),不涉及任何真實版權角色圖像,亦不涉及真實購買或付費抽獎。純 HTML/CSS/JavaScript 製作,音效由 Web Audio API 即時合成,圖案由 SVG 即時繪製,無需安裝、無外部圖檔或音檔。
+  </footer>
+</div>
+
+<!-- Tear + Reveal overlay -->
+<div class="overlay hidden" id="overlay">
+  <div class="reveal-stage">
+    <div id="tearPhase">
+      <div class="drag-hint" id="dragHint">🤏 從封口貼紙右上角開始,用手指或滑鼠拖拉慢慢撕開!</div>
+      <div class="box-wrap" id="boxWrap">
+        <div class="box-cube" id="boxCube">
+          <div class="box-ribbon-v"></div><div class="box-ribbon-h"></div>
+          <span class="box-icon">🎁</span>
+          <span class="box-caption" id="boxCaption">神秘盲盒</span>
+        </div>
+        <div class="seal" id="seal"><span class="seal-glyph">封</span></div>
+        <div class="corner-hint" id="cornerHint">👆</div>
+      </div>
+    </div>
+    <div id="revealPhase">
+      <div class="rarity-badge" id="rarityBadge">普通款</div>
+      <div class="turntable-stage" id="turntableStage">
+        <div class="turntable-figure" id="turntableFigure"></div>
+      </div>
+      <div class="pedestal"></div>
+      <div class="item-name" id="itemName">角色名稱</div>
+      <div class="item-series" id="itemSeriesName">系列名稱</div>
+      <div class="drag-rotate-hint">👆 拖曳可 360° 旋轉查看</div>
+    </div>
+    <button class="close-btn hidden" id="closeBtn">收下,繼續拆下一個 ➜</button>
+  </div>
+</div>
+
+<!-- Box summary overlay -->
+<div class="overlay hidden" id="summaryOverlay">
+  <div class="panel summary-panel">
+    <h2>🎊 這一盒 12 抽已經全部拆完!</h2>
+    <p style="color:#d9c9ff; font-size:14px;" id="summaryText"></p>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="controls" style="margin-top: 16px;">
+      <button class="action-btn" id="summaryNewBoxBtn">🔁 再開一盒(同系列)</button>
+      <button class="action-btn secondary" id="summaryBackBtn">↩️ 返回系列列表</button>
+    </div>
+  </div>
+</div>
+
+<!-- Collection overlay -->
+<div class="overlay hidden" id="collectionOverlay">
+  <div class="panel collection-panel">
+    <h2>📖 收藏圖鑑</h2>
+    <p style="color:#d9c9ff; font-size:13px; margin-top:-6px;">已收集的款式會顯示全彩造型,金粉底色代表隱藏款。</p>
+    <div id="collectionBody"></div>
+    <div class="controls" style="margin-top: 14px;">
+      <button class="action-btn secondary" id="collectionCloseBtn">關閉圖鑑</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Series / item data ----------
+  const RAW_SERIES = [
+    { name: "元素小精靈", icon: "⚡", bodyType: "ears-tri",
+      items: [
+        ["火焰仔", "🔥"], ["水滴仔", "💧"], ["藤蔓仔", "🌿"], ["電光仔", "⚡"],
+        ["岩石仔", "🪨"], ["冰霜仔", "❄️"], ["微風仔", "🌪️"], ["光耀仔", "✨"],
+        ["闇影仔", "🌑"], ["星塵仔", "💫"], ["甜心仔", "💖"], ["磁鐵仔", "🧲"]
+      ], hiddenName: "傳說虹光聖靈", hiddenBadge: "🌈" },
+    { name: "魔法旅人:精靈藥師", icon: "🧙", bodyType: "ears-long",
+      items: [
+        ["藥草魔女", "🌱"], ["沉默劍聖", "⚔️"], ["星辰占星師", "🔭"], ["冰霜法師", "🧊"],
+        ["治癒神官", "➕"], ["森林弓手", "🏹"], ["煉金術士", "⚗️"], ["幻術詩人", "🎭"],
+        ["雷光騎士", "⚡"], ["龍語者", "🐉"], ["時間旅者", "⏳"], ["沉眠賢者", "💤"]
+      ], hiddenName: "千年魔法使者", hiddenBadge: "✨" },
+    { name: "鬼獵者:呼吸劍士", icon: "🗡️", bodyType: "headband",
+      items: [
+        ["火之呼吸", "🔥"], ["水之呼吸", "💧"], ["雷之呼吸", "⚡"], ["風之呼吸", "🌪️"],
+        ["岩之呼吸", "🪨"], ["蟲之呼吸", "🐛"], ["花之呼吸", "🌸"], ["戀之呼吸", "💗"],
+        ["蛇之呼吸", "🐍"], ["音之呼吸", "🎵"], ["霞之呼吸", "🌫️"], ["月之呼吸", "🌙"]
+      ], hiddenName: "日之呼吸・傳說劍士", hiddenBadge: "☀️" },
+    { name: "經典童話樂園", icon: "👑", bodyType: "ears-round",
+      items: [
+        ["森林公主", "👑"], ["玻璃鞋精靈", "👠"], ["魔法南瓜車", "🎃"], ["勇敢船長", "⚓"],
+        ["小紅斗篷", "🧣"], ["森林裁縫", "🪡"], ["音樂盒仙子", "🎶"], ["溫柔巨人", "🌳"],
+        ["海洋人魚", "🧜"], ["沉睡花仙", "💤"], ["木偶男孩", "🪵"], ["魔鏡守衛", "🪞"]
+      ], hiddenName: "童話女王・星光加冕", hiddenBadge: "👑" },
+    { name: "大海賊寶藏隊", icon: "🏴‍☠️", bodyType: "hat-tricorn",
+      items: [
+        ["草帽船長", "⚓"], ["劍豪副手", "⚔️"], ["天才航海士", "🧭"], ["廚師拳王", "🍳"],
+        ["狙擊神槍手", "🎯"], ["潛水醫生", "💊"], ["樂師音符", "🎸"], ["考古學家", "📜"],
+        ["骷髏音樂家", "💀"], ["馴鹿醫生", "🦌"], ["忍者影子", "🥷"], ["巨人舵手", "🚢"]
+      ], hiddenName: "傳說船長・世界秘寶", hiddenBadge: "👑" },
+    { name: "咒術鬥士:結界師", icon: "🌀", bodyType: "collar-talisman",
+      items: [
+        ["領域展開師", "🌀"], ["呪具劍士", "🗡️"], ["咒符師", "📜"], ["冰咒法師", "❄️"],
+        ["影子操偶師", "🎎"], ["拳鬥咒術士", "👊"], ["千年結界師", "🛡️"], ["蟲毒使者", "🐛"],
+        ["雷咒武士", "⚡"], ["特級咒靈", "👹"], ["學生會長", "🎓"], ["神秘轉學生", "❓"]
+      ], hiddenName: "最強咒術師・無下限", hiddenBadge: "✨" },
+    { name: "惡魔獵人:鏈鋸小隊", icon: "⛓️", bodyType: "horns-devil",
+      items: [
+        ["鏈鋸惡魔", "⛓️"], ["血斧惡魔", "🪓"], ["蜘蛛惡魔", "🕷️"], ["冰霜惡魔", "❄️"],
+        ["手槍惡魔", "🔫"], ["蝙蝠惡魔", "🦇"], ["暗夜惡魔", "🌑"], ["電鋸貓咪", "🐾"],
+        ["未來惡魔", "🔮"], ["掌控惡魔", "✋"], ["惡魔獵人少女", "🗡️"], ["天使武器", "👼"]
+      ], hiddenName: "支配之王・傳說惡魔", hiddenBadge: "👑" },
+    { name: "巨人獵人:調查兵團", icon: "🕊️", bodyType: "wings-cloak",
+      items: [
+        ["調查兵團隊長", "🎖️"], ["立體機動戰士", "⚙️"], ["巨人化少年", "🔥"], ["情報參謀", "📋"],
+        ["城牆守衛", "🛡️"], ["憲兵團間諜", "🕵️"], ["巨人研究員", "🔬"], ["鎧之戰士", "🛡️"],
+        ["超大型巨人", "💥"], ["始祖血脈者", "🩸"], ["自由之翼", "🕊️"], ["地鳴之聲", "🌍"]
+      ], hiddenName: "傳說九大巨人・自由結局", hiddenBadge: "🕊️" },
+    { name: "間諜家族:偽裝任務", icon: "🕴️", bodyType: "hat-fedora",
+      items: [
+        ["偽裝爸爸", "🕴️"], ["讀心少女", "👧"], ["爆彈殺手媽媽", "💣"], ["隱藏身份特工", "🎭"],
+        ["情報販子", "📠"], ["學院面試官", "🎓"], ["秘密通訊員", "📻"], ["變裝專家", "👘"],
+        ["忠犬夥伴", "🐕"], ["雙面間諜", "🔍"], ["暗號分析師", "🔐"], ["假面舞會伴侶", "💃"]
+      ], hiddenName: "終極任務・世界和平計畫", hiddenBadge: "🕊️" },
+    { name: "森林精靈物語", icon: "🌳", bodyType: "crown-leaf",
+      items: [
+        ["橡實小精靈", "🌰"], ["苔蘚守護者", "🍃"], ["螢火蟲使者", "✨"], ["露珠妖精", "💧"],
+        ["貓巴士夥伴", "🚌"], ["風之使者", "🌬️"], ["森林大王獸", "🌳"], ["煤炭小精靈", "⚫"],
+        ["花瓣舞者", "🌸"], ["雨後彩虹靈", "🌈"], ["月夜貓頭鷹", "🦉"], ["古樹低語者", "🌲"]
+      ], hiddenName: "森林之主・千年神木靈", hiddenBadge: "🌳" }
+  ];
+
+  const HIDDEN_CHANCE = 0.05;
+
+  function paletteFor(seriesIdx, itemIdx, total) {
+    const hue = Math.round((seriesIdx * 37 + itemIdx * (360 / total)) % 360);
+    return { primary: `hsl(${hue} 68% 58%)`, secondary: `hsl(${hue} 55% 34%)` };
+  }
+
+  const SERIES = RAW_SERIES.map((s, sIdx) => {
+    const items = s.items.map(([name, badge], iIdx) => {
+      const pal = paletteFor(sIdx, iIdx, s.items.length);
+      return { name, badge, primary: pal.primary, secondary: pal.secondary };
+    });
+    const accentPal = paletteFor(sIdx, 0, s.items.length);
+    return {
+      id: "s" + sIdx,
+      name: s.name,
+      icon: s.icon,
+      bodyType: s.bodyType,
+      accentA: `hsl(${(sIdx * 37) % 360} 70% 62%)`,
+      accentB: `hsl(${(sIdx * 37) % 360} 55% 30%)`,
+      items,
+      hidden: { name: s.hiddenName, badge: s.hiddenBadge }
+    };
+  });
+
+  // ---------- SVG chibi figure renderer ----------
+  let svgUidCounter = 0;
+  function accessoryMarkup(bodyType, fillPrimary, strokeColor) {
+    switch (bodyType) {
+      case "ears-tri":
+        return `<polygon points="62,58 50,14 82,52" fill="${strokeColor}"/><polygon points="138,58 150,14 118,52" fill="${strokeColor}"/>`;
+      case "ears-long":
+        return `<polygon points="66,68 6,42 70,84" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/><polygon points="134,68 194,42 130,84" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>`;
+      case "headband":
+        return `<rect x="62" y="66" width="76" height="12" rx="6" fill="${strokeColor}"/><circle cx="138" cy="72" r="6" fill="${strokeColor}"/>`;
+      case "ears-round":
+        return `<circle cx="62" cy="42" r="24" fill="${strokeColor}"/><circle cx="138" cy="42" r="24" fill="${strokeColor}"/>`;
+      case "hat-tricorn":
+        return `<path d="M48 60 Q100 8 152 60 Q100 38 48 60 Z" fill="${strokeColor}"/>`;
+      case "horns-devil":
+        return `<polygon points="78,60 70,22 92,54" fill="${strokeColor}"/><polygon points="122,60 130,22 108,54" fill="${strokeColor}"/>`;
+      case "hat-fedora":
+        return `<ellipse cx="100" cy="58" rx="46" ry="10" fill="${strokeColor}"/><rect x="72" y="28" width="56" height="32" rx="10" fill="${strokeColor}"/><rect x="72" y="44" width="56" height="8" fill="${fillPrimary}"/>`;
+      case "crown-leaf":
+        return `<ellipse cx="80" cy="34" rx="16" ry="9" fill="${strokeColor}" transform="rotate(-25 80 34)"/><ellipse cx="100" cy="22" rx="16" ry="9" fill="${strokeColor}"/><ellipse cx="120" cy="34" rx="16" ry="9" fill="${strokeColor}" transform="rotate(25 120 34)"/>`;
+      default:
+        return "";
+    }
+  }
+  function wingsOrCollarMarkup(bodyType, fillPrimary, strokeColor) {
+    if (bodyType === "wings-cloak") {
+      return `<path d="M58 132 Q6 110 18 172 Q44 156 60 150 Z" fill="${strokeColor}" opacity="0.85"/><path d="M142 132 Q194 110 182 172 Q156 156 140 150 Z" fill="${strokeColor}" opacity="0.85"/>`;
+    }
+    if (bodyType === "collar-talisman") {
+      return `<rect x="76" y="116" width="14" height="32" rx="2" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2" transform="rotate(-14 83 132)"/><rect x="110" y="116" width="14" height="32" rx="2" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2" transform="rotate(14 117 132)"/>`;
+    }
+    return "";
+  }
+
+  function figureSVG(item, bodyType, isHidden) {
+    const uid = ++svgUidCounter;
+    const primary = item.primary;
+    const secondary = item.secondary;
+    const grad = isHidden ? `<linearGradient id="g${uid}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ffe37a"/><stop offset="30%" stop-color="#ff8fc7"/>
+        <stop offset="60%" stop-color="#8fd6ff"/><stop offset="100%" stop-color="#b98fff"/>
+      </linearGradient>` : "";
+    const fillPrimary = isHidden ? `url(#g${uid})` : primary;
+    const strokeColor = isHidden ? "#ffd76a" : secondary;
+    const behindBody = wingsOrCollarMarkup(bodyType, fillPrimary, strokeColor);
+    const aboveHead = accessoryMarkup(bodyType, fillPrimary, strokeColor);
+    const sparkles = isHidden ? `
+      <g class="sparkle-ring"><circle cx="100" cy="150" r="92" fill="none" stroke="#ffe37a" stroke-width="2" stroke-dasharray="6 10" opacity="0.7"/></g>
+      <text x="30" y="56" font-size="20" class="tw">✨</text>
+      <text x="162" y="66" font-size="18" class="tw tw2">✨</text>
+      <text x="26" y="200" font-size="16" class="tw tw3">✨</text>
+      <text x="166" y="206" font-size="20" class="tw tw2">✨</text>` : "";
+    return `<svg viewBox="0 0 200 260" class="figure-svg${isHidden ? " is-hidden" : ""}">
+      <defs>${grad}</defs>
+      <ellipse cx="100" cy="242" rx="58" ry="12" fill="rgba(0,0,0,0.18)"/>
+      ${behindBody}
+      <path d="M100 108 C150 108 168 150 160 200 C154 238 130 250 100 250 C70 250 46 238 40 200 C32 150 50 108 100 108 Z" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
+      <circle cx="100" cy="90" r="40" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
+      ${aboveHead}
+      <ellipse cx="82" cy="90" rx="6" ry="8" fill="#2c1650"/>
+      <ellipse cx="118" cy="90" rx="6" ry="8" fill="#2c1650"/>
+      <circle cx="70" cy="102" r="7" fill="#ff9ec7" opacity="0.6"/>
+      <circle cx="130" cy="102" r="7" fill="#ff9ec7" opacity="0.6"/>
+      <path d="M88 106 Q100 114 112 106" stroke="#2c1650" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="100" cy="168" r="20" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2"/>
+      <text x="100" y="176" font-size="20" text-anchor="middle">${item.badge}</text>
+      ${sparkles}
+    </svg>`;
+  }
+
+  // ---------- Collection persistence ----------
+  const STORAGE_KEY = "blindbox_collection_v1";
+  let collection = {};
+  (function loadCollection() {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) collection = JSON.parse(raw) || {};
+    } catch (e) { collection = {}; }
+  })();
+  function saveCollection() {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(collection)); } catch (e) { /* ignore */ }
+  }
+  function markCollected(seriesId, slotKey) {
+    if (!collection[seriesId]) collection[seriesId] = {};
+    collection[seriesId][slotKey] = true;
+    saveCollection();
+  }
+  function collectedCount(series) {
+    const rec = collection[series.id] || {};
+    return Object.keys(rec).length;
+  }
+
+  // ---------- Box / draw state ----------
+  let currentSeries = null;
+  let currentBox = null; // array of 12 { slotIdx, isHidden, itemRef, opened }
+  let currentDrawItem = null; // item currently in tear/reveal overlay
+  let muted = false;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildBox(series) {
+    const order = shuffle(series.items.map((_, i) => i));
+    return order.map((itemIdx, slot) => ({
+      slot: slot + 1,
+      itemIdx,
+      isHidden: Math.random() < HIDDEN_CHANCE,
+      opened: false
+    }));
+  }
+
+  function resolveItem(entry) {
+    return currentSeries.items[entry.itemIdx];
+  }
+
+  // ---------- DOM refs ----------
+  const seriesGrid = document.getElementById("seriesGrid");
+  const seriesListView = document.getElementById("seriesListView");
+  const boxView = document.getElementById("boxView");
+  const boxTitle = document.getElementById("boxTitle");
+  const boxProgressPill = document.getElementById("boxProgressPill");
+  const boxGrid = document.getElementById("boxGrid");
+  const randomOpenBtn = document.getElementById("randomOpenBtn");
+  const newBoxBtn = document.getElementById("newBoxBtn");
+  const backToListBtn = document.getElementById("backToListBtn");
+
+  const overlay = document.getElementById("overlay");
+  const tearPhase = document.getElementById("tearPhase");
+  const revealPhase = document.getElementById("revealPhase");
+  const boxWrap = document.getElementById("boxWrap");
+  const boxCube = document.getElementById("boxCube");
+  const boxCaption = document.getElementById("boxCaption");
+  const seal = document.getElementById("seal");
+  const dragHint = document.getElementById("dragHint");
+  const cornerHint = document.getElementById("cornerHint");
+  const closeBtn = document.getElementById("closeBtn");
+  const rarityBadge = document.getElementById("rarityBadge");
+  const turntableFigure = document.getElementById("turntableFigure");
+  const itemName = document.getElementById("itemName");
+  const itemSeriesName = document.getElementById("itemSeriesName");
+
+  const summaryOverlay = document.getElementById("summaryOverlay");
+  const summaryText = document.getElementById("summaryText");
+  const summaryGrid = document.getElementById("summaryGrid");
+  const summaryNewBoxBtn = document.getElementById("summaryNewBoxBtn");
+  const summaryBackBtn = document.getElementById("summaryBackBtn");
+
+  const collectionBtn = document.getElementById("collectionBtn");
+  const collectionOverlay = document.getElementById("collectionOverlay");
+  const collectionBody = document.getElementById("collectionBody");
+  const collectionCloseBtn = document.getElementById("collectionCloseBtn");
+  const muteBtn = document.getElementById("muteBtn");
+
+  // ---------- Audio (Web Audio API, synthesized, no files) ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function createNoiseBuffer(ctx, duration) {
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate * duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    return buffer;
+  }
+  function tone(freq, delay, dur, type, gainVal) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gainVal || 0.2, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  function playTear(gainVal) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const noiseBuf = createNoiseBuffer(ctx, 0.28);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    const band = ctx.createBiquadFilter();
+    band.type = "bandpass"; band.frequency.value = 2200; band.Q.value = 0.8;
+    const g = ctx.createGain();
+    const t0 = ctx.currentTime;
+    g.gain.setValueAtTime(gainVal || 0.26, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.28);
+    src.connect(band); band.connect(g); g.connect(ctx.destination);
+    src.start(t0); src.stop(t0 + 0.3);
+  }
+  function playPop() {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(300, t0);
+    osc.frequency.exponentialRampToValueAtTime(900, t0 + 0.12);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.22, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + 0.18);
+  }
+  function playChime() {
+    tone(659.25, 0, 0.18, "sine", 0.16);
+    tone(880, 0.12, 0.24, "sine", 0.16);
+  }
+  function playFanfare() {
+    const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5];
+    notes.forEach((f, i) => tone(f, i * 0.13, 0.3, "triangle", 0.2));
+    tone(1567.98, notes.length * 0.13 + 0.05, 0.55, "triangle", 0.22);
+  }
+
+  // ---------- Confetti canvas ----------
+  const fxCanvas = document.getElementById("fx-canvas");
+  const fxCtx = fxCanvas.getContext("2d");
+  function resizeCanvas() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+  let particles = [];
+  let fxRunning = false;
+  const FX_COLORS = ["#ffe37a", "#ff8fc7", "#8fd6ff", "#b98fff", "#7cf0b0", "#ffffff"];
+  function spawnBurst(x, y, count) {
+    const color = FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+      const speed = 2 + Math.random() * 3.5;
+      particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 0, maxLife: 50 + Math.random() * 30, color, size: 2 + Math.random() * 2 });
+    }
+  }
+  function stepParticles() {
+    fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.99; p.life++;
+      const alpha = Math.max(0, 1 - p.life / p.maxLife);
+      fxCtx.globalAlpha = alpha; fxCtx.fillStyle = p.color;
+      fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fxCtx.fill();
+    });
+    fxCtx.globalAlpha = 1;
+    particles = particles.filter(p => p.life < p.maxLife);
+    if (particles.length > 0) requestAnimationFrame(stepParticles); else fxRunning = false;
+  }
+  function ensureFxLoop() { if (!fxRunning) { fxRunning = true; requestAnimationFrame(stepParticles); } }
+  function launchConfetti(big) {
+    const bursts = big ? 5 : 2;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = fxCanvas.width * (0.2 + Math.random() * 0.6);
+        const y = fxCanvas.height * (0.2 + Math.random() * 0.3);
+        spawnBurst(x, y, big ? 60 : 30);
+        ensureFxLoop();
+      }, i * 220 + Math.random() * 100);
+    }
+  }
+
+  // ---------- Turntable (JS-driven 360 rotation) ----------
+  let ttAngle = 0;
+  let ttDragging = false;
+  let ttLastX = 0;
+  let ttRafId = null;
+  function ttTick() {
+    if (!ttDragging) ttAngle += 0.55;
+    const rad = (ttAngle * Math.PI) / 180;
+    const brightness = 0.82 + 0.32 * Math.abs(Math.cos(rad));
+    turntableFigure.style.transform = `rotateY(${ttAngle}deg)`;
+    turntableFigure.style.filter = `brightness(${brightness.toFixed(2)})`;
+    ttRafId = requestAnimationFrame(ttTick);
+  }
+  function startTurntable() {
+    ttAngle = 0; ttDragging = false;
+    if (ttRafId) cancelAnimationFrame(ttRafId);
+    ttRafId = requestAnimationFrame(ttTick);
+  }
+  function stopTurntable() {
+    if (ttRafId) cancelAnimationFrame(ttRafId);
+    ttRafId = null;
+  }
+  document.getElementById("turntableStage").addEventListener("pointerdown", e => {
+    ttDragging = true; ttLastX = e.clientX;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  });
+  document.getElementById("turntableStage").addEventListener("pointermove", e => {
+    if (!ttDragging) return;
+    const dx = e.clientX - ttLastX; ttLastX = e.clientX;
+    ttAngle += dx * 0.9;
+  });
+  ["pointerup", "pointercancel"].forEach(evt => {
+    document.getElementById("turntableStage").addEventListener(evt, () => { ttDragging = false; });
+  });
+
+  // ---------- Rendering: series list ----------
+  function renderSeriesList() {
+    seriesGrid.innerHTML = SERIES.map(series => {
+      const total = series.items.length + 1;
+      const got = collectedCount(series);
+      const preview = figureSVG(series.items[0], series.bodyType, false);
+      return `<button class="series-card" data-series="${series.id}" style="background: linear-gradient(150deg, ${series.accentA}, ${series.accentB});">
+        <span class="series-figure">${preview}</span>
+        <span class="series-name">${series.icon} ${series.name}</span>
+        <span class="series-progress">已收集 ${got}/${total}</span>
+      </button>`;
+    }).join("");
+  }
+
+  // ---------- Rendering: box view ----------
+  function showBoxView(series) {
+    currentSeries = series;
+    currentBox = buildBox(series);
+    seriesListView.classList.add("hidden");
+    boxView.classList.remove("hidden");
+    boxTitle.textContent = `${series.icon} ${series.name}`;
+    renderBoxGrid();
+  }
+  function renderBoxGrid() {
+    const openedCount = currentBox.filter(e => e.opened).length;
+    boxProgressPill.textContent = `本盒進度 ${openedCount}/12`;
+    boxGrid.innerHTML = currentBox.map(entry => {
+      if (!entry.opened) {
+        return `<button class="box-tile" data-slot="${entry.slot}"><span class="tile-q">?</span><span class="tile-no">${entry.slot}</span></button>`;
+      }
+      const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
+      const cls = entry.isHidden ? "box-tile opened got-hidden" : "box-tile opened";
+      return `<button class="${cls}" data-slot="${entry.slot}" disabled><span class="tile-mini">${item.badge}</span><span class="tile-no">${entry.slot}</span></button>`;
+    }).join("");
+  }
+
+  // ---------- Tear + reveal flow ----------
+  const DRAG_MAX = 140;
+  const COMPLETE_THRESHOLD = 0.65;
+  const TEAR_MAX_RADIUS = Math.hypot(240, 280) * 1.05;
+  let dragState = null;
+  let settling = false;
+
+  function applyTearProgress(p) {
+    const cp = Math.max(0, Math.min(1, p));
+    const radius = TEAR_MAX_RADIUS * (1 - cp);
+    seal.style.clipPath = `circle(${radius}px at 0% 100%)`;
+  }
+  function snapTear(target) {
+    seal.style.transition = "";
+    void seal.offsetWidth;
+    applyTearProgress(target);
+  }
+
+  function openSlot(slot) {
+    const entry = currentBox.find(e => e.slot === slot);
+    if (!entry || entry.opened) return;
+    currentDrawItem = entry;
+    dragState = null; settling = false;
+    boxCube.style.setProperty("--box-a", currentSeries.accentA);
+    boxCube.style.setProperty("--box-b", currentSeries.accentB);
+    boxCaption.textContent = currentSeries.name;
+    seal.style.transition = "none";
+    applyTearProgress(0);
+    boxWrap.classList.remove("dragging");
+    dragHint.classList.remove("faded");
+    cornerHint.classList.remove("faded");
+    closeBtn.classList.add("hidden");
+    tearPhase.style.display = "";
+    revealPhase.classList.remove("show");
+    stopTurntable();
+    overlay.classList.remove("hidden");
+    requestAnimationFrame(() => { seal.style.transition = ""; });
+  }
+
+  function onBoxPointerDown(e) {
+    if (!currentDrawItem || settling) return;
+    boxWrap.setPointerCapture(e.pointerId);
+    seal.style.transition = "none";
+    dragState = { pointerId: e.pointerId, startY: e.clientY, lastTick: 0 };
+    boxWrap.classList.add("dragging");
+    dragHint.classList.add("faded");
+    cornerHint.classList.add("faded");
+  }
+  function onBoxPointerMove(e) {
+    if (!dragState || dragState.pointerId !== e.pointerId) return;
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    applyTearProgress(progress);
+    if (progress - dragState.lastTick > 0.22) { dragState.lastTick = progress; playTear(0.14); }
+  }
+  function onBoxPointerUp(e) {
+    if (!dragState || dragState.pointerId !== e.pointerId) return;
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    dragState = null;
+    boxWrap.classList.remove("dragging");
+    if (progress >= COMPLETE_THRESHOLD) {
+      settling = true;
+      snapTear(1);
+      playTear(0.32);
+      playPop();
+      setTimeout(finalizeReveal, 420);
+    } else {
+      snapTear(0);
+      dragHint.classList.remove("faded");
+      cornerHint.classList.remove("faded");
+    }
+  }
+
+  function finalizeReveal() {
+    settling = false;
+    const entry = currentDrawItem;
+    entry.opened = true;
+    const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
+
+    tearPhase.style.display = "none";
+    revealPhase.classList.add("show");
+    rarityBadge.textContent = entry.isHidden ? "🌟 隱藏款!" : "普通款";
+    rarityBadge.className = entry.isHidden ? "rarity-badge hidden-rarity" : "rarity-badge";
+    itemName.textContent = item.name;
+    itemSeriesName.textContent = `${currentSeries.icon} ${currentSeries.name}`;
+
+    const figItem = entry.isHidden
+      ? { primary: item.primary || "#ffe37a", secondary: item.secondary || "#c79a2b", badge: item.badge }
+      : item;
+    turntableFigure.innerHTML = figureSVG(figItem, currentSeries.bodyType, !!entry.isHidden);
+    startTurntable();
+
+    if (entry.isHidden) { launchConfetti(true); playFanfare(); }
+    else { launchConfetti(false); playChime(); }
+
+    markCollected(currentSeries.id, entry.isHidden ? "hidden" : String(entry.itemIdx));
+    renderBoxGrid();
+    renderSeriesList();
+
+    closeBtn.classList.remove("hidden");
+    const allDone = currentBox.every(e => e.opened);
+    closeBtn.textContent = allDone ? "🎉 查看本盒戰績" : "收下,繼續拆下一個 ➜";
+    closeBtn.dataset.allDone = allDone ? "1" : "0";
+  }
+
+  function handleClose() {
+    overlay.classList.add("hidden");
+    stopTurntable();
+    const allDone = closeBtn.dataset.allDone === "1";
+    currentDrawItem = null;
+    if (allDone) showSummary();
+  }
+
+  function showSummary() {
+    const hiddenCount = currentBox.filter(e => e.isHidden).length;
+    summaryText.textContent = `這一盒共拆出 ${hiddenCount} 個隱藏款(理論機率每抽 5%)。看看你拆到了什麼吧!`;
+    summaryGrid.innerHTML = currentBox.map(entry => {
+      const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
+      const figItem = entry.isHidden ? { primary: "#ffe37a", secondary: "#c79a2b", badge: item.badge } : item;
+      const cls = entry.isHidden ? "summary-cell hidden-cell" : "summary-cell";
+      return `<div class="${cls}">
+        <span class="sc-figure">${figureSVG(figItem, currentSeries.bodyType, !!entry.isHidden)}</span>
+        <div class="sc-name">${item.name}</div>
+      </div>`;
+    }).join("");
+    summaryOverlay.classList.remove("hidden");
+  }
+
+  function newBox(fromSummary) {
+    if (!fromSummary && currentBox) {
+      const openedCount = currentBox.filter(e => e.opened).length;
+      if (openedCount > 0 && openedCount < 12) {
+        const ok = window.confirm("這一盒還沒拆完,確定要開新的一盒嗎?尚未拆的部分會直接消失(已收藏的款式不受影響)。");
+        if (!ok) return;
+      }
+    }
+    currentBox = buildBox(currentSeries);
+    overlay.classList.add("hidden");
+    summaryOverlay.classList.add("hidden");
+    renderBoxGrid();
+  }
+
+  // ---------- Collection (圖鑑) rendering ----------
+  function renderCollection() {
+    collectionBody.innerHTML = SERIES.map(series => {
+      const rec = collection[series.id] || {};
+      const total = series.items.length + 1;
+      const got = Object.keys(rec).length;
+      const slots = series.items.map((item, idx) => {
+        const has = !!rec[String(idx)];
+        if (!has) return `<div class="mini-slot locked"><span class="mini-q">?</span></div>`;
+        return `<div class="mini-slot collected"><span class="mini-figure">${figureSVG(item, series.bodyType, false)}</span></div>`;
+      }).join("");
+      const hiddenHas = !!rec["hidden"];
+      const hiddenSlot = hiddenHas
+        ? `<div class="mini-slot collected is-hidden-slot"><span class="mini-figure">${figureSVG({ primary: "#ffe37a", secondary: "#c79a2b", badge: series.hidden.badge }, series.bodyType, true)}</span></div>`
+        : `<div class="mini-slot locked"><span class="mini-q">★</span></div>`;
+      return `<div class="collection-series-block">
+        <div class="collection-series-title"><span>${series.icon} ${series.name}</span><span>${got}/${total}</span></div>
+        <div class="collection-mini-grid">${slots}${hiddenSlot}</div>
+      </div>`;
+    }).join("");
+  }
+
+  // ---------- Event wiring ----------
+  seriesGrid.addEventListener("click", e => {
+    const btn = e.target.closest(".series-card");
+    if (!btn) return;
+    const series = SERIES.find(s => s.id === btn.dataset.series);
+    if (series) showBoxView(series);
+  });
+  backToListBtn.addEventListener("click", () => {
+    boxView.classList.add("hidden");
+    seriesListView.classList.remove("hidden");
+    renderSeriesList();
+  });
+  boxGrid.addEventListener("click", e => {
+    const btn = e.target.closest(".box-tile");
+    if (!btn || btn.disabled) return;
+    openSlot(parseInt(btn.dataset.slot, 10));
+  });
+  randomOpenBtn.addEventListener("click", () => {
+    const avail = currentBox.filter(e => !e.opened);
+    if (avail.length === 0) { window.alert("這一盒已經全部拆完囉!請開新的一盒。"); return; }
+    const pick = avail[Math.floor(Math.random() * avail.length)];
+    openSlot(pick.slot);
+  });
+  newBoxBtn.addEventListener("click", () => newBox(false));
+  summaryNewBoxBtn.addEventListener("click", () => newBox(true));
+  summaryBackBtn.addEventListener("click", () => {
+    summaryOverlay.classList.add("hidden");
+    boxView.classList.add("hidden");
+    seriesListView.classList.remove("hidden");
+    renderSeriesList();
+  });
+
+  boxWrap.addEventListener("pointerdown", onBoxPointerDown);
+  boxWrap.addEventListener("pointermove", onBoxPointerMove);
+  boxWrap.addEventListener("pointerup", onBoxPointerUp);
+  boxWrap.addEventListener("pointercancel", onBoxPointerUp);
+  closeBtn.addEventListener("click", handleClose);
+
+  collectionBtn.addEventListener("click", () => { renderCollection(); collectionOverlay.classList.remove("hidden"); });
+  collectionCloseBtn.addEventListener("click", () => collectionOverlay.classList.add("hidden"));
+
+  muteBtn.addEventListener("click", () => { muted = !muted; muteBtn.textContent = muted ? "🔇" : "🔊"; });
+
+  // ---------- Init ----------
+  renderSeriesList();
+})();
+</script>
+</body>
+</html>
