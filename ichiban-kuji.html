@@ -305,32 +305,38 @@
     color: #fff;
     text-shadow: 0 1px 3px rgba(0,0,0,0.7);
   }
-  .paper-half {
+  .paper {
     position: absolute; inset: 0;
     border-radius: 22px;
     background: repeating-linear-gradient(135deg, #fff8ea 0 10px, #f4e6c8 10px 20px);
     border: 3px solid var(--red);
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.4s cubic-bezier(.4,.6,.4,1), opacity 0.4s ease;
+    transition: clip-path 0.4s cubic-bezier(.4,.6,.4,1);
     box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    clip-path: circle(420px at 0% 100%);
   }
-  .paper-half::after {
-    content: '賞';
-    font-size: 46px;
+  .paper .tear-glyph {
+    position: absolute;
+    left: 24%; top: 76%;
+    transform: translate(-50%, -50%);
+    font-size: 44px;
     font-weight: 800;
     color: var(--red);
     opacity: 0.85;
   }
-  .half-a {
-    clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
-    transform-origin: top center;
+  .corner-hint {
+    position: absolute;
+    top: 2px; right: 2px;
+    font-size: 24px;
+    z-index: 5;
+    animation: cornerBounce 1.2s ease-in-out infinite;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
   }
-  .half-a::after { transform: translateY(-24px); }
-  .half-b {
-    clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-    transform-origin: bottom center;
+  .corner-hint.faded { opacity: 0; }
+  @keyframes cornerBounce {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-5px, 5px); }
   }
-  .half-b::after { transform: translateY(24px); }
 
   .close-btn {
     font-family: inherit;
@@ -412,15 +418,15 @@
 <!-- Reveal overlay -->
 <div class="overlay hidden" id="overlay">
   <div class="reveal-stage">
-    <div class="drag-hint" id="dragHint">🤏 用手指或滑鼠拖拉籤紙,慢慢撕開看看藏著什麼獎!</div>
+    <div class="drag-hint" id="dragHint">🤏 從籤紙右上角開始,用手指或滑鼠拖拉慢慢撕開!</div>
     <div class="ticket-wrap" id="ticketWrap">
       <div class="prize-behind" id="prizeBehind">
         <div class="tier-badge" id="tierBadge">SP賞</div>
         <div class="prize-emoji" id="prizeEmoji">🎁</div>
         <div class="prize-name" id="prizeName">獎品名稱</div>
       </div>
-      <div class="paper-half half-a" id="halfA"></div>
-      <div class="paper-half half-b" id="halfB"></div>
+      <div class="paper" id="paper"><span class="tear-glyph">賞</span></div>
+      <div class="corner-hint" id="cornerHint">👆</div>
     </div>
     <button class="close-btn" id="closeBtn" hidden>收下獎品,繼續抽籤 ➜</button>
   </div>
@@ -515,6 +521,9 @@
   let settling = false;
   const DRAG_MAX = 140;
   const COMPLETE_THRESHOLD = 0.65;
+  // Ticket size is fixed in CSS (.ticket-wrap), not measured from layout, since
+  // it must be available before the reveal overlay (and its display:none) is shown.
+  const TEAR_MAX_RADIUS = Math.hypot(260, 320) * 1.05;
 
   // ---------- DOM refs ----------
   const grid = document.getElementById("grid");
@@ -527,8 +536,8 @@
   const tierBadge = document.getElementById("tierBadge");
   const prizeEmoji = document.getElementById("prizeEmoji");
   const prizeName = document.getElementById("prizeName");
-  const halfA = document.getElementById("halfA");
-  const halfB = document.getElementById("halfB");
+  const paper = document.getElementById("paper");
+  const cornerHint = document.getElementById("cornerHint");
   const dragHint = document.getElementById("dragHint");
   const closeBtn = document.getElementById("closeBtn");
   const randomDrawBtn = document.getElementById("randomDrawBtn");
@@ -787,20 +796,19 @@
   }
 
   // ---------- Draw / reveal flow ----------
+  // The paper is peeled from the top-right corner: a circle centered at the
+  // opposite (bottom-left) corner shrinks as you drag, so the top-right corner
+  // (farthest from the circle's center) is the first bit of paper to tear away,
+  // and the reveal grows from that corner toward the opposite one.
   function applyTearProgress(p) {
     const cp = Math.max(0, Math.min(1, p));
-    const ty = cp * 160;
-    const rot = cp * 18;
-    halfA.style.transform = `translateY(${-ty}%) rotate(${-rot}deg)`;
-    halfB.style.transform = `translateY(${ty}%) rotate(${rot}deg)`;
-    halfA.style.opacity = `${1 - cp}`;
-    halfB.style.opacity = `${1 - cp}`;
+    const radius = TEAR_MAX_RADIUS * (1 - cp);
+    paper.style.clipPath = `circle(${radius}px at 0% 100%)`;
   }
 
   function snapTear(target) {
-    halfA.style.transition = "";
-    halfB.style.transition = "";
-    void halfA.offsetWidth; // force reflow so the re-enabled transition animates this change
+    paper.style.transition = "";
+    void paper.offsetWidth; // force reflow so the re-enabled transition animates this change
     applyTearProgress(target);
   }
 
@@ -815,27 +823,26 @@
     prizeBehind.className = `prize-behind tier-${item.tierId}`;
     prizeEmoji.textContent = item.emoji;
     prizeName.textContent = item.prizeName;
-    halfA.style.transition = "none";
-    halfB.style.transition = "none";
+    paper.style.transition = "none";
     applyTearProgress(0);
     ticketWrap.classList.remove("dragging");
     dragHint.classList.remove("faded");
+    cornerHint.classList.remove("faded");
     closeBtn.hidden = true;
     overlay.classList.remove("hidden");
     requestAnimationFrame(() => {
-      halfA.style.transition = "";
-      halfB.style.transition = "";
+      paper.style.transition = "";
     });
   }
 
   function onTicketPointerDown(e) {
     if (!currentItem || settling) return;
     ticketWrap.setPointerCapture(e.pointerId);
-    halfA.style.transition = "none";
-    halfB.style.transition = "none";
+    paper.style.transition = "none";
     dragState = { pointerId: e.pointerId, startY: e.clientY, lastTick: 0 };
     ticketWrap.classList.add("dragging");
     dragHint.classList.add("faded");
+    cornerHint.classList.add("faded");
   }
 
   function onTicketPointerMove(e) {
@@ -861,6 +868,7 @@
     } else {
       snapTear(0);
       dragHint.classList.remove("faded");
+      cornerHint.classList.remove("faded");
     }
   }
 
