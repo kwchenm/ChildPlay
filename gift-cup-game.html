@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>禮物杯猜猜樂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #3b0a1f;
+    --bg2: #1f0512;
+    --panel: #2b0a1c;
+    --gold: #ffd166;
+    --gold-dark: #c79a3e;
+    --cream: #fdf1e0;
+    --cream-dim: #d9b9a8;
+    --cup-body: #b8342f;
+    --cup-rim: #ffd166;
+    --green: #4caf7d;
+    --red: #e2544a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 50% 0%, var(--bg1) 0%, var(--bg2) 70%, #0d0208 100%);
+    color: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .home-link {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bg2);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+
+  h1 {
+    font-family: 'Cinzel', 'Baloo 2', serif;
+    font-size: clamp(16px, 4vw, 24px);
+    margin: 0;
+    text-align: center;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
+  }
+
+  .icon-btn {
+    font-size: 20px;
+    background: var(--panel);
+    border: 2px solid var(--gold-dark);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--cream);
+    flex-shrink: 0;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  .panel {
+    width: 100%;
+    max-width: 520px;
+    background: linear-gradient(180deg, #3a0e22, #24081a);
+    border: 3px solid var(--gold-dark);
+    border-radius: 22px;
+    padding: 22px 18px;
+    box-shadow: 0 0 26px rgba(255, 209, 102, 0.18), 0 10px 0 rgba(0,0,0,0.4);
+  }
+
+  /* ---- Start screen ---- */
+  .start-screen { text-align: center; }
+  .start-emoji { font-size: 54px; margin-bottom: 6px; }
+  .start-screen h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: clamp(18px, 4vw, 24px);
+    margin: 0 0 8px;
+  }
+  .start-screen p {
+    color: var(--cream-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 22px;
+  }
+
+  .diff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .diff-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--cream);
+    background: #3a1428;
+    border: 2px solid var(--gold-dark);
+    border-radius: 16px;
+    padding: 16px 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.12s ease, background 0.15s ease;
+  }
+  .diff-btn:active { transform: translateY(2px) scale(0.98); }
+  .diff-btn .diff-cups { font-size: 22px; }
+  .diff-btn .diff-name { font-size: 15px; }
+  .diff-btn .diff-sub { font-size: 11px; color: var(--cream-dim); }
+  .diff-btn.easy { border-color: #4caf7d; }
+  .diff-btn.normal { border-color: #4dabf7; }
+  .diff-btn.hard { border-color: #ffa552; }
+  .diff-btn.expert { border-color: #e2544a; }
+
+  /* ---- Game screen ---- */
+  .hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .hud-item {
+    background: var(--bg2);
+    border: 2px solid var(--gold-dark);
+    border-radius: 12px;
+    padding: 6px 12px;
+    text-align: center;
+    flex: 1;
+    min-width: 78px;
+  }
+
+  .hud-label {
+    font-size: 10px;
+    color: var(--cream-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .hud-value {
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--gold);
+  }
+
+  .lives { font-size: 16px; }
+
+  .prompt {
+    text-align: center;
+    font-size: clamp(15px, 3.4vw, 19px);
+    font-weight: 800;
+    color: var(--cream);
+    min-height: 28px;
+    margin-bottom: 14px;
+  }
+  .prompt .en {
+    display: block;
+    font-size: 0.62em;
+    color: var(--cream-dim);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .table {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(180deg, #5a3320, #3c2013);
+    border-radius: 16px;
+    border: 3px solid #7a4a2a;
+    overflow: hidden;
+    box-shadow: inset 0 6px 14px rgba(0,0,0,0.4);
+  }
+
+  .cup-track {
+    position: absolute;
+    inset: 0;
+  }
+
+  .gift-emoji {
+    position: absolute;
+    bottom: 18px;
+    font-size: 30px;
+    transform: translateX(-50%);
+    z-index: 1;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+    transition: opacity 0.2s ease;
+  }
+
+  .cup {
+    position: absolute;
+    bottom: 14px;
+    height: 90px;
+    z-index: 2;
+    cursor: pointer;
+    transition: left 0s;
+  }
+
+  .cup-shape {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, var(--cup-body), #7a1d1a);
+    border: 3px solid var(--cup-rim);
+    border-radius: 10px 10px 30px 30px / 10px 10px 50px 50px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.35), inset 0 -8px 10px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .cup-shape::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 8px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+  }
+
+  .cup.ring-correct .cup-shape { border-color: var(--green); box-shadow: 0 0 16px rgba(76,175,125,0.9), 0 6px 0 rgba(0,0,0,0.35); }
+  .cup.ring-wrong .cup-shape { border-color: var(--red); box-shadow: 0 0 16px rgba(226,84,74,0.9), 0 6px 0 rgba(0,0,0,0.35); }
+  .cup.ring-wrong { animation: cupShake 0.4s ease; }
+  @keyframes cupShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .cup.lifted { transform: translateY(-52px) !important; }
+  .cup { transition: transform 0.35s ease; }
+
+  .hint {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--cream-dim);
+    margin-top: 12px;
+  }
+
+  /* ---- Game over screen ---- */
+  .over-screen { text-align: center; }
+  .over-emoji { font-size: 50px; margin-bottom: 8px; }
+  .over-screen h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: clamp(18px, 4vw, 24px);
+    margin: 0 0 10px;
+  }
+  .over-stats {
+    font-size: 15px;
+    color: var(--cream-dim);
+    margin-bottom: 22px;
+    line-height: 1.8;
+  }
+  .over-stats b { color: var(--gold); }
+
+  .retry-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--bg2);
+    background: var(--gold);
+    border: none;
+    border-radius: 24px;
+    padding: 14px 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--gold-dark);
+  }
+  .retry-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-dark); }
+
+  footer {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--cream-dim);
+    text-align: center;
+    max-width: 520px;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ---- shared celebration overlays ---- */
+  #confetti-layer, #fireworks-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #confetti-layer { z-index: 50; }
+  #fireworks-layer { z-index: 70; }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    border-radius: 3px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0.9; }
+  }
+
+  .fw-particle {
+    position: absolute;
+    top: 0; left: 0;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    animation: fwPop 900ms ease-out forwards;
+  }
+  @keyframes fwPop {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+  }
+
+  .milestone-banner {
+    position: fixed;
+    top: 22%;
+    left: 50%;
+    transform: translate(-50%, -10px) scale(0.5);
+    background: linear-gradient(135deg, #ffe08a, #ffb347);
+    padding: 18px 30px;
+    border-radius: 24px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    font-size: clamp(16px, 4vw, 24px);
+    font-weight: 800;
+    color: #6b3f2a;
+    z-index: 95;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .milestone-banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .milestone-banner .en { display: block; font-size: 0.6em; color: #8a5a2b; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🎁 禮物杯猜猜樂</h1>
+    <button class="icon-btn" id="muteBtn" title="靜音">🔊</button>
+  </header>
+
+  <div class="panel">
+    <!-- Start screen -->
+    <div class="start-screen" id="startScreen">
+      <div class="start-emoji">🎩🎁</div>
+      <h2>魔術師的禮物杯</h2>
+      <p>
+        看好禮物藏在哪個杯子裡,杯子會開始移動打亂位置,<br>
+        等它們停下來,猜猜禮物到底跑到哪裡去了!<br>
+        答對會過關、杯子變多、搖得更快;答錯會扣一顆愛心。
+      </p>
+      <div class="diff-grid">
+        <button class="diff-btn easy" data-cups="3">
+          <span class="diff-cups">🥤🥤🥤</span>
+          <span class="diff-name">簡單</span>
+          <span class="diff-sub">3 個杯子</span>
+        </button>
+        <button class="diff-btn normal" data-cups="4">
+          <span class="diff-cups">🥤🥤🥤🥤</span>
+          <span class="diff-name">普通</span>
+          <span class="diff-sub">4 個杯子</span>
+        </button>
+        <button class="diff-btn hard" data-cups="5">
+          <span class="diff-cups">🥤×5</span>
+          <span class="diff-name">困難</span>
+          <span class="diff-sub">5 個杯子</span>
+        </button>
+        <button class="diff-btn expert" data-cups="6">
+          <span class="diff-cups">🥤×6</span>
+          <span class="diff-name">地獄</span>
+          <span class="diff-sub">6 個杯子</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Game screen -->
+    <div id="gameScreen" hidden>
+      <div class="hud">
+        <div class="hud-item">
+          <div class="hud-label">關卡 LEVEL</div>
+          <div class="hud-value" id="levelVal">1</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">分數 SCORE</div>
+          <div class="hud-value" id="scoreVal">0</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">愛心 LIVES</div>
+          <div class="hud-value lives" id="livesVal">❤️❤️❤️</div>
+        </div>
+      </div>
+
+      <div class="prompt" id="promptText">看好禮物在哪裡! <span class="en">Watch closely!</span></div>
+
+      <div class="table">
+        <div class="cup-track" id="cupTrack"></div>
+      </div>
+
+      <div class="hint" id="hintText">杯子搖晃時請耐心等待,停下來才能點選喔</div>
+    </div>
+
+    <!-- Game over screen -->
+    <div class="over-screen" id="overScreen" hidden>
+      <div class="over-emoji">🎭</div>
+      <h2>挑戰結束!</h2>
+      <div class="over-stats">
+        最終分數:<b id="finalScore">0</b> 分<br>
+        到達關卡:<b id="finalLevel">1</b> 關
+      </div>
+      <button class="retry-btn" id="retryBtn">🔁 重新挑戰</button>
+    </div>
+  </div>
+
+  <footer>選好難度後,杯子會隨著過關逐漸變多、搖得更快,考驗你的眼力和記憶力!</footer>
+</div>
+
+<div id="confetti-layer"></div>
+<div id="fireworks-layer"></div>
+<div class="milestone-banner" id="milestoneBanner"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const MAX_CUPS = 8;
+  const MAX_LIVES = 3;
+
+  // ---------- DOM ----------
+  const startScreen = document.getElementById("startScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  const overScreen = document.getElementById("overScreen");
+  const cupTrack = document.getElementById("cupTrack");
+  const promptText = document.getElementById("promptText");
+  const hintText = document.getElementById("hintText");
+  const levelVal = document.getElementById("levelVal");
+  const scoreVal = document.getElementById("scoreVal");
+  const livesVal = document.getElementById("livesVal");
+  const finalScore = document.getElementById("finalScore");
+  const finalLevel = document.getElementById("finalLevel");
+  const retryBtn = document.getElementById("retryBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const confettiLayer = document.getElementById("confetti-layer");
+  const fireworksLayer = document.getElementById("fireworks-layer");
+  const milestoneBanner = document.getElementById("milestoneBanner");
+
+  // ---------- State ----------
+  let baseCups = 3;
+  let level = 1;
+  let score = 0;
+  let lives = MAX_LIVES;
+  let cups = []; // {id, slot, el}
+  let giftId = -1;
+  let canGuess = false;
+  let muted = false;
+  let lastMilestone = 0;
+
+  // ---------- Audio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+
+  function beep(freq, duration, type, delay, gainVal) {
+    if (muted) return;
+    const ctx2 = getCtx();
+    if (!ctx2) return;
+    const osc = ctx2.createOscillator();
+    const gain = ctx2.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = gainVal != null ? gainVal : 0.15;
+    osc.connect(gain);
+    gain.connect(ctx2.destination);
+    const startAt = ctx2.currentTime + (delay || 0);
+    osc.start(startAt);
+    gain.gain.setValueAtTime(gain.gain.value, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    osc.stop(startAt + duration + 0.02);
+  }
+
+  function playLift() { beep(420, 0.08, "triangle", 0, 0.12); }
+  function playDrop() { beep(220, 0.08, "sine", 0, 0.14); }
+  function playSwap() { beep(700 + Math.random() * 200, 0.05, "triangle", 0, 0.06); }
+  function playCorrect() {
+    beep(523.25, 0.1, "triangle", 0.0, 0.16);
+    beep(659.25, 0.1, "triangle", 0.09, 0.16);
+    beep(783.99, 0.1, "triangle", 0.18, 0.18);
+    beep(1046.5, 0.18, "triangle", 0.27, 0.2);
+  }
+  function playWrong() {
+    beep(280, 0.18, "sawtooth", 0, 0.12);
+    beep(200, 0.24, "sawtooth", 0.14, 0.1);
+  }
+  function playGameOver() {
+    beep(330, 0.18, "sine", 0, 0.14);
+    beep(260, 0.2, "sine", 0.16, 0.12);
+    beep(190, 0.3, "sine", 0.34, 0.12);
+  }
+  function playFireworkBoom(delay) {
+    beep(90, 0.35, "sine", delay, 0.2);
+    beep(1568, 0.12, "triangle", delay + 0.12, 0.12);
+  }
+
+  // ---------- Helpers ----------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function paramsForLevel(lvl) {
+    const cupCount = Math.min(MAX_CUPS, baseCups + Math.floor((lvl - 1) / 3));
+    const swaps = Math.min(26, 4 + (baseCups - 3) * 2 + lvl * 2);
+    const duration = Math.max(190, 480 - lvl * 12);
+    return { cupCount, swaps, duration };
+  }
+
+  function layoutMetrics(n) {
+    const rect = cupTrack.getBoundingClientRect();
+    const cupW = clamp(rect.width / n - 10, 34, 70);
+    const totalW = cupW * n;
+    const gap = (rect.width - totalW) / (n + 1);
+    return { width: rect.width, cupW, gap };
+  }
+
+  function slotX(slot, metrics) {
+    return metrics.gap + slot * (metrics.cupW + metrics.gap);
+  }
+
+  function layoutCups(animate) {
+    const metrics = layoutMetrics(cups.length);
+    cups.forEach((c) => {
+      c.el.style.width = metrics.cupW + "px";
+      const x = slotX(c.slot, metrics);
+      if (!animate) c.el.style.transition = "none";
+      c.el.style.left = x + "px";
+      if (!animate) {
+        void c.el.offsetWidth;
+        c.el.style.transition = "";
+      }
+    });
+  }
+
+  window.addEventListener("resize", () => {
+    if (cups.length) layoutCups(false);
+  });
+
+  // ---------- Building a round ----------
+  function buildCups(n) {
+    cupTrack.innerHTML = "";
+    cups = [];
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement("div");
+      el.className = "cup";
+      el.innerHTML = '<div class="cup-shape"></div>';
+      cupTrack.appendChild(el);
+      const cup = { id: i, slot: i, el };
+      el.addEventListener("click", () => onCupTap(cup));
+      cups.push(cup);
+    }
+    layoutCups(false);
+  }
+
+  function findBySlot(slot) {
+    return cups.find((c) => c.slot === slot);
+  }
+
+  function showGiftAt(slot, visible) {
+    let giftEl = document.getElementById("giftEmoji");
+    if (!giftEl) {
+      giftEl = document.createElement("div");
+      giftEl.id = "giftEmoji";
+      giftEl.className = "gift-emoji";
+      giftEl.textContent = "🎁";
+      cupTrack.appendChild(giftEl);
+    }
+    const metrics = layoutMetrics(cups.length);
+    const x = slotX(slot, metrics) + metrics.cupW / 2;
+    giftEl.style.left = x + "px";
+    giftEl.style.opacity = visible ? "1" : "0";
+  }
+
+  function animateSwap(cupA, cupB, duration) {
+    return new Promise((resolve) => {
+      const metrics = layoutMetrics(cups.length);
+      const aStart = slotX(cupA.slot, metrics);
+      const bStart = slotX(cupB.slot, metrics);
+      const tmp = cupA.slot;
+      cupA.slot = cupB.slot;
+      cupB.slot = tmp;
+      const aEnd = slotX(cupA.slot, metrics);
+      const bEnd = slotX(cupB.slot, metrics);
+      cupA.el.style.transition = "none";
+      cupB.el.style.transition = "none";
+      const startTime = performance.now();
+      function frame(now) {
+        const t = Math.min(1, (now - startTime) / duration);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        const arc = Math.sin(Math.PI * t) * 16;
+        cupA.el.style.left = aStart + (aEnd - aStart) * e + "px";
+        cupB.el.style.left = bStart + (bEnd - bStart) * e + "px";
+        cupA.el.style.transform = "translateY(" + -arc + "px)";
+        cupB.el.style.transform = "translateY(" + -arc * 0.85 + "px)";
+        if (t < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          cupA.el.style.transform = "";
+          cupB.el.style.transform = "";
+          resolve();
+        }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  async function shuffleRound(swaps, duration) {
+    for (let i = 0; i < swaps; i++) {
+      const n = cups.length;
+      let s1 = Math.floor(Math.random() * n);
+      let s2 = Math.floor(Math.random() * n);
+      while (s2 === s1) s2 = Math.floor(Math.random() * n);
+      const cupA = findBySlot(s1);
+      const cupB = findBySlot(s2);
+      playSwap();
+      await animateSwap(cupA, cupB, duration);
+    }
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function startRound() {
+    canGuess = false;
+    cups.forEach((c) => {
+      c.el.classList.remove("ring-correct", "ring-wrong");
+    });
+    const { cupCount, swaps, duration } = paramsForLevel(level);
+    if (cups.length !== cupCount) {
+      buildCups(cupCount);
+    } else {
+      cups.forEach((c, i) => (c.slot = i));
+      layoutCups(false);
+    }
+
+    giftId = cups[Math.floor(Math.random() * cups.length)].id;
+    const giftCup = cups.find((c) => c.id === giftId);
+
+    promptText.innerHTML = '看好禮物在哪裡! <span class="en">Watch closely!</span>';
+    hintText.textContent = "杯子搖晃時請耐心等待,停下來才能點選喔";
+
+    cups.forEach((c) => c.el.classList.add("lifted"));
+    showGiftAt(giftCup.slot, true);
+    playLift();
+    await sleep(1300);
+    cups.forEach((c) => c.el.classList.remove("lifted"));
+    showGiftAt(giftCup.slot, false);
+    playDrop();
+    await sleep(450);
+
+    promptText.innerHTML = '搖晃中,請看仔細! <span class="en">Shuffling...</span>';
+    await shuffleRound(swaps, duration);
+
+    promptText.innerHTML = '禮物在哪一個杯子? <span class="en">Which cup has the gift?</span>';
+    hintText.textContent = "點一下你覺得藏著禮物的杯子";
+    canGuess = true;
+  }
+
+  function onCupTap(cup) {
+    if (!canGuess) return;
+    canGuess = false;
+    const giftCup = cups.find((c) => c.id === giftId);
+    const correct = cup.id === giftId;
+
+    cups.forEach((c) => c.el.classList.add("lifted"));
+    showGiftAt(giftCup.slot, true);
+    playDrop();
+
+    if (correct) {
+      cup.el.classList.add("ring-correct");
+      playCorrect();
+      const pts = 50 * cups.length + paramsForLevel(level).swaps * 5;
+      score += pts;
+      scoreVal.textContent = String(score);
+      promptText.innerHTML =
+        "🎉 猜對了!過關! <span class=\"en\">Correct! Level up!</span>";
+      hintText.textContent = "+" + pts + " 分";
+      spawnConfetti(20);
+
+      const milestoneStep = Math.floor(level / 5);
+      if (milestoneStep > lastMilestone) {
+        lastMilestone = milestoneStep;
+        setTimeout(() => milestoneCelebration(level), 200);
+      }
+
+      level += 1;
+      levelVal.textContent = String(level);
+      setTimeout(startRound, 1700);
+    } else {
+      cup.el.classList.add("ring-wrong");
+      giftCup.el.classList.add("ring-correct");
+      playWrong();
+      lives -= 1;
+      livesVal.textContent = "❤️".repeat(Math.max(0, lives)) + "🖤".repeat(MAX_LIVES - Math.max(0, lives));
+      promptText.innerHTML =
+        "😢 猜錯了,禮物在金色那杯! <span class=\"en\">Wrong! There it was.</span>";
+      hintText.textContent = "扣 1 顆愛心";
+
+      if (lives <= 0) {
+        setTimeout(showGameOver, 1700);
+      } else {
+        setTimeout(startRound, 1700);
+      }
+    }
+  }
+
+  // ---------- Screens ----------
+  function showGameOver() {
+    playGameOver();
+    gameScreen.hidden = true;
+    overScreen.hidden = false;
+    finalScore.textContent = String(score);
+    finalLevel.textContent = String(level);
+  }
+
+  function startGame(cupsChosen) {
+    baseCups = cupsChosen;
+    level = 1;
+    score = 0;
+    lives = MAX_LIVES;
+    lastMilestone = 0;
+    scoreVal.textContent = "0";
+    levelVal.textContent = "1";
+    livesVal.textContent = "❤️".repeat(MAX_LIVES);
+    startScreen.hidden = true;
+    overScreen.hidden = true;
+    gameScreen.hidden = false;
+    startRound();
+  }
+
+  document.querySelectorAll(".diff-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      getCtx();
+      startGame(parseInt(btn.dataset.cups, 10));
+    });
+  });
+
+  retryBtn.addEventListener("click", () => {
+    overScreen.hidden = true;
+    startScreen.hidden = false;
+  });
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  // ---------- Celebration helpers ----------
+  function spawnConfetti(count) {
+    const colors = ["#ffd166", "#e2544a", "#4caf7d", "#4dabf7", "#c9a6ff"];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const size = 6 + Math.random() * 7;
+      piece.style.width = size + "px";
+      piece.style.height = size * 1.6 + "px";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const duration = 1.4 + Math.random() * 1;
+      piece.style.animationDuration = duration + "s";
+      confettiLayer.appendChild(piece);
+      setTimeout(() => piece.remove(), duration * 1000 + 100);
+    }
+  }
+
+  function spawnFirework(x, y, color) {
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement("div");
+      p.className = "fw-particle";
+      const angle = (Math.PI * 2 * i) / count;
+      const dist = 70 + Math.random() * 70;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.left = x + "px";
+      p.style.top = y + "px";
+      p.style.background = color;
+      fireworksLayer.appendChild(p);
+      setTimeout(() => p.remove(), 950);
+    }
+  }
+
+  function milestoneCelebration(reachedLevel) {
+    const fwColors = ["#ffd166", "#e2544a", "#4caf7d", "#4dabf7", "#c9a6ff"];
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => {
+        const x = window.innerWidth * (0.15 + Math.random() * 0.7);
+        const y = window.innerHeight * (0.12 + Math.random() * 0.35);
+        spawnFirework(x, y, fwColors[Math.floor(Math.random() * fwColors.length)]);
+        playFireworkBoom(0);
+      }, i * 220);
+    }
+    milestoneBanner.innerHTML =
+      "🏆 挑戰到第 " + reachedLevel + " 關了! " +
+      '<span class="en">Level ' + reachedLevel + ' reached!</span>';
+    milestoneBanner.classList.add("show");
+    setTimeout(() => milestoneBanner.classList.remove("show"), 2400);
+  }
+
+  document.body.addEventListener(
+    "click",
+    function unlockAudioOnce() {
+      getCtx();
+      document.body.removeEventListener("click", unlockAudioOnce);
+    },
+    { once: true }
+  );
+})();
+</script>
+</body>
+</html>
