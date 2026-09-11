@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>台北狂飆夜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #0a1024;
+    --bg2: #150a2a;
+    --panel: #171233;
+    --edge: #3a2f6b;
+    --neon-pink: #ff3d9a;
+    --neon-cyan: #3de0ff;
+    --gold: #ffd166;
+    --text: #f2eeff;
+    --text-dim: #9c93c9;
+    --red: #ff4d4d;
+    --green: #4caf7d;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 50% -10%, var(--bg2) 0%, var(--bg1) 65%, #05040c 100%);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .home-link {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bg1);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+
+  h1 {
+    font-family: 'Orbitron', 'Baloo 2', sans-serif;
+    font-size: clamp(14px, 3.6vw, 19px);
+    margin: 0;
+    text-align: center;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px rgba(61, 224, 255, 0.6);
+  }
+
+  .icon-btn {
+    font-size: 18px;
+    background: var(--panel);
+    border: 2px solid var(--edge);
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  .panel {
+    width: 100%;
+    max-width: 520px;
+    background: linear-gradient(180deg, #1c1640, #100c26);
+    border: 3px solid var(--edge);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 0 24px rgba(61, 224, 255, 0.12), 0 10px 0 rgba(0,0,0,0.4);
+  }
+
+  /* ---- Start screen ---- */
+  .start-screen { text-align: center; }
+  .start-emoji { font-size: 48px; margin-bottom: 6px; }
+  .start-screen h2 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--gold);
+    font-size: clamp(16px, 4vw, 21px);
+    margin: 0 0 10px;
+  }
+  .start-screen p {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.7;
+    margin: 0 0 8px;
+    text-align: left;
+  }
+  .start-screen .rules {
+    background: #0e0a22;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    text-align: left;
+  }
+  .start-screen .rules b { color: var(--gold); }
+
+  .start-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--bg1);
+    background: var(--gold);
+    border: none;
+    border-radius: 26px;
+    padding: 14px 34px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #a9741a;
+  }
+  .start-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #a9741a; }
+
+  /* ---- Game screen ---- */
+  .hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .hud-item {
+    background: var(--bg1);
+    border: 2px solid var(--edge);
+    border-radius: 12px;
+    padding: 6px 10px;
+    text-align: center;
+    flex: 1;
+    min-width: 74px;
+  }
+  .hud-label { font-size: 9.5px; color: var(--text-dim); letter-spacing: 0.5px; }
+  .hud-value {
+    font-family: 'Orbitron', monospace;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--neon-cyan);
+  }
+  .hud-value.gold { color: var(--gold); }
+  .hud-value.wanted { color: var(--red); font-size: 15px; }
+
+  .mission-banner {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    background: #0e0a22;
+    border-radius: 10px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    min-height: 20px;
+  }
+  .mission-banner .sub { color: var(--text-dim); font-size: 11px; font-weight: 600; }
+
+  .game-wrap {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 3px solid var(--edge);
+  }
+
+  canvas#game {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #201a3a;
+  }
+
+  #bustedFlash {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 40, 40, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+  }
+  #bustedFlash.show { opacity: 1; }
+
+  .float-pop {
+    position: absolute;
+    font-family: 'Orbitron', monospace;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--gold);
+    text-shadow: 0 0 6px rgba(255,209,102,0.8);
+    pointer-events: none;
+    animation: popUp 900ms ease-out forwards;
+    z-index: 10;
+  }
+  @keyframes popUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-36px); opacity: 0; }
+  }
+
+  .controls {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+  }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: 52px 52px 52px;
+    grid-template-rows: 52px 52px;
+    gap: 6px;
+  }
+  .dpad-btn {
+    background: var(--panel);
+    border: 2px solid var(--edge);
+    border-radius: 14px;
+    color: var(--text);
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .dpad-btn:active, .dpad-btn.pressed { background: var(--neon-cyan); color: var(--bg1); }
+  .dpad-left { grid-column: 1; grid-row: 2; }
+  .dpad-up { grid-column: 2; grid-row: 1; }
+  .dpad-down { grid-column: 2; grid-row: 2; }
+  .dpad-right { grid-column: 3; grid-row: 2; }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  footer {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 520px;
+  }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🌃 台北狂飆夜</h1>
+    <button class="icon-btn" id="muteBtn" title="靜音">🔊</button>
+  </header>
+
+  <div class="panel">
+    <!-- Start screen -->
+    <div class="start-screen" id="startScreen">
+      <div class="start-emoji">🚗💨</div>
+      <h2>自由駕駛・送貨接關・躲避警察</h2>
+      <div class="rules">
+        <p><b>🎯 目標</b>:開車在城市裡到處跑,載貨到指定地點交貨賺錢,連續交貨會有連擊獎金。</p>
+        <p><b>🚦 小心</b>:闖紅燈或撞到建築物會被警察盯上(通緝星星 +1),警車會開始追你。</p>
+        <p><b>🏃 甩開警察</b>:拉開距離、撐過一段時間沒被靠近,通緝等級就會降下來;被警車追上會被攔下扣罰款,但可以馬上繼續玩。</p>
+        <p><b>🎮 操作</b>:方向鍵 / WASD,或畫面下方的方向按鈕(手機觸控)。</p>
+      </div>
+      <button class="start-btn" id="startBtn">發動引擎 ▶</button>
+    </div>
+
+    <!-- Game screen -->
+    <div id="gameScreen" hidden>
+      <div class="hud">
+        <div class="hud-item">
+          <div class="hud-label">💰 現金</div>
+          <div class="hud-value gold" id="cashVal">$0</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">🔥 連擊</div>
+          <div class="hud-value" id="comboVal">0</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">🚨 通緝</div>
+          <div class="hud-value wanted" id="wantedVal">☆☆☆☆☆</div>
+        </div>
+      </div>
+
+      <div class="mission-banner" id="missionBanner">
+        📦 開去閃爍的貨物標記取貨 <span class="sub">Find the glowing pickup</span>
+      </div>
+
+      <div class="game-wrap">
+        <canvas id="game" width="480" height="360"></canvas>
+        <div id="bustedFlash">🚨 被攔下來了!</div>
+      </div>
+
+      <div class="controls">
+        <div class="dpad">
+          <button class="dpad-btn dpad-up" id="btnUp">▲</button>
+          <button class="dpad-btn dpad-left" id="btnLeft">◀</button>
+          <button class="dpad-btn dpad-right" id="btnRight">▶</button>
+          <button class="dpad-btn dpad-down" id="btnDown">▼</button>
+        </div>
+      </div>
+      <div class="hint">方向鍵 / WASD 也可以操作</div>
+    </div>
+  </div>
+
+  <footer>原創俯視角開放城市駕駛遊戲,無暴力與犯罪內容,純粹飆速、送貨與甩開警察的刺激感 🌆</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- World layout ----------
+  const GRID = 6;
+  const BLOCK = 170;
+  const STREET = 120;
+  const PITCH = BLOCK + STREET;
+  const WORLD = GRID * PITCH + STREET;
+
+  const buildings = [];
+  function buildingColor(c, r) {
+    const isLandmark = c === Math.floor(GRID / 2) && r === Math.floor(GRID / 2);
+    const isMarket = (c === 1 && r === 1) || (c === GRID - 2 && r === GRID - 2);
+    if (isLandmark) return { fill: "#3a2f6b", glow: "#ffd166" };
+    if (isMarket) return { fill: "#5a1f2a", glow: "#ff5c5c" };
+    const palette = ["#241d47", "#1d2447", "#241d3a", "#1d3a47"];
+    return { fill: palette[(c * 3 + r * 7) % palette.length], glow: "#3de0ff" };
+  }
+  for (let c = 0; c < GRID; c++) {
+    for (let r = 0; r < GRID; r++) {
+      const x = STREET + c * PITCH;
+      const y = STREET + r * PITCH;
+      const col = buildingColor(c, r);
+      buildings.push({ x, y, w: BLOCK, h: BLOCK, fill: col.fill, glow: col.glow });
+    }
+  }
+
+  const allIntersections = [];
+  const lights = [];
+  for (let i = 0; i <= GRID; i++) {
+    for (let j = 0; j <= GRID; j++) {
+      const x = i * PITCH + STREET / 2;
+      const y = j * PITCH + STREET / 2;
+      allIntersections.push({ x, y });
+      if (i > 0 && i < GRID && j > 0 && j < GRID) {
+        const phase = Math.random() * 8;
+        lights.push({ x, y, state: "green", timer: 4 + phase, cooldown: 0 });
+      }
+    }
+  }
+
+  function randomIntersection(minDistFrom) {
+    let pt;
+    let tries = 0;
+    do {
+      pt = allIntersections[Math.floor(Math.random() * allIntersections.length)];
+      tries++;
+    } while (minDistFrom && tries < 30 && Math.hypot(pt.x - minDistFrom.x, pt.y - minDistFrom.y) < 260);
+    return { x: pt.x, y: pt.y };
+  }
+
+  // ---------- DOM ----------
+  const startScreen = document.getElementById("startScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const cashVal = document.getElementById("cashVal");
+  const comboVal = document.getElementById("comboVal");
+  const wantedVal = document.getElementById("wantedVal");
+  const missionBanner = document.getElementById("missionBanner");
+  const bustedFlash = document.getElementById("bustedFlash");
+  const startBtn = document.getElementById("startBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const gameWrap = document.querySelector(".game-wrap");
+
+  const VIEW_W = 480;
+  const VIEW_H = 360;
+
+  // ---------- State ----------
+  let running = false;
+  let muted = false;
+  let cash = 0;
+  let combo = 0;
+  let wanted = 0;
+  let missionState = "pickup";
+  let missionPoint = { x: WORLD / 2, y: WORLD / 2 };
+  let missionTimeLeft = 0;
+  let evadeTimer = 0;
+  let lastTime = 0;
+  let simTime = 0;
+
+  const player = {
+    x: WORLD / 2,
+    y: WORLD / 2,
+    heading: 0,
+    speed: 0,
+    maxSpeed: 3.4,
+    accel: 0.09,
+    turnRate: 0.05,
+    crashCooldown: 0,
+  };
+  const camera = { x: player.x, y: player.y };
+  const policeCars = [];
+  const floatPops = [];
+
+  const keys = { up: false, down: false, left: false, right: false };
+
+  // ---------- Audio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+  function beep(freq, duration, type, delay, gainVal) {
+    if (muted) return;
+    const ctx2 = getCtx();
+    if (!ctx2) return;
+    const osc = ctx2.createOscillator();
+    const gain = ctx2.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = gainVal != null ? gainVal : 0.15;
+    osc.connect(gain);
+    gain.connect(ctx2.destination);
+    const startAt = ctx2.currentTime + (delay || 0);
+    osc.start(startAt);
+    gain.gain.setValueAtTime(gain.gain.value, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    osc.stop(startAt + duration + 0.02);
+  }
+  function playPickup() { beep(700, 0.08, "triangle", 0, 0.12); beep(950, 0.08, "triangle", 0.06, 0.1); }
+  function playDeliver() {
+    beep(523.25, 0.1, "triangle", 0, 0.16);
+    beep(659.25, 0.1, "triangle", 0.08, 0.16);
+    beep(880, 0.16, "triangle", 0.16, 0.18);
+  }
+  function playCrash() { beep(140, 0.18, "sawtooth", 0, 0.16); beep(90, 0.2, "sawtooth", 0.05, 0.12); }
+  function playSiren() { beep(880, 0.1, "square", 0, 0.08); beep(660, 0.1, "square", 0.1, 0.08); }
+  function playBusted() { beep(300, 0.2, "sawtooth", 0, 0.14); beep(220, 0.24, "sawtooth", 0.18, 0.12); }
+  function playEvade() { beep(659, 0.1, "sine", 0, 0.12); beep(880, 0.14, "sine", 0.1, 0.12); }
+
+  // ---------- Helpers ----------
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function circleRectCollide(cx, cy, radius, rect) {
+    const nearestX = clamp(cx, rect.x, rect.x + rect.w);
+    const nearestY = clamp(cy, rect.y, rect.y + rect.h);
+    const dx = cx - nearestX;
+    const dy = cy - nearestY;
+    const dist = Math.hypot(dx, dy);
+    if (dist < radius) {
+      return { nx: dist > 0.001 ? dx / dist : 1, ny: dist > 0.001 ? dy / dist : 0, penetration: radius - dist };
+    }
+    return null;
+  }
+
+  function resolveBuildingCollisions(car, radius, isPlayer) {
+    let hitAny = false;
+    for (let i = 0; i < buildings.length; i++) {
+      const hit = circleRectCollide(car.x, car.y, radius, buildings[i]);
+      if (hit) {
+        hitAny = true;
+        car.x += hit.nx * hit.penetration;
+        car.y += hit.ny * hit.penetration;
+        const into = car.vx * hit.nx + car.vy * hit.ny;
+        if (into < 0) {
+          car.vx -= into * hit.nx;
+          car.vy -= into * hit.ny;
+        }
+        car.speed *= 0.55;
+        if (isPlayer && car.crashCooldown <= 0) {
+          car.crashCooldown = 2.2;
+          playCrash();
+          raiseWanted();
+        }
+      }
+    }
+    return hitAny;
+  }
+
+  // ---------- Input ----------
+  const keyMap = {
+    ArrowUp: "up", KeyW: "up",
+    ArrowDown: "down", KeyS: "down",
+    ArrowLeft: "left", KeyA: "left",
+    ArrowRight: "right", KeyD: "right",
+  };
+  window.addEventListener("keydown", (e) => {
+    const k = keyMap[e.code];
+    if (k) { keys[k] = true; e.preventDefault(); }
+  });
+  window.addEventListener("keyup", (e) => {
+    const k = keyMap[e.code];
+    if (k) { keys[k] = false; e.preventDefault(); }
+  });
+
+  function bindDpadButton(id, key) {
+    const el = document.getElementById(id);
+    const set = (v) => (e) => { keys[key] = v; el.classList.toggle("pressed", v); if (e) e.preventDefault(); };
+    el.addEventListener("pointerdown", set(true));
+    el.addEventListener("pointerup", set(false));
+    el.addEventListener("pointerleave", set(false));
+    el.addEventListener("pointercancel", set(false));
+  }
+  bindDpadButton("btnUp", "up");
+  bindDpadButton("btnDown", "down");
+  bindDpadButton("btnLeft", "left");
+  bindDpadButton("btnRight", "right");
+
+  // ---------- Mission system ----------
+  function newPickup() {
+    missionState = "pickup";
+    missionPoint = randomIntersection(player);
+    missionBanner.innerHTML = '📦 開去閃爍的貨物標記取貨 <span class="sub">Find the glowing pickup</span>';
+  }
+  function startDelivery() {
+    missionState = "deliver";
+    missionPoint = randomIntersection(player);
+    missionTimeLeft = 26;
+    missionBanner.innerHTML = '🏁 送到紅旗地點,時間快到囉! <span class="sub">Deliver before time runs out</span>';
+    playPickup();
+  }
+  function deliverySuccess() {
+    combo += 1;
+    const reward = 80 + combo * 15;
+    cash += reward;
+    cashVal.textContent = "$" + cash;
+    comboVal.textContent = String(combo);
+    spawnFloatPop(VIEW_W / 2, VIEW_H / 2 - 20, "+$" + reward);
+    playDeliver();
+    newPickup();
+  }
+  function deliveryFail() {
+    combo = 0;
+    comboVal.textContent = "0";
+    missionBanner.innerHTML = '⏰ 超時了,再接一趟! <span class="sub">Too slow, try again</span>';
+    newPickup();
+  }
+
+  // ---------- Wanted / police ----------
+  const MAX_WANTED = 5;
+  const HEAT_RADIUS = 260;
+  const EVADE_TIME = 8;
+  const CATCH_RADIUS = 22;
+
+  function updateWantedUI() {
+    wantedVal.textContent = "★".repeat(wanted) + "☆".repeat(MAX_WANTED - wanted);
+  }
+
+  function raiseWanted() {
+    if (wanted < MAX_WANTED) {
+      wanted += 1;
+      updateWantedUI();
+      spawnPoliceCar();
+      playSiren();
+    }
+    evadeTimer = 0;
+  }
+
+  function spawnPoliceCar() {
+    const p = randomIntersection(player);
+    const headingToPlayer = Math.atan2(player.y - p.y, player.x - p.x);
+    policeCars.push({
+      x: p.x, y: p.y, vx: 0, vy: 0,
+      heading: headingToPlayer, speed: 0, crashCooldown: 0,
+      avoidUntil: 0, turnBias: Math.random() < 0.5 ? -1 : 1,
+    });
+  }
+
+  function busted() {
+    const fine = Math.round(cash * 0.3) + 20;
+    cash = Math.max(0, cash - fine);
+    cashVal.textContent = "$" + cash;
+    wanted = 0;
+    updateWantedUI();
+    policeCars.length = 0;
+    evadeTimer = 0;
+    playBusted();
+    bustedFlash.textContent = "🚨 被攔下來了!罰款 $" + fine;
+    bustedFlash.classList.add("show");
+    setTimeout(() => bustedFlash.classList.remove("show"), 900);
+  }
+
+  // ---------- Float pop text ----------
+  function spawnFloatPop(px, py, text) {
+    const el = document.createElement("div");
+    el.className = "float-pop";
+    el.textContent = text;
+    el.style.left = px - 20 + "px";
+    el.style.top = py + "px";
+    gameWrap.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+
+  // ---------- Update loop ----------
+  function updatePlayer(dt) {
+    const p = player;
+    if (p.crashCooldown > 0) p.crashCooldown -= dt;
+
+    if (keys.up) p.speed = Math.min(p.maxSpeed, p.speed + p.accel);
+    else if (keys.down) p.speed = Math.max(-p.maxSpeed * 0.5, p.speed - p.accel);
+    else p.speed *= 0.985;
+
+    // Turning responsiveness is intentionally speed-independent (arcade-style):
+    // a car stopped at an intersection can still pivot quickly to line up with
+    // the street it needs, instead of crawling through a slow low-speed turn.
+    if (keys.left) p.heading -= p.turnRate;
+    if (keys.right) p.heading += p.turnRate;
+
+    p.vx = Math.cos(p.heading) * p.speed;
+    p.vy = Math.sin(p.heading) * p.speed;
+    p.x = clamp(p.x + p.vx * dt * 60, 20, WORLD - 20);
+    p.y = clamp(p.y + p.vy * dt * 60, 20, WORLD - 20);
+
+    resolveBuildingCollisions(p, 10, true);
+  }
+
+  function updatePolice(dt) {
+    for (let i = 0; i < policeCars.length; i++) {
+      const car = policeCars[i];
+      if (car.crashCooldown > 0) car.crashCooldown -= dt;
+
+      let targetAngle;
+      if (simTime < car.avoidUntil) {
+        // Recently hit something: force a turn away from the wall instead of
+        // beelining straight at the player again (which would just re-collide).
+        targetAngle = car.heading + car.turnBias * 1.6;
+      } else {
+        targetAngle = Math.atan2(player.y - car.y, player.x - car.x);
+      }
+      let diff = targetAngle - car.heading;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      car.heading += clamp(diff, -0.07, 0.07);
+      car.speed = Math.min(player.maxSpeed * 0.88, car.speed + 0.07);
+      car.vx = Math.cos(car.heading) * car.speed;
+      car.vy = Math.sin(car.heading) * car.speed;
+      car.x = clamp(car.x + car.vx * dt * 60, 20, WORLD - 20);
+      car.y = clamp(car.y + car.vy * dt * 60, 20, WORLD - 20);
+      const collided = resolveBuildingCollisions(car, 10, false);
+      if (collided) {
+        car.avoidUntil = simTime + 0.7;
+        car.turnBias = Math.random() < 0.5 ? -1 : 1;
+      }
+
+      const distToPlayer = Math.hypot(car.x - player.x, car.y - player.y);
+      if (distToPlayer < CATCH_RADIUS) {
+        busted();
+        return;
+      }
+    }
+  }
+
+  function updateWantedDecay(dt) {
+    if (wanted <= 0) return;
+    let minDist = Infinity;
+    for (let i = 0; i < policeCars.length; i++) {
+      const d = Math.hypot(policeCars[i].x - player.x, policeCars[i].y - player.y);
+      if (d < minDist) minDist = d;
+    }
+    if (minDist > HEAT_RADIUS) {
+      evadeTimer += dt;
+      if (evadeTimer >= EVADE_TIME) {
+        wanted -= 1;
+        updateWantedUI();
+        evadeTimer = 0;
+        playEvade();
+        if (wanted === 0) {
+          policeCars.length = 0;
+          spawnFloatPop(VIEW_W / 2, VIEW_H / 2 - 40, "擺脫警察了!");
+        } else if (policeCars.length > wanted) {
+          policeCars.pop();
+        }
+      }
+    } else {
+      evadeTimer = 0;
+    }
+  }
+
+  function updateTrafficLights(dt) {
+    for (let i = 0; i < lights.length; i++) {
+      const L = lights[i];
+      if (L.cooldown > 0) L.cooldown -= dt;
+      L.timer -= dt;
+      if (L.timer <= 0) {
+        if (L.state === "green") { L.state = "yellow"; L.timer = 1.2; }
+        else if (L.state === "yellow") { L.state = "red"; L.timer = 3.2; }
+        else { L.state = "green"; L.timer = 4.2; }
+      }
+    }
+  }
+
+  function checkRedLightRunning() {
+    if (Math.abs(player.speed) < 1.4) return;
+    for (let i = 0; i < lights.length; i++) {
+      const L = lights[i];
+      if (L.cooldown > 0) continue;
+      const d = Math.hypot(player.x - L.x, player.y - L.y);
+      if (d < 36 && L.state === "red") {
+        L.cooldown = 3;
+        raiseWanted();
+        spawnFloatPop(VIEW_W / 2, VIEW_H / 2 - 40, "闖紅燈!");
+      }
+    }
+  }
+
+  function checkMissionProgress() {
+    const d = Math.hypot(player.x - missionPoint.x, player.y - missionPoint.y);
+    if (missionState === "pickup") {
+      if (d < 30) startDelivery();
+    } else {
+      missionTimeLeft -= 1 / 60;
+      if (d < 30) deliverySuccess();
+      else if (missionTimeLeft <= 0) deliveryFail();
+    }
+  }
+
+  // ---------- Rendering ----------
+  function worldToScreen(wx, wy) {
+    return { x: wx - camera.x + VIEW_W / 2, y: wy - camera.y + VIEW_H / 2 };
+  }
+
+  function drawCar(wx, wy, heading, bodyColor, roofColor, lightsOn) {
+    const s = worldToScreen(wx, wy);
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(heading);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(-11, -7 + 3, 22, 14);
+    ctx.fillStyle = bodyColor;
+    ctx.fillRect(-11, -7, 22, 14);
+    ctx.fillStyle = roofColor;
+    ctx.fillRect(-4, -5, 10, 10);
+    if (lightsOn) {
+      const on = Math.floor(Date.now() / 150) % 2 === 0;
+      ctx.fillStyle = on ? "#ff3d3d" : "#3d6dff";
+      ctx.beginPath();
+      ctx.arc(-9, -5, 2.4, 0, Math.PI * 2);
+      ctx.arc(-9, 5, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.fillStyle = "#20193d";
+    ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+
+    const left = camera.x - VIEW_W / 2 - 40;
+    const top = camera.y - VIEW_H / 2 - 40;
+    const right = camera.x + VIEW_W / 2 + 40;
+    const bottom = camera.y + VIEW_H / 2 + 40;
+
+    // lane markings (only visible streets, cheap draw of full grid clipped by viewport)
+    ctx.strokeStyle = "rgba(255,255,255,0.14)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([12, 12]);
+    for (let i = 0; i <= GRID; i++) {
+      const wx = i * PITCH + STREET / 2;
+      if (wx > left && wx < right) {
+        const s1 = worldToScreen(wx, 0);
+        const s2 = worldToScreen(wx, WORLD);
+        ctx.beginPath();
+        ctx.moveTo(s1.x, 0);
+        ctx.lineTo(s2.x, VIEW_H);
+        ctx.stroke();
+      }
+      const wy = i * PITCH + STREET / 2;
+      if (wy > top && wy < bottom) {
+        const s1 = worldToScreen(0, wy);
+        const s2 = worldToScreen(WORLD, wy);
+        ctx.beginPath();
+        ctx.moveTo(0, s1.y);
+        ctx.lineTo(VIEW_W, s2.y);
+        ctx.stroke();
+      }
+    }
+    ctx.setLineDash([]);
+
+    // buildings
+    for (let i = 0; i < buildings.length; i++) {
+      const b = buildings[i];
+      if (b.x + b.w < left || b.x > right || b.y + b.h < top || b.y > bottom) continue;
+      const s = worldToScreen(b.x, b.y);
+      ctx.fillStyle = b.fill;
+      ctx.fillRect(s.x, s.y, b.w, b.h);
+      ctx.strokeStyle = b.glow;
+      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(s.x, s.y, b.w, b.h);
+      ctx.globalAlpha = 1;
+      // window lights
+      ctx.fillStyle = b.glow;
+      ctx.globalAlpha = 0.55;
+      for (let wx = 14; wx < b.w - 10; wx += 26) {
+        for (let wy = 14; wy < b.h - 10; wy += 26) {
+          if ((wx + wy) % 3 === 0) ctx.fillRect(s.x + wx, s.y + wy, 6, 6);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // traffic lights
+    for (let i = 0; i < lights.length; i++) {
+      const L = lights[i];
+      if (L.x < left || L.x > right || L.y < top || L.y > bottom) continue;
+      const s = worldToScreen(L.x, L.y);
+      ctx.fillStyle = L.state === "green" ? "#4caf7d" : L.state === "yellow" ? "#ffd166" : "#ff4d4d";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // mission marker
+    {
+      const s = worldToScreen(missionPoint.x, missionPoint.y);
+      const pulse = 6 + Math.sin(Date.now() / 180) * 2;
+      ctx.fillStyle = missionState === "pickup" ? "#ffd166" : "#ff5c5c";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, pulse, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(missionState === "pickup" ? "📦" : "🏁", s.x, s.y - 14);
+    }
+
+    // police cars
+    for (let i = 0; i < policeCars.length; i++) {
+      const c = policeCars[i];
+      drawCar(c.x, c.y, c.heading, "#1d3a8f", "#dfe7ff", true);
+    }
+
+    // player car
+    drawCar(player.x, player.y, player.heading, "#ff3d9a", "#fff2fb", false);
+  }
+
+  // ---------- Main loop ----------
+  function tick(now) {
+    if (!running) return;
+    const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 1 / 60;
+    lastTime = now;
+    simTime += dt;
+
+    updatePlayer(dt);
+    camera.x += (player.x - camera.x) * 0.14;
+    camera.y += (player.y - camera.y) * 0.14;
+    updatePolice(dt);
+    updateWantedDecay(dt);
+    updateTrafficLights(dt);
+    checkRedLightRunning();
+    checkMissionProgress();
+    render();
+
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Start / init ----------
+  startBtn.addEventListener("click", () => {
+    getCtx();
+    startScreen.hidden = true;
+    gameScreen.hidden = false;
+    running = true;
+    lastTime = 0;
+    newPickup();
+    requestAnimationFrame(tick);
+  });
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  document.body.addEventListener(
+    "click",
+    function unlockAudioOnce() {
+      getCtx();
+      document.body.removeEventListener("click", unlockAudioOnce);
+    },
+    { once: true }
+  );
+})();
+</script>
+</body>
+</html>
