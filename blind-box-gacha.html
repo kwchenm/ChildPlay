@@ -111,6 +111,38 @@
   }
 
   /* ---- Box view ---- */
+  .box-view-layout {
+    width: 100%; max-width: 960px; display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .box-main-panel { flex: 3; min-width: 320px; margin-bottom: 0; }
+  .bingo-panel { flex: 1; min-width: 240px; margin-bottom: 0; align-self: stretch; }
+  .bingo-desc { font-size: 12px; color: var(--text-dim); margin: 0 0 12px; line-height: 1.5; }
+  .bingo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .bingo-cell {
+    aspect-ratio: 1; border-radius: 10px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px; color: var(--text-dim); transition: all 0.3s ease;
+  }
+  .bingo-cell.marked {
+    background: linear-gradient(135deg, var(--gold-a), var(--gold-b)); color: #241a06;
+    box-shadow: 0 0 14px rgba(246,217,146,0.5); transform: scale(1.04);
+  }
+  .bingo-cell.in-line {
+    border-color: #fff; animation: bingoPulse 0.7s ease-in-out infinite alternate;
+  }
+  @keyframes bingoPulse {
+    from { box-shadow: 0 0 14px rgba(246,217,146,0.5); }
+    to { box-shadow: 0 0 28px 4px rgba(255,255,255,0.85); }
+  }
+  .bingo-status { text-align: center; font-size: 13px; font-weight: 800; color: var(--gold-a); margin-top: 12px; }
+  .bingo-toast {
+    position: fixed; top: 18%; left: 50%; transform: translate(-50%, -20px); z-index: 700;
+    background: linear-gradient(135deg, #ffe37a, #ff8fc7, #8fd6ff, #b98fff);
+    color: #1c1030; font-weight: 800; font-size: 20px; padding: 14px 28px; border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .bingo-toast.show { opacity: 1; transform: translate(-50%, 0); }
   .box-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .box-title { font-size: 19px; font-weight: 800; color: var(--gold-a); }
   .box-progress-pill {
@@ -132,10 +164,10 @@
   }
   .action-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .box-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; padding: 4px; }
+  .box-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(216px, 1fr)); gap: 20px; padding: 4px; }
   .box-tile {
     font-family: inherit; position: relative; aspect-ratio: 1;
-    border-radius: 16px; border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 24px; border: 1px solid rgba(255,255,255,0.16);
     background: linear-gradient(155deg, #2c2450 0%, #16112c 100%);
     color: var(--gold-a); display: flex; flex-direction: column; align-items: center; justify-content: center;
     cursor: pointer; font-weight: 800; transition: transform 0.18s cubic-bezier(.2,.8,.3,1.3);
@@ -149,12 +181,12 @@
   }
   .box-tile:hover:not(:disabled) { transform: translateY(-3px) scale(1.05); }
   .box-tile:active:not(:disabled) { transform: scale(0.94); }
-  .box-tile .tile-q { font-size: 22px; z-index: 1; }
+  .box-tile .tile-q { font-size: 56px; z-index: 1; }
   .box-tile.opened { cursor: default; }
   .box-tile.opened::before { display: none; }
   .box-tile .tile-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .box-tile.opened.got-hidden { border-color: var(--gold-a); box-shadow: 0 0 18px rgba(246,217,146,0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
-  .box-tile .tile-no { position: absolute; bottom: 4px; font-size: 9px; opacity: 0.7; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #fff; }
+  .box-tile .tile-no { position: absolute; bottom: 10px; font-size: 20px; opacity: 0.8; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.8); color: #fff; font-weight: 800; }
 
   footer { margin-top: 6px; font-size: 11.5px; color: rgba(245,241,232,0.45); text-align: center; max-width: 780px; }
 
@@ -318,6 +350,7 @@
 <canvas id="bg-fx"></canvas>
 <canvas id="fx-canvas"></canvas>
 <div id="flash-layer"></div>
+<div class="bingo-toast" id="bingoToast">🎆 連線囉!</div>
 
 <div id="app">
   <header>
@@ -328,7 +361,7 @@
       <button class="icon-btn" id="muteBtn" title="靜音切換">🔊</button>
     </div>
   </header>
-  <div class="subtitle">5 大臻藏系列・每盒 12 抽・每抽 5% 機率降臨隱藏款</div>
+  <div class="subtitle">5 大臻藏系列・每盒 30 抽・每抽 5% 機率降臨隱藏款・旁邊十六宮格連線贏煙火</div>
   <div class="privacy-note">🔒 私人收藏版・僅供個人本機遊玩,請勿公開發布或散布圖片內容</div>
 
   <!-- Series select view -->
@@ -338,17 +371,25 @@
   </div>
 
   <!-- Box view -->
-  <div class="panel hidden" id="boxView">
-    <div class="box-header">
-      <span class="box-title" id="boxTitle"></span>
-      <span class="box-progress-pill" id="boxProgressPill"></span>
+  <div class="hidden box-view-layout" id="boxView">
+    <div class="panel box-main-panel">
+      <div class="box-header">
+        <span class="box-title" id="boxTitle"></span>
+        <span class="box-progress-pill" id="boxProgressPill"></span>
+      </div>
+      <div class="controls" style="margin-bottom: 16px;">
+        <button class="action-btn" id="randomOpenBtn">🎲 隨機拆一個</button>
+        <button class="action-btn secondary" id="newBoxBtn">🔁 開新的一盒</button>
+        <button class="action-btn secondary" id="backToListBtn">↩️ 返回系列列表</button>
+      </div>
+      <div class="box-grid" id="boxGrid"></div>
     </div>
-    <div class="controls" style="margin-bottom: 16px;">
-      <button class="action-btn" id="randomOpenBtn">🎲 隨機拆一個</button>
-      <button class="action-btn secondary" id="newBoxBtn">🔁 開新的一盒</button>
-      <button class="action-btn secondary" id="backToListBtn">↩️ 返回系列列表</button>
+    <div class="panel bingo-panel">
+      <h2>🎯 十六宮格連線</h2>
+      <p class="bingo-desc">抽到 1~16 號會點亮對應數字,連成一整排(橫、直、對角線皆可)就放煙火慶祝!</p>
+      <div class="bingo-grid" id="bingoGrid"></div>
+      <div class="bingo-status" id="bingoStatus">已連線 0 條</div>
     </div>
-    <div class="box-grid" id="boxGrid"></div>
   </div>
 
   <footer>
@@ -393,7 +434,7 @@
 <!-- Box summary overlay -->
 <div class="overlay hidden" id="summaryOverlay">
   <div class="panel summary-panel">
-    <h2>🎊 這一盒 12 抽已經全部拆完!</h2>
+    <h2>🎊 這一盒 30 抽已經全部拆完!</h2>
     <p style="color:var(--text-dim); font-size:13.5px;" id="summaryText"></p>
     <div class="summary-grid" id="summaryGrid"></div>
     <div class="controls" style="margin-top: 16px;">
@@ -424,38 +465,168 @@
   const RAW_SERIES = [
     { id: "conan", name: "名偵探柯南", icon: "🕵️", accentA: "#7fb8ff", accentB: "#0d2a52",
       items: [
-        ["01.jpg", "江戶川柯南"], ["02.jpg", "怪盜基德"], ["03.jpg", "毛利蘭"],
-        ["04.jpg", "怪盜基德・現身"], ["05.jpg", "怪盜基德・預告函"], ["06.jpg", "事件現場"],
-        ["07.jpg", "偵探天團"], ["08.jpg", "少年偵探團"], ["09.jpg", "名偵探對決"],
-        ["10.jpg", "工藤新一與毛利蘭"], ["11.jpg", "怪盜基德與中森青子"], ["12.jpg", "夏日回憶・新一與蘭"]
+        ["01.jpg", "江戶川柯南"],
+        ["02.jpg", "怪盜基德"],
+        ["03.jpg", "毛利蘭"],
+        ["04.jpg", "怪盜基德・現身"],
+        ["05.jpg", "怪盜基德・預告函"],
+        ["06.jpg", "事件現場"],
+        ["07.jpg", "偵探天團"],
+        ["08.jpg", "少年偵探團"],
+        ["09.jpg", "名偵探對決"],
+        ["10.jpg", "工藤新一與毛利蘭"],
+        ["11.jpg", "怪盜基德與中森青子"],
+        ["12.jpg", "夏日回憶・新一與蘭"],
+        ["13.jpg", "偵探對決・烈焰追擊"],
+        ["14.jpg", "偵探事務所日常"],
+        ["15.jpg", "怪盜基德・零的策略"],
+        ["16.jpg", "名偵探全員大集合"],
+        ["17.jpg", "黑衣組織・雙眸"],
+        ["18.jpg", "案件檔案牆"],
+        ["19.jpg", "怪盜基德・夜色追蹤"],
+        ["20.jpg", "米花町街景"],
+        ["21.jpg", "電玩遊樂場"],
+        ["22.jpg", "柯南與基德"],
+        ["23.jpg", "神秘身影"],
+        ["24.jpg", "怪盜基德・窗邊剪影"],
+        ["25.jpg", "新一與蘭・門前"],
+        ["26.jpg", "黑衣組織・冷酷凝視"],
+        ["27.jpg", "名偵探柯南劇場版"],
+        ["28.jpg", "推理瞬間"],
+        ["29.jpg", "名偵探柯南・電影特報"],
+        ["30.jpg", "偵探對決・雷霆一擊"],
       ], hiddenFile: "hidden.jpg", hiddenName: "全員集合・名偵探柯南" },
     { id: "sololeveling", name: "獨自升級", icon: "⚔️", accentA: "#8f7cff", accentB: "#160a33",
       items: [
-        ["01.jpg", "影之君主 成振宇"], ["02.jpg", "暗影軍團統帥"], ["03.jpg", "覺醒的獵人"],
-        ["04.jpg", "最強獵人"], ["05.jpg", "都市獵人"], ["06.jpg", "影之軍隊"],
-        ["07.jpg", "雪地狩獵者"], ["08.jpg", "覺醒者之力"], ["09.jpg", "暗影使者"],
-        ["10.jpg", "劍聖"], ["11.jpg", "劍舞獵人 車海仁"], ["12.jpg", "金色巨獸獵人"]
+        ["01.jpg", "影之君主 成振宇"],
+        ["02.jpg", "暗影軍團統帥"],
+        ["03.jpg", "覺醒的獵人"],
+        ["04.jpg", "最強獵人"],
+        ["05.jpg", "都市獵人"],
+        ["06.jpg", "影之軍隊"],
+        ["07.jpg", "雪地狩獵者"],
+        ["08.jpg", "覺醒者之力"],
+        ["09.jpg", "暗影使者"],
+        ["10.jpg", "劍聖"],
+        ["11.jpg", "劍舞獵人 車海仁"],
+        ["12.jpg", "金色巨獸獵人"],
+        ["13.jpg", "暗黑征服者"],
+        ["14.jpg", "白色騎士"],
+        ["15.jpg", "覺醒之力・成振宇"],
+        ["16.jpg", "赤紅獵人"],
+        ["17.jpg", "銀白劍聖"],
+        ["18.jpg", "靜謐凝視"],
+        ["19.jpg", "煙霧行者"],
+        ["20.jpg", "孤高身影"],
+        ["21.jpg", "紫電覺醒"],
+        ["22.jpg", "赤劍疾風"],
+        ["23.jpg", "獵人公會全員"],
+        ["24.jpg", "赤藍對峙"],
+        ["25.jpg", "疾馳追跡"],
+        ["26.jpg", "影之軍隊・降臨"],
+        ["27.jpg", "橙電斬擊"],
+        ["28.jpg", "都市黃昏獵人"],
+        ["29.jpg", "傳說降臨・海報"],
+        ["30.jpg", "白雪劍舞"],
       ], hiddenFile: "hidden.jpg", hiddenName: "影之將軍 貝魯" },
     { id: "frieren", name: "葬送的芙莉蓮", icon: "🧙‍♀️", accentA: "#bfe3ff", accentB: "#274a6b",
       items: [
-        ["01.jpg", "希姆爾"], ["02.jpg", "海塔"], ["03.jpg", "艾森"],
-        ["04.jpg", "修塔爾克"], ["05.jpg", "費倫"], ["06.jpg", "芙莉蓮"],
-        ["07.jpg", "芙莉蓮・日常"], ["08.jpg", "芙莉蓮・旅途"], ["09.jpg", "聖誕限定芙莉蓮"],
-        ["10.jpg", "萬聖節限定芙莉蓮"], ["11.jpg", "芙莉蓮與同伴"], ["12.jpg", "新年和服芙莉蓮"]
+        ["01.jpg", "希姆爾"],
+        ["02.jpg", "海塔"],
+        ["03.jpg", "艾森"],
+        ["04.jpg", "修塔爾克"],
+        ["05.jpg", "費倫"],
+        ["06.jpg", "芙莉蓮"],
+        ["07.jpg", "芙莉蓮・日常"],
+        ["08.jpg", "芙莉蓮・旅途"],
+        ["09.jpg", "聖誕限定芙莉蓮"],
+        ["10.jpg", "萬聖節限定芙莉蓮"],
+        ["11.jpg", "芙莉蓮與同伴"],
+        ["12.jpg", "新年和服芙莉蓮"],
+        ["13.jpg", "首映紀念海報"],
+        ["14.jpg", "旅途夥伴群像"],
+        ["15.jpg", "夕陽下的隊伍"],
+        ["16.jpg", "聖誕節費倫"],
+        ["17.jpg", "萬聖節群像"],
+        ["18.jpg", "費倫與芙莉蓮"],
+        ["19.jpg", "旅途中的四人"],
+        ["20.jpg", "魔法練習"],
+        ["21.jpg", "學院日常群像"],
+        ["22.jpg", "沙灘旅途"],
+        ["23.jpg", "冬日新年賀"],
+        ["24.jpg", "SEIN"],
+        ["25.jpg", "旅人四人組"],
+        ["26.jpg", "修塔爾克與費倫"],
+        ["27.jpg", "森林旅途"],
+        ["28.jpg", "古老城鎮"],
+        ["29.jpg", "教堂彩窗"],
+        ["30.jpg", "遠方城堡"],
       ], hiddenFile: "hidden.jpg", hiddenName: "千年魔法・覺醒芙莉蓮" },
     { id: "disney", name: "迪士尼經典", icon: "🏰", accentA: "#ffd166", accentB: "#7a3b8c",
       items: [
-        ["01.jpg", "米奇經典剪影"], ["02.jpg", "米奇星空之旅"], ["03.jpg", "米奇夥伴大集合"],
-        ["04.jpg", "動物方城市:兔子警官與狐狸"], ["05.jpg", "動物方城市:好搭檔"], ["06.jpg", "小熊維尼與小豬"],
-        ["07.jpg", "王國之心三劍客"], ["08.jpg", "飛哥與小佛"], ["09.jpg", "星際寶貝:莉蘿與史迪奇"],
-        ["10.jpg", "阿拉丁神燈精靈"], ["11.jpg", "米奇與米妮"], ["12.jpg", "溫馨家庭時光"]
+        ["01.jpg", "米奇經典剪影"],
+        ["02.jpg", "米奇星空之旅"],
+        ["03.jpg", "米奇夥伴大集合"],
+        ["04.jpg", "動物方城市:兔子警官與狐狸"],
+        ["05.jpg", "動物方城市:好搭檔"],
+        ["06.jpg", "小熊維尼與小豬"],
+        ["07.jpg", "王國之心三劍客"],
+        ["08.jpg", "飛哥與小佛"],
+        ["09.jpg", "星際寶貝:莉蘿與史迪奇"],
+        ["10.jpg", "阿拉丁神燈精靈"],
+        ["11.jpg", "米奇與米妮"],
+        ["12.jpg", "溫馨家庭時光"],
+        ["13.jpg", "王國之心・徽章"],
+        ["14.jpg", "王國之心・夥伴集合"],
+        ["15.jpg", "精靈之舞"],
+        ["16.jpg", "小美人魚幻想"],
+        ["17.jpg", "玩具工坊"],
+        ["18.jpg", "冰上溜冰的米奇"],
+        ["19.jpg", "溫馨家庭晚餐"],
+        ["20.jpg", "小兔邦尼"],
+        ["21.jpg", "米奇衝浪"],
+        ["22.jpg", "復古電視米奇"],
+        ["23.jpg", "米奇滑板剪影"],
+        ["24.jpg", "米奇經典圖示"],
+        ["25.jpg", "王國之心・心之光"],
+        ["26.jpg", "王國之心・繽紛鑰匙劍"],
+        ["27.jpg", "長髮公主・天燈之夜"],
+        ["28.jpg", "冰雪奇緣・冰晶之戰"],
+        ["29.jpg", "王國之心・雪境冒險"],
+        ["30.jpg", "綠龍幻境"],
       ], hiddenFile: "hidden.jpg", hiddenName: "王國之心・傳說鑰匙劍使者" },
     { id: "kimetsu", name: "鬼滅之刃", icon: "🗡️", accentA: "#7fd9c4", accentB: "#5c0f14",
       items: [
-        ["01.jpg", "竈門炭治郎"], ["02.jpg", "竈門禰豆子"], ["03.jpg", "我妻善逸"],
-        ["04.jpg", "嘴平伊之助"], ["05.jpg", "冨岡義勇"], ["06.jpg", "胡蝶忍"],
-        ["07.jpg", "禰豆子・竹口封印"], ["08.jpg", "鬼殺隊・覺醒之眼"], ["09.jpg", "紅色劍士"],
-        ["10.jpg", "雷之呼吸・全集中"], ["11.jpg", "鬼殺隊出陣"], ["12.jpg", "業炎之刃"]
+        ["01.jpg", "竈門炭治郎"],
+        ["02.jpg", "竈門禰豆子"],
+        ["03.jpg", "我妻善逸"],
+        ["04.jpg", "嘴平伊之助"],
+        ["05.jpg", "冨岡義勇"],
+        ["06.jpg", "胡蝶忍"],
+        ["07.jpg", "禰豆子・竹口封印"],
+        ["08.jpg", "鬼殺隊・覺醒之眼"],
+        ["09.jpg", "紅色劍士"],
+        ["10.jpg", "雷之呼吸・全集中"],
+        ["11.jpg", "鬼殺隊出陣"],
+        ["12.jpg", "業炎之刃"],
+        ["13.jpg", "竈門炭治郎(月曆版)"],
+        ["14.jpg", "我妻善逸(月曆版)"],
+        ["15.jpg", "嘴平伊之助(月曆版)"],
+        ["16.jpg", "冨岡義勇(月曆版)"],
+        ["17.jpg", "胡蝶忍(月曆版)"],
+        ["18.jpg", "蝶戀之舞"],
+        ["19.jpg", "雪夜劍士"],
+        ["20.jpg", "花蝶精靈"],
+        ["21.jpg", "覺醒之眼・鬼殺隊"],
+        ["22.jpg", "雙劍齊舞・櫻花"],
+        ["23.jpg", "熱血對決"],
+        ["24.jpg", "鬼殺隊小隊集合"],
+        ["25.jpg", "森林中的劍士"],
+        ["26.jpg", "緋紅疾風斬"],
+        ["27.jpg", "全集中・堅定意志"],
+        ["28.jpg", "闇夜羽翼"],
+        ["29.jpg", "鬼殺隊・傳說集結"],
+        ["30.jpg", "市松花紋劍士"],
       ], hiddenFile: "hidden.jpg", hiddenName: "鬼殺隊・柱合會議" }
   ];
 
@@ -514,6 +685,57 @@
   }
   function resolveItem(entry) { return currentSeries.items[entry.itemIdx]; }
 
+  // ---------- 16-grid bingo mini-game ----------
+  const BINGO_LINES = [
+    [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15],
+    [0, 4, 8, 12], [1, 5, 9, 13], [2, 6, 10, 14], [3, 7, 11, 15],
+    [0, 5, 10, 15], [3, 6, 9, 12]
+  ];
+  let bingoCard = [];
+  let bingoMarked = new Set();
+  let bingoCompletedLines = new Set();
+
+  function initBingo() {
+    bingoCard = shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
+    bingoMarked = new Set();
+    bingoCompletedLines = new Set();
+    renderBingo();
+  }
+  function renderBingo() {
+    const inLineCells = new Set();
+    bingoCompletedLines.forEach(li => BINGO_LINES[li].forEach(pos => inLineCells.add(pos)));
+    bingoGrid.innerHTML = bingoCard.map((num, pos) => {
+      const marked = bingoMarked.has(num);
+      const cls = ["bingo-cell"];
+      if (marked) cls.push("marked");
+      if (inLineCells.has(pos)) cls.push("in-line");
+      return `<div class="${cls.join(" ")}">${num}</div>`;
+    }).join("");
+    bingoStatus.textContent = `已連線 ${bingoCompletedLines.size} 條`;
+  }
+  function showBingoToast(text) {
+    bingoToast.textContent = text;
+    bingoToast.classList.add("show");
+    setTimeout(() => bingoToast.classList.remove("show"), 1600);
+  }
+  function markBingo(slotNumber) {
+    if (slotNumber < 1 || slotNumber > 16) return;
+    bingoMarked.add(slotNumber);
+    const newlyCompleted = [];
+    BINGO_LINES.forEach((line, li) => {
+      if (bingoCompletedLines.has(li)) return;
+      const complete = line.every(pos => bingoMarked.has(bingoCard[pos]));
+      if (complete) { bingoCompletedLines.add(li); newlyCompleted.push(li); }
+    });
+    renderBingo();
+    if (newlyCompleted.length > 0) {
+      showBingoToast(`🎆 連線囉!已連成 ${bingoCompletedLines.size} 條`);
+      launchConfetti(true);
+      playFanfare();
+      flashScreen("#ffe9b0");
+    }
+  }
+
   // ---------- DOM refs ----------
   const seriesGrid = document.getElementById("seriesGrid");
   const seriesListView = document.getElementById("seriesListView");
@@ -524,6 +746,9 @@
   const randomOpenBtn = document.getElementById("randomOpenBtn");
   const newBoxBtn = document.getElementById("newBoxBtn");
   const backToListBtn = document.getElementById("backToListBtn");
+  const bingoGrid = document.getElementById("bingoGrid");
+  const bingoStatus = document.getElementById("bingoStatus");
+  const bingoToast = document.getElementById("bingoToast");
 
   const overlay = document.getElementById("overlay");
   const tearPhase = document.getElementById("tearPhase");
@@ -836,6 +1061,7 @@
   function showBoxView(series) {
     currentSeries = series;
     currentBox = buildBox(series);
+    initBingo();
     seriesListView.classList.add("hidden");
     boxView.classList.remove("hidden");
     boxTitle.textContent = `${series.icon} ${series.name}`;
@@ -843,7 +1069,7 @@
   }
   function renderBoxGrid() {
     const openedCount = currentBox.filter(e => e.opened).length;
-    boxProgressPill.textContent = `本盒進度 ${openedCount}/12`;
+    boxProgressPill.textContent = `本盒進度 ${openedCount}/${currentBox.length}`;
     boxGrid.innerHTML = currentBox.map(entry => {
       if (!entry.opened) {
         return `<button class="box-tile" data-slot="${entry.slot}"><span class="tile-q">?</span><span class="tile-no">${entry.slot}</span></button>`;
@@ -971,6 +1197,7 @@
     else { launchConfetti(false); playChime(); }
 
     markCollected(currentSeries.id, entry.isHidden ? "hidden" : String(entry.itemIdx));
+    setTimeout(() => markBingo(entry.slot), 500);
     renderBoxGrid();
     renderSeriesList();
 
@@ -1005,12 +1232,13 @@
   function newBox(fromSummary) {
     if (!fromSummary && currentBox) {
       const openedCount = currentBox.filter(e => e.opened).length;
-      if (openedCount > 0 && openedCount < 12) {
+      if (openedCount > 0 && openedCount < currentBox.length) {
         const ok = window.confirm("這一盒還沒拆完,確定要開新的一盒嗎?尚未拆的部分會直接消失(已收藏的款式不受影響)。");
         if (!ok) return;
       }
     }
     currentBox = buildBox(currentSeries);
+    initBingo();
     overlay.classList.add("hidden");
     summaryOverlay.classList.add("hidden");
     renderBoxGrid();
