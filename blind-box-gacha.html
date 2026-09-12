@@ -220,7 +220,7 @@
   @keyframes hintBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 
   .box-wrap {
-    position: relative; width: 250px; height: 290px; margin: 0 auto 22px;
+    position: relative; width: min(750px, 88vw); aspect-ratio: 250 / 290; margin: 0 auto 22px;
     cursor: grab; touch-action: none; animation: idleWiggle 2.8s ease-in-out infinite;
   }
   .box-wrap.dragging { animation: none; cursor: grabbing; }
@@ -243,8 +243,8 @@
   }
   .box-cube .box-ribbon-v { position: absolute; top:0; bottom:0; left: 50%; width: 22px; margin-left: -11px; background: linear-gradient(180deg, var(--gold-a), var(--gold-b)); opacity: 0.9; }
   .box-cube .box-ribbon-h { position: absolute; left:0; right:0; top: 50%; height: 22px; margin-top: -11px; background: linear-gradient(90deg, var(--gold-a), var(--gold-b)); opacity: 0.9; }
-  .box-cube .box-icon { font-size: 52px; z-index: 1; }
-  .box-cube .box-caption { font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); z-index: 1; }
+  .box-cube .box-icon { font-size: clamp(52px, 11vw, 96px); z-index: 1; }
+  .box-cube .box-caption { font-size: clamp(13px, 2.2vw, 20px); font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); z-index: 1; }
 
   .seal {
     position: absolute; inset: 0; border-radius: 22px;
@@ -256,10 +256,10 @@
   }
   .seal .seal-glyph {
     position: absolute; left: 24%; top: 76%; transform: translate(-50%, -50%);
-    font-size: 42px; font-weight: 800; color: var(--gold-b); opacity: 0.9;
+    font-size: clamp(42px, 8vw, 72px); font-weight: 800; color: var(--gold-b); opacity: 0.9;
   }
   .corner-hint {
-    position: absolute; top: 4px; right: 4px; font-size: 24px; z-index: 5;
+    position: absolute; top: 4px; right: 4px; font-size: clamp(24px, 5vw, 42px); z-index: 5;
     animation: cornerBounce 1.2s ease-in-out infinite; transition: opacity 0.25s ease; pointer-events: none;
   }
   .corner-hint.faded { opacity: 0; }
@@ -290,18 +290,22 @@
   }
   @keyframes badgeGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
 
-  .card-stage { perspective: 1100px; width: 232px; height: 310px; margin: 0 auto; }
+  .card-stage { perspective: 1100px; width: min(696px, 82vw); aspect-ratio: 232 / 310; margin: 0 auto; }
   .card-tilt {
     width: 100%; height: 100%; position: relative; border-radius: 18px; overflow: hidden;
-    box-shadow: 0 22px 44px rgba(0,0,0,0.55);
+    box-shadow: 0 22px 44px rgba(0,0,0,0.55); background: #0b0b14;
     will-change: transform;
   }
   .card-tilt.is-hidden { box-shadow: 0 0 46px rgba(255,215,100,0.65), 0 22px 44px rgba(0,0,0,0.55); }
-  .card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .card-frame { position: absolute; inset: 0; border-radius: 18px; border: 3px solid rgba(255,255,255,0.4); pointer-events: none; }
+  .card-photo-bg {
+    position: absolute; inset: -20%; width: 140%; height: 140%; object-fit: cover;
+    filter: blur(28px) brightness(0.5) saturate(1.15); transform: scale(1.05); z-index: 0;
+  }
+  .card-photo { position: relative; width: 100%; height: 100%; object-fit: contain; display: block; z-index: 1; }
+  .card-frame { position: absolute; inset: 0; border-radius: 18px; border: 3px solid rgba(255,255,255,0.4); pointer-events: none; z-index: 4; }
   .card-tilt.is-hidden .card-frame { border-color: var(--gold-a); box-shadow: inset 0 0 34px rgba(255,215,100,0.55); }
   .card-sheen {
-    position: absolute; inset: 0; pointer-events: none; opacity: 0.55;
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.55; z-index: 3;
     background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 48%, rgba(255,255,255,0.12) 53%, transparent 68%);
     transform: translateX(var(--sheen-x, -60%));
     mix-blend-mode: overlay;
@@ -310,10 +314,10 @@
     background: linear-gradient(115deg, transparent 25%, rgba(255,224,150,0.7) 45%, rgba(180,220,255,0.4) 52%, rgba(255,180,230,0.5) 58%, transparent 72%);
     opacity: 0.8;
   }
-  .card-shadow { width: 190px; height: 22px; border-radius: 50%; margin: 10px auto 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.5), transparent 72%); }
-  .drag-rotate-hint { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
-  .item-name { font-size: 19px; font-weight: 800; margin-top: 12px; color: #fff; letter-spacing: 0.02em; }
-  .item-series { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+  .card-shadow { width: min(570px, 62vw); height: 26px; border-radius: 50%; margin: 12px auto 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.5), transparent 72%); }
+  .drag-rotate-hint { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+  .item-name { font-size: clamp(19px, 3.4vw, 28px); font-weight: 800; margin-top: 14px; color: #fff; letter-spacing: 0.02em; }
+  .item-series { font-size: clamp(12px, 2vw, 15px); color: var(--text-dim); margin-top: 4px; }
 
   /* ---- Summary overlay ---- */
   .summary-panel { max-width: 480px; }
@@ -361,7 +365,7 @@
       <button class="icon-btn" id="muteBtn" title="靜音切換">🔊</button>
     </div>
   </header>
-  <div class="subtitle">5 大臻藏系列・每盒 30 抽・每抽 5% 機率降臨隱藏款・旁邊十六宮格連線贏煙火</div>
+  <div class="subtitle">6 大臻藏系列・每盒 30 抽・每抽 5% 機率降臨隱藏款・旁邊十六宮格連線贏煙火</div>
   <div class="privacy-note">🔒 私人收藏版・僅供個人本機遊玩,請勿公開發布或散布圖片內容</div>
 
   <!-- Series select view -->
@@ -386,7 +390,7 @@
     </div>
     <div class="panel bingo-panel">
       <h2>🎯 十六宮格連線</h2>
-      <p class="bingo-desc">抽到 1~16 號會點亮對應數字,連成一整排(橫、直、對角線皆可)就放煙火慶祝!</p>
+      <p class="bingo-desc">格子裡的號碼都先蓋住,抽到 1~16 號才會翻開對應數字,連成一整排(橫、直、對角線皆可)就放煙火慶祝!</p>
       <div class="bingo-grid" id="bingoGrid"></div>
       <div class="bingo-status" id="bingoStatus">已連線 0 條</div>
     </div>
@@ -417,6 +421,7 @@
       <div class="rarity-badge" id="rarityBadge">普通款</div>
       <div class="card-stage" id="cardStage">
         <div class="card-tilt" id="cardTilt">
+          <img class="card-photo-bg" id="cardPhotoBg" src="" alt="">
           <img class="card-photo" id="cardPhoto" src="" alt="">
           <div class="card-sheen"></div>
           <div class="card-frame"></div>
@@ -627,7 +632,40 @@
         ["28.jpg", "闇夜羽翼"],
         ["29.jpg", "鬼殺隊・傳說集結"],
         ["30.jpg", "市松花紋劍士"],
-      ], hiddenFile: "hidden.jpg", hiddenName: "鬼殺隊・柱合會議" }
+      ], hiddenFile: "hidden.jpg", hiddenName: "鬼殺隊・柱合會議" },
+    { id: "pikmin", name: "皮克敏", icon: "🌱", accentA: "#8fd67a", accentB: "#1f4d2e",
+      items: [
+        ["01.jpg", "森林中的皮克敏"],
+        ["02.jpg", "大亂鬥皮克敏隊"],
+        ["03.jpg", "任天堂明星大亂鬥"],
+        ["04.jpg", "皮克敏圖鑑"],
+        ["05.jpg", "草原上的小隊"],
+        ["06.jpg", "藤蔓花紋邊框"],
+        ["07.jpg", "繽紛皮克敏群"],
+        ["08.jpg", "大亂鬥夥伴們"],
+        ["09.jpg", "明星大亂鬥集合"],
+        ["10.jpg", "百人亂鬥"],
+        ["11.jpg", "收藏公仔展示櫃"],
+        ["12.jpg", "紅皮克敏行軍"],
+        ["13.jpg", "藤蔓上的隊伍"],
+        ["14.jpg", "奧利馬與紅皮克敏"],
+        ["15.jpg", "準備開戰"],
+        ["16.jpg", "白皮克敏特寫"],
+        ["17.jpg", "皮克敏圖鑑牆"],
+        ["18.jpg", "雪地探險"],
+        ["19.jpg", "花朵皮克敏花束"],
+        ["20.jpg", "數字徽章皮克敏"],
+        ["21.jpg", "你會成為我們的隊長嗎"],
+        ["22.jpg", "大亂鬥角色群像"],
+        ["23.jpg", "夜光花田"],
+        ["24.jpg", "紫皮克敏行軍"],
+        ["25.jpg", "紅皮克敏過橋"],
+        ["26.jpg", "黃皮克敏與王冠"],
+        ["27.jpg", "彩虹皮克敏排排站"],
+        ["28.jpg", "奇幻森林之旅"],
+        ["29.jpg", "amiibo公仔陣列"],
+        ["30.jpg", "大亂鬥DX紀念卡"],
+      ], hiddenFile: "hidden.jpg", hiddenName: "傳說隊長・蘋果探險記" }
   ];
 
   const HIDDEN_CHANCE = 0.05;
@@ -709,7 +747,7 @@
       const cls = ["bingo-cell"];
       if (marked) cls.push("marked");
       if (inLineCells.has(pos)) cls.push("in-line");
-      return `<div class="${cls.join(" ")}">${num}</div>`;
+      return `<div class="${cls.join(" ")}">${marked ? num : "?"}</div>`;
     }).join("");
     bingoStatus.textContent = `已連線 ${bingoCompletedLines.size} 條`;
   }
@@ -765,6 +803,7 @@
   const cardStage = document.getElementById("cardStage");
   const cardTilt = document.getElementById("cardTilt");
   const cardPhoto = document.getElementById("cardPhoto");
+  const cardPhotoBg = document.getElementById("cardPhotoBg");
   const itemName = document.getElementById("itemName");
   const itemSeriesName = document.getElementById("itemSeriesName");
 
@@ -1081,15 +1120,21 @@
   }
 
   // ---------- Tear + charge + reveal flow ----------
-  const DRAG_MAX = 140;
   const COMPLETE_THRESHOLD = 0.65;
-  const TEAR_MAX_RADIUS = Math.hypot(250, 290) * 1.05;
+  let dragMax = 140;
+  let tearMaxRadius = Math.hypot(250, 290) * 1.05;
   let dragState = null;
   let settling = false;
 
+  function updateTearMetrics() {
+    const rect = boxWrap.getBoundingClientRect();
+    tearMaxRadius = Math.hypot(rect.width, rect.height) * 1.05;
+    dragMax = rect.height * 0.48;
+  }
+
   function applyTearProgress(p) {
     const cp = Math.max(0, Math.min(1, p));
-    const radius = TEAR_MAX_RADIUS * (1 - cp);
+    const radius = tearMaxRadius * (1 - cp);
     seal.style.clipPath = `circle(${radius}px at 0% 100%)`;
   }
   function snapTear(target) {
@@ -1106,8 +1151,6 @@
     boxCube.style.setProperty("--box-a", currentSeries.accentA);
     boxCube.style.setProperty("--box-b", currentSeries.accentB);
     boxCaption.textContent = currentSeries.name;
-    seal.style.transition = "none";
-    applyTearProgress(0);
     boxWrap.classList.remove("dragging", "charging");
     boxCube.classList.remove("charging");
     vignette.classList.remove("on");
@@ -1118,6 +1161,9 @@
     revealPhase.classList.remove("show");
     stopTilt();
     overlay.classList.remove("hidden");
+    seal.style.transition = "none";
+    updateTearMetrics();
+    applyTearProgress(0);
     requestAnimationFrame(() => { seal.style.transition = ""; });
   }
 
@@ -1132,13 +1178,13 @@
   }
   function onBoxPointerMove(e) {
     if (!dragState || dragState.pointerId !== e.pointerId) return;
-    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / dragMax));
     applyTearProgress(progress);
     if (progress - dragState.lastTick > 0.22) { dragState.lastTick = progress; playTear(0.14); }
   }
   function onBoxPointerUp(e) {
     if (!dragState || dragState.pointerId !== e.pointerId) return;
-    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / DRAG_MAX));
+    const progress = Math.max(0, Math.min(1, Math.abs(e.clientY - dragState.startY) / dragMax));
     dragState = null;
     boxWrap.classList.remove("dragging");
     if (progress >= COMPLETE_THRESHOLD) {
@@ -1190,6 +1236,7 @@
     itemSeriesName.textContent = `${currentSeries.icon} ${currentSeries.name}`;
 
     cardPhoto.src = item.src;
+    cardPhotoBg.src = item.src;
     cardTilt.className = entry.isHidden ? "card-tilt is-hidden" : "card-tilt";
     startTilt();
 
