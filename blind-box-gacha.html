@@ -76,29 +76,34 @@
   }
   .panel h2 { margin: 0 0 14px; font-size: 16px; color: var(--gold-a); letter-spacing: 0.03em; }
   .subtitle { text-align: center; color: var(--text-dim); font-size: 13.5px; font-weight: 600; margin: 0 0 18px; letter-spacing: 0.02em; }
+  .privacy-note {
+    text-align: center; color: var(--gold-a); font-size: 12px; font-weight: 700;
+    margin: -10px 0 16px; opacity: 0.85;
+  }
 
   /* ---- Series select grid ---- */
   .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
   .series-card {
     position: relative; overflow: hidden;
     border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 20px; padding: 18px 12px 14px;
+    border-radius: 20px; padding: 0 0 12px;
     display: flex; flex-direction: column; align-items: center; gap: 8px;
     cursor: pointer; font-family: inherit; color: #fff;
-    background: linear-gradient(155deg, var(--series-a), var(--series-b) 80%);
+    background: linear-gradient(155deg, var(--series-a), var(--series-b) 85%);
     box-shadow: 0 12px 26px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
     transition: transform 0.25s cubic-bezier(.2,.8,.3,1.3), box-shadow 0.25s ease;
   }
   .series-card::before {
     content: ""; position: absolute; inset: -40% -60%;
     background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.28) 50%, transparent 60%);
-    transform: translateX(-120%); transition: transform 0.7s ease;
+    transform: translateX(-120%); transition: transform 0.7s ease; z-index: 2;
   }
   .series-card:hover::before { transform: translateX(60%); }
   .series-card:hover { transform: translateY(-4px); box-shadow: 0 18px 34px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22); }
   .series-card:active { transform: translateY(1px) scale(0.98); }
-  .series-card .series-figure { width: 84px; height: 108px; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.4)); }
-  .series-card .series-name { font-size: 14.5px; font-weight: 800; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .series-card .series-photo-wrap { width: 100%; aspect-ratio: 4/3; overflow: hidden; }
+  .series-card .series-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .series-card .series-name { font-size: 14.5px; font-weight: 800; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.4); padding: 0 10px; }
   .series-card .series-progress {
     font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.18);
@@ -135,6 +140,7 @@
     color: var(--gold-a); display: flex; flex-direction: column; align-items: center; justify-content: center;
     cursor: pointer; font-weight: 800; transition: transform 0.18s cubic-bezier(.2,.8,.3,1.3);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 16px rgba(0,0,0,0.35);
+    overflow: hidden;
   }
   .box-tile::before {
     content: ""; position: absolute; top: 6px; left: 6px; right: 6px; height: 40%;
@@ -144,14 +150,11 @@
   .box-tile:hover:not(:disabled) { transform: translateY(-3px) scale(1.05); }
   .box-tile:active:not(:disabled) { transform: scale(0.94); }
   .box-tile .tile-q { font-size: 22px; z-index: 1; }
-  .box-tile.opened { cursor: default; background: rgba(255,255,255,0.03); opacity: 0.55; }
-  .box-tile.opened.got-hidden {
-    background: linear-gradient(155deg, #4a3410, #1c1608);
-    opacity: 1; border-color: var(--gold-a);
-    box-shadow: 0 0 18px rgba(246,217,146,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-  }
-  .box-tile .tile-mini { font-size: 22px; z-index: 1; }
-  .box-tile .tile-no { position: absolute; bottom: 4px; font-size: 9px; opacity: 0.7; z-index: 1; }
+  .box-tile.opened { cursor: default; }
+  .box-tile.opened::before { display: none; }
+  .box-tile .tile-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .box-tile.opened.got-hidden { border-color: var(--gold-a); box-shadow: 0 0 18px rgba(246,217,146,0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
+  .box-tile .tile-no { position: absolute; bottom: 4px; font-size: 9px; opacity: 0.7; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,0.8); color: #fff; }
 
   footer { margin-top: 6px; font-size: 11.5px; color: rgba(245,241,232,0.45); text-align: center; max-width: 780px; }
 
@@ -237,7 +240,7 @@
   }
   .vignette.on { opacity: 1; }
 
-  /* ---- Reveal / 360 turntable phase ---- */
+  /* ---- Reveal / holographic card phase ---- */
   #revealPhase { display: none; opacity: 0; transform: translateY(14px) scale(0.94); }
   #revealPhase.show { display: block; animation: revealIn 0.55s cubic-bezier(.2,.9,.25,1.3) forwards; }
   @keyframes revealIn { to { opacity: 1; transform: translateY(0) scale(1); } }
@@ -245,7 +248,7 @@
   .rarity-badge {
     display: inline-block; font-size: 13.5px; font-weight: 800; padding: 6px 18px;
     border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid var(--panel-border);
-    color: var(--gold-a); margin-bottom: 8px; letter-spacing: 0.04em;
+    color: var(--gold-a); margin-bottom: 10px; letter-spacing: 0.04em;
   }
   .rarity-badge.hidden-rarity {
     background: linear-gradient(90deg, #ffe37a, #ff8fc7, #8fd6ff, #b98fff);
@@ -255,45 +258,53 @@
   }
   @keyframes badgeGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
 
-  .turntable-stage { perspective: 950px; width: 220px; height: 270px; margin: 6px auto 0; }
-  .turntable-figure { width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform; }
-  .figure-svg { width: 100%; height: 100%; filter: drop-shadow(0 14px 16px rgba(0,0,0,0.45)); }
-  .figure-svg.is-hidden { filter: drop-shadow(0 0 22px rgba(255,215,100,0.95)) drop-shadow(0 14px 16px rgba(0,0,0,0.45)); }
-  .pedestal {
-    width: 170px; height: 24px; border-radius: 50%; margin: -8px auto 0;
-    background: radial-gradient(ellipse at center, rgba(255,225,160,0.45), rgba(0,0,0,0.1) 72%);
+  .card-stage { perspective: 1100px; width: 232px; height: 310px; margin: 0 auto; }
+  .card-tilt {
+    width: 100%; height: 100%; position: relative; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 22px 44px rgba(0,0,0,0.55);
+    will-change: transform;
   }
+  .card-tilt.is-hidden { box-shadow: 0 0 46px rgba(255,215,100,0.65), 0 22px 44px rgba(0,0,0,0.55); }
+  .card-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-frame { position: absolute; inset: 0; border-radius: 18px; border: 3px solid rgba(255,255,255,0.4); pointer-events: none; }
+  .card-tilt.is-hidden .card-frame { border-color: var(--gold-a); box-shadow: inset 0 0 34px rgba(255,215,100,0.55); }
+  .card-sheen {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.55;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 48%, rgba(255,255,255,0.12) 53%, transparent 68%);
+    transform: translateX(var(--sheen-x, -60%));
+    mix-blend-mode: overlay;
+  }
+  .card-tilt.is-hidden .card-sheen {
+    background: linear-gradient(115deg, transparent 25%, rgba(255,224,150,0.7) 45%, rgba(180,220,255,0.4) 52%, rgba(255,180,230,0.5) 58%, transparent 72%);
+    opacity: 0.8;
+  }
+  .card-shadow { width: 190px; height: 22px; border-radius: 50%; margin: 10px auto 0; background: radial-gradient(ellipse at center, rgba(0,0,0,0.5), transparent 72%); }
   .drag-rotate-hint { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
   .item-name { font-size: 19px; font-weight: 800; margin-top: 12px; color: #fff; letter-spacing: 0.02em; }
   .item-series { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
-  .tw { animation: twinkle 1.6s ease-in-out infinite; transform-origin: center; }
-  .tw2 { animation-delay: 0.4s; } .tw3 { animation-delay: 0.8s; }
-  @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.25); } }
-  .sparkle-ring { animation: ringSpin 4s linear infinite; transform-origin: 100px 150px; }
-  @keyframes ringSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
   /* ---- Summary overlay ---- */
   .summary-panel { max-width: 480px; }
   .summary-panel h2 { color: var(--gold-a); font-size: 21px; }
   .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(94px, 1fr)); gap: 9px; margin-top: 10px; }
-  .summary-cell { background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 14px; padding: 9px 4px; text-align: center; }
-  .summary-cell.hidden-cell { background: linear-gradient(155deg, #4a3410, #1c1608); border-color: var(--gold-a); box-shadow: 0 0 14px rgba(246,217,146,0.4); }
-  .summary-cell .sc-figure { width: 46px; height: 58px; margin: 0 auto; }
-  .summary-cell .sc-name { font-size: 10px; font-weight: 700; margin-top: 3px; line-height: 1.25; color: var(--text-dim); }
+  .summary-cell { background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 14px; padding: 6px; text-align: center; overflow: hidden; }
+  .summary-cell.hidden-cell { border-color: var(--gold-a); box-shadow: 0 0 14px rgba(246,217,146,0.4); }
+  .summary-cell .sc-photo { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; display: block; }
+  .summary-cell .sc-name { font-size: 10px; font-weight: 700; margin-top: 4px; line-height: 1.25; color: var(--text-dim); }
 
   /* ---- Collection (圖鑑) overlay ---- */
   .collection-panel { max-width: 960px; max-height: 88vh; overflow-y: auto; }
   .collection-series-block { margin-bottom: 20px; }
   .collection-series-title { font-size: 14px; font-weight: 800; color: var(--gold-a); margin-bottom: 8px; display: flex; justify-content: space-between; }
-  .collection-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 7px; }
+  .collection-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 7px; }
   .mini-slot {
-    aspect-ratio: 1; border-radius: 12px; background: rgba(255,255,255,0.03);
+    aspect-ratio: 3/4; border-radius: 10px; background: rgba(255,255,255,0.03);
     display: flex; align-items: center; justify-content: center; font-size: 20px;
-    border: 1px solid rgba(255,255,255,0.08); position: relative;
+    border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden;
   }
-  .mini-slot.collected { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.28); }
-  .mini-slot.collected.is-hidden-slot { background: linear-gradient(155deg, #4a3410, #1c1608); border-color: var(--gold-a); box-shadow: 0 0 12px rgba(246,217,146,0.4); }
-  .mini-slot .mini-figure { width: 36px; height: 46px; }
+  .mini-slot.collected { border-color: rgba(255,255,255,0.28); }
+  .mini-slot.collected.is-hidden-slot { border-color: var(--gold-a); box-shadow: 0 0 12px rgba(246,217,146,0.4); }
+  .mini-slot .mini-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .mini-slot.locked .mini-q { color: rgba(255,255,255,0.28); font-weight: 800; }
 
   [hidden], .hidden { display: none !important; }
@@ -318,6 +329,7 @@
     </div>
   </header>
   <div class="subtitle">5 大臻藏系列・每盒 12 抽・每抽 5% 機率降臨隱藏款</div>
+  <div class="privacy-note">🔒 私人收藏版・僅供個人本機遊玩,請勿公開發布或散布圖片內容</div>
 
   <!-- Series select view -->
   <div class="panel" id="seriesListView">
@@ -340,7 +352,7 @@
   </div>
 
   <footer>
-    盲盒收藏樂園為模擬遊戲,所有系列與角色皆為原創示意設計(靈感取材自熱門動漫類型,但造型、姓名皆為原創繪製),不涉及任何真實版權角色圖像,亦不涉及真實購買或付費抽獎。純 HTML/CSS/JavaScript 製作,音效由 Web Audio API 分層即時合成,圖案由 SVG 即時繪製,無需安裝、無外部圖檔或音檔。
+    這是私人使用的收藏模擬遊戲,角色圖片來自個人收藏的作品美術/桌布,版權皆屬原作者與製作公司所有,僅供本機個人娛樂,不做公開發布或散布使用。純 HTML/CSS/JavaScript 製作,音效由 Web Audio API 分層即時合成,無需安裝、無需建置流程。
   </footer>
 </div>
 
@@ -362,13 +374,17 @@
     </div>
     <div id="revealPhase">
       <div class="rarity-badge" id="rarityBadge">普通款</div>
-      <div class="turntable-stage" id="turntableStage">
-        <div class="turntable-figure" id="turntableFigure"></div>
+      <div class="card-stage" id="cardStage">
+        <div class="card-tilt" id="cardTilt">
+          <img class="card-photo" id="cardPhoto" src="" alt="">
+          <div class="card-sheen"></div>
+          <div class="card-frame"></div>
+        </div>
       </div>
-      <div class="pedestal"></div>
+      <div class="card-shadow"></div>
       <div class="item-name" id="itemName">角色名稱</div>
       <div class="item-series" id="itemSeriesName">系列名稱</div>
-      <div class="drag-rotate-hint">👆 拖曳可 360° 旋轉查看</div>
+      <div class="drag-rotate-hint">👆 拖曳可傾斜查看鏡面光澤</div>
     </div>
     <button class="close-btn hidden" id="closeBtn">收下,繼續拆下一個 ➜</button>
   </div>
@@ -391,7 +407,7 @@
 <div class="overlay hidden" id="collectionOverlay">
   <div class="panel collection-panel">
     <h2>📖 收藏圖鑑</h2>
-    <p style="color:var(--text-dim); font-size:13px; margin-top:-6px;">已收集的款式會顯示全彩造型,金框金光代表隱藏款。</p>
+    <p style="color:var(--text-dim); font-size:13px; margin-top:-6px;">已收集的款式會顯示全彩照片,金框金光代表隱藏款。</p>
     <div id="collectionBody"></div>
     <div class="controls" style="margin-top: 14px;">
       <button class="action-btn secondary" id="collectionCloseBtn">關閉圖鑑</button>
@@ -403,124 +419,62 @@
 (function () {
   "use strict";
 
-  // ---------- Series / item data (5 curated series) ----------
+  // ---------- Series / item data (real photo assets, private local use only) ----------
+  const PHOTO_ROOT = "assets/blindbox-photos";
   const RAW_SERIES = [
-    { name: "元素小精靈", icon: "⚡", bodyType: "ears-tri", accentA: "#ffcf5c", accentB: "#7a4b00",
+    { id: "conan", name: "名偵探柯南", icon: "🕵️", accentA: "#7fb8ff", accentB: "#0d2a52",
       items: [
-        ["火焰仔", "🔥"], ["水滴仔", "💧"], ["藤蔓仔", "🌿"], ["電光仔", "⚡"],
-        ["岩石仔", "🪨"], ["冰霜仔", "❄️"], ["微風仔", "🌪️"], ["光耀仔", "✨"],
-        ["闇影仔", "🌑"], ["星塵仔", "💫"], ["甜心仔", "💖"], ["磁鐵仔", "🧲"]
-      ], hiddenName: "傳說虹光聖靈", hiddenBadge: "🌈" },
-    { name: "魔法旅人:精靈藥師", icon: "🧙", bodyType: "ears-long", accentA: "#9fc0ff", accentB: "#1c2b66",
+        ["01.jpg", "江戶川柯南"], ["02.jpg", "怪盜基德"], ["03.jpg", "毛利蘭"],
+        ["04.jpg", "怪盜基德・現身"], ["05.jpg", "怪盜基德・預告函"], ["06.jpg", "事件現場"],
+        ["07.jpg", "偵探天團"], ["08.jpg", "少年偵探團"], ["09.jpg", "名偵探對決"],
+        ["10.jpg", "工藤新一與毛利蘭"], ["11.jpg", "怪盜基德與中森青子"], ["12.jpg", "夏日回憶・新一與蘭"]
+      ], hiddenFile: "hidden.jpg", hiddenName: "全員集合・名偵探柯南" },
+    { id: "sololeveling", name: "獨自升級", icon: "⚔️", accentA: "#8f7cff", accentB: "#160a33",
       items: [
-        ["藥草魔女", "🌱"], ["沉默劍聖", "⚔️"], ["星辰占星師", "🔭"], ["冰霜法師", "🧊"],
-        ["治癒神官", "➕"], ["森林弓手", "🏹"], ["煉金術士", "⚗️"], ["幻術詩人", "🎭"],
-        ["雷光騎士", "⚡"], ["龍語者", "🐉"], ["時間旅者", "⏳"], ["沉眠賢者", "💤"]
-      ], hiddenName: "千年魔法使者", hiddenBadge: "✨" },
-    { name: "鬼獵者:呼吸劍士", icon: "🗡️", bodyType: "headband", accentA: "#ff8080", accentB: "#5c0f14",
+        ["01.jpg", "影之君主 成振宇"], ["02.jpg", "暗影軍團統帥"], ["03.jpg", "覺醒的獵人"],
+        ["04.jpg", "最強獵人"], ["05.jpg", "都市獵人"], ["06.jpg", "影之軍隊"],
+        ["07.jpg", "雪地狩獵者"], ["08.jpg", "覺醒者之力"], ["09.jpg", "暗影使者"],
+        ["10.jpg", "劍聖"], ["11.jpg", "劍舞獵人 車海仁"], ["12.jpg", "金色巨獸獵人"]
+      ], hiddenFile: "hidden.jpg", hiddenName: "影之將軍 貝魯" },
+    { id: "frieren", name: "葬送的芙莉蓮", icon: "🧙‍♀️", accentA: "#bfe3ff", accentB: "#274a6b",
       items: [
-        ["火之呼吸", "🔥"], ["水之呼吸", "💧"], ["雷之呼吸", "⚡"], ["風之呼吸", "🌪️"],
-        ["岩之呼吸", "🪨"], ["蟲之呼吸", "🐛"], ["花之呼吸", "🌸"], ["戀之呼吸", "💗"],
-        ["蛇之呼吸", "🐍"], ["音之呼吸", "🎵"], ["霞之呼吸", "🌫️"], ["月之呼吸", "🌙"]
-      ], hiddenName: "日之呼吸・傳說劍士", hiddenBadge: "☀️" },
-    { name: "經典童話樂園", icon: "👑", bodyType: "ears-round", accentA: "#ffb3d1", accentB: "#7a2749",
+        ["01.jpg", "希姆爾"], ["02.jpg", "海塔"], ["03.jpg", "艾森"],
+        ["04.jpg", "修塔爾克"], ["05.jpg", "費倫"], ["06.jpg", "芙莉蓮"],
+        ["07.jpg", "芙莉蓮・日常"], ["08.jpg", "芙莉蓮・旅途"], ["09.jpg", "聖誕限定芙莉蓮"],
+        ["10.jpg", "萬聖節限定芙莉蓮"], ["11.jpg", "芙莉蓮與同伴"], ["12.jpg", "新年和服芙莉蓮"]
+      ], hiddenFile: "hidden.jpg", hiddenName: "千年魔法・覺醒芙莉蓮" },
+    { id: "disney", name: "迪士尼經典", icon: "🏰", accentA: "#ffd166", accentB: "#7a3b8c",
       items: [
-        ["森林公主", "👑"], ["玻璃鞋精靈", "👠"], ["魔法南瓜車", "🎃"], ["勇敢船長", "⚓"],
-        ["小紅斗篷", "🧣"], ["森林裁縫", "🪡"], ["音樂盒仙子", "🎶"], ["溫柔巨人", "🌳"],
-        ["海洋人魚", "🧜"], ["沉睡花仙", "💤"], ["木偶男孩", "🪵"], ["魔鏡守衛", "🪞"]
-      ], hiddenName: "童話女王・星光加冕", hiddenBadge: "👑" },
-    { name: "大海賊寶藏隊", icon: "🏴‍☠️", bodyType: "hat-tricorn", accentA: "#6be3cb", accentB: "#0b4a44",
+        ["01.jpg", "米奇經典剪影"], ["02.jpg", "米奇星空之旅"], ["03.jpg", "米奇夥伴大集合"],
+        ["04.jpg", "動物方城市:兔子警官與狐狸"], ["05.jpg", "動物方城市:好搭檔"], ["06.jpg", "小熊維尼與小豬"],
+        ["07.jpg", "王國之心三劍客"], ["08.jpg", "飛哥與小佛"], ["09.jpg", "星際寶貝:莉蘿與史迪奇"],
+        ["10.jpg", "阿拉丁神燈精靈"], ["11.jpg", "米奇與米妮"], ["12.jpg", "溫馨家庭時光"]
+      ], hiddenFile: "hidden.jpg", hiddenName: "王國之心・傳說鑰匙劍使者" },
+    { id: "kimetsu", name: "鬼滅之刃", icon: "🗡️", accentA: "#7fd9c4", accentB: "#5c0f14",
       items: [
-        ["草帽船長", "⚓"], ["劍豪副手", "⚔️"], ["天才航海士", "🧭"], ["廚師拳王", "🍳"],
-        ["狙擊神槍手", "🎯"], ["潛水醫生", "💊"], ["樂師音符", "🎸"], ["考古學家", "📜"],
-        ["骷髏音樂家", "💀"], ["馴鹿醫生", "🦌"], ["忍者影子", "🥷"], ["巨人舵手", "🚢"]
-      ], hiddenName: "傳說船長・世界秘寶", hiddenBadge: "👑" }
+        ["01.jpg", "竈門炭治郎"], ["02.jpg", "竈門禰豆子"], ["03.jpg", "我妻善逸"],
+        ["04.jpg", "嘴平伊之助"], ["05.jpg", "冨岡義勇"], ["06.jpg", "胡蝶忍"],
+        ["07.jpg", "禰豆子・竹口封印"], ["08.jpg", "鬼殺隊・覺醒之眼"], ["09.jpg", "紅色劍士"],
+        ["10.jpg", "雷之呼吸・全集中"], ["11.jpg", "鬼殺隊出陣"], ["12.jpg", "業炎之刃"]
+      ], hiddenFile: "hidden.jpg", hiddenName: "鬼殺隊・柱合會議" }
   ];
 
   const HIDDEN_CHANCE = 0.05;
   const CHARGE_MS_NORMAL = 950;
   const CHARGE_MS_HIDDEN = 2000;
 
-  function paletteFor(seriesIdx, itemIdx, total) {
-    const hue = Math.round((seriesIdx * 41 + itemIdx * (360 / total)) % 360);
-    return { primary: `hsl(${hue} 62% 48%)`, secondary: `hsl(${hue} 50% 26%)` };
-  }
-
-  const SERIES = RAW_SERIES.map((s, sIdx) => {
-    const items = s.items.map(([name, badge], iIdx) => {
-      const pal = paletteFor(sIdx, iIdx, s.items.length);
-      return { name, badge, primary: pal.primary, secondary: pal.secondary };
-    });
-    return {
-      id: "s" + sIdx,
-      name: s.name,
-      icon: s.icon,
-      bodyType: s.bodyType,
-      accentA: s.accentA,
-      accentB: s.accentB,
-      items,
-      hidden: { name: s.hiddenName, badge: s.hiddenBadge }
-    };
-  });
-
-  // ---------- SVG chibi figure renderer (placeholder art; swap-ready for real photo turntables) ----------
-  let svgUidCounter = 0;
-  function accessoryMarkup(bodyType, fillPrimary, strokeColor) {
-    switch (bodyType) {
-      case "ears-tri":
-        return `<polygon points="62,58 50,14 82,52" fill="${strokeColor}"/><polygon points="138,58 150,14 118,52" fill="${strokeColor}"/>`;
-      case "ears-long":
-        return `<polygon points="66,68 6,42 70,84" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/><polygon points="134,68 194,42 130,84" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>`;
-      case "headband":
-        return `<rect x="62" y="66" width="76" height="12" rx="6" fill="${strokeColor}"/><circle cx="138" cy="72" r="6" fill="${strokeColor}"/>`;
-      case "ears-round":
-        return `<circle cx="62" cy="42" r="24" fill="${strokeColor}"/><circle cx="138" cy="42" r="24" fill="${strokeColor}"/>`;
-      case "hat-tricorn":
-        return `<path d="M48 60 Q100 8 152 60 Q100 38 48 60 Z" fill="${strokeColor}"/>`;
-      default:
-        return "";
-    }
-  }
-
-  function figureSVG(item, bodyType, isHidden) {
-    const uid = ++svgUidCounter;
-    const primary = item.primary;
-    const secondary = item.secondary;
-    const grad = isHidden ? `<linearGradient id="g${uid}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#ffe37a"/><stop offset="30%" stop-color="#ff8fc7"/>
-        <stop offset="60%" stop-color="#8fd6ff"/><stop offset="100%" stop-color="#b98fff"/>
-      </linearGradient>` : `<radialGradient id="g${uid}" cx="35%" cy="30%" r="75%">
-        <stop offset="0%" stop-color="${primary}" stop-opacity="1"/>
-        <stop offset="100%" stop-color="${secondary}" stop-opacity="1"/>
-      </radialGradient>`;
-    const fillPrimary = `url(#g${uid})`;
-    const strokeColor = isHidden ? "#ffd76a" : secondary;
-    const aboveHead = accessoryMarkup(bodyType, fillPrimary, strokeColor);
-    const sparkles = isHidden ? `
-      <g class="sparkle-ring"><circle cx="100" cy="150" r="92" fill="none" stroke="#ffe37a" stroke-width="2" stroke-dasharray="6 10" opacity="0.7"/></g>
-      <text x="30" y="56" font-size="20" class="tw">✨</text>
-      <text x="162" y="66" font-size="18" class="tw tw2">✨</text>
-      <text x="26" y="200" font-size="16" class="tw tw3">✨</text>
-      <text x="166" y="206" font-size="20" class="tw tw2">✨</text>` : "";
-    return `<svg viewBox="0 0 200 260" class="figure-svg${isHidden ? " is-hidden" : ""}">
-      <defs>${grad}</defs>
-      <ellipse cx="100" cy="242" rx="58" ry="12" fill="rgba(0,0,0,0.35)"/>
-      <path d="M100 108 C150 108 168 150 160 200 C154 238 130 250 100 250 C70 250 46 238 40 200 C32 150 50 108 100 108 Z" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
-      <circle cx="100" cy="90" r="40" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
-      ${aboveHead}
-      <ellipse cx="82" cy="90" rx="6" ry="8" fill="#1a1024"/>
-      <ellipse cx="118" cy="90" rx="6" ry="8" fill="#1a1024"/>
-      <circle cx="70" cy="102" r="7" fill="#ff9ec7" opacity="0.55"/>
-      <circle cx="130" cy="102" r="7" fill="#ff9ec7" opacity="0.55"/>
-      <path d="M88 106 Q100 114 112 106" stroke="#1a1024" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <circle cx="100" cy="168" r="20" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2"/>
-      <text x="100" y="176" font-size="20" text-anchor="middle">${item.badge}</text>
-      ${sparkles}
-    </svg>`;
-  }
+  const SERIES = RAW_SERIES.map(s => ({
+    id: s.id,
+    name: s.name,
+    icon: s.icon,
+    accentA: s.accentA,
+    accentB: s.accentB,
+    items: s.items.map(([file, name]) => ({ file, name, src: `${PHOTO_ROOT}/${s.id}/${file}` })),
+    hidden: { file: s.hiddenFile, name: s.hiddenName, src: `${PHOTO_ROOT}/${s.id}/${s.hiddenFile}` }
+  }));
 
   // ---------- Collection persistence ----------
-  const STORAGE_KEY = "blindbox_collection_v2";
+  const STORAGE_KEY = "blindbox_collection_v3";
   let collection = {};
   (function loadCollection() {
     try {
@@ -583,7 +537,9 @@
   const cornerHint = document.getElementById("cornerHint");
   const closeBtn = document.getElementById("closeBtn");
   const rarityBadge = document.getElementById("rarityBadge");
-  const turntableFigure = document.getElementById("turntableFigure");
+  const cardStage = document.getElementById("cardStage");
+  const cardTilt = document.getElementById("cardTilt");
+  const cardPhoto = document.getElementById("cardPhoto");
   const itemName = document.getElementById("itemName");
   const itemSeriesName = document.getElementById("itemSeriesName");
 
@@ -688,7 +644,6 @@
     osc.connect(g); g.connect(ctx.destination);
     osc.start(t0); osc.stop(t0 + durationSec + 0.2);
   }
-  // Layered "drumroll" build-up: click rate + pitch accelerate toward the burst.
   let chargeTimers = [];
   function playChargeRoll(durationMs, hidden) {
     chargeTimers.forEach(id => clearTimeout(id));
@@ -822,36 +777,46 @@
     flashLayer.classList.add("flash");
   }
 
-  // ---------- Turntable (JS-driven 360 rotation; swap-ready for real photo sequences) ----------
-  let ttAngle = 0;
-  let ttDragging = false;
-  let ttLastX = 0;
-  let ttRafId = null;
-  function ttTick() {
-    if (!ttDragging) ttAngle += 0.55;
-    const rad = (ttAngle * Math.PI) / 180;
-    const brightness = 0.82 + 0.32 * Math.abs(Math.cos(rad));
-    turntableFigure.style.transform = `rotateY(${ttAngle}deg)`;
-    turntableFigure.style.filter = `brightness(${brightness.toFixed(2)})`;
-    ttRafId = requestAnimationFrame(ttTick);
+  // ---------- Holographic card tilt (drag to tilt; gentle idle sway otherwise) ----------
+  let tiltDragging = false;
+  let tiltAngleX = 0, tiltAngleY = 0;
+  let tiltRafId = null;
+  let tiltStartTime = 0;
+  function applyTilt(rx, ry, sheenX) {
+    cardTilt.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+    cardTilt.style.setProperty("--sheen-x", sheenX + "%");
   }
-  function startTurntable() {
-    ttAngle = 0; ttDragging = false;
-    if (ttRafId) cancelAnimationFrame(ttRafId);
-    ttRafId = requestAnimationFrame(ttTick);
+  function tiltTick(ts) {
+    if (!tiltDragging) {
+      const t = (ts - tiltStartTime) / 1000;
+      const ry = Math.sin(t * 0.6) * 8;
+      const rx = Math.cos(t * 0.5) * 4;
+      applyTilt(rx, ry, 50 + ry * 3);
+    }
+    tiltRafId = requestAnimationFrame(tiltTick);
   }
-  function stopTurntable() { if (ttRafId) cancelAnimationFrame(ttRafId); ttRafId = null; }
-  document.getElementById("turntableStage").addEventListener("pointerdown", e => {
-    ttDragging = true; ttLastX = e.clientX;
-    e.currentTarget.setPointerCapture(e.pointerId);
+  function startTilt() {
+    tiltDragging = false; tiltAngleX = 0; tiltAngleY = 0;
+    tiltStartTime = performance.now();
+    if (tiltRafId) cancelAnimationFrame(tiltRafId);
+    tiltRafId = requestAnimationFrame(tiltTick);
+  }
+  function stopTilt() { if (tiltRafId) cancelAnimationFrame(tiltRafId); tiltRafId = null; }
+  cardStage.addEventListener("pointerdown", e => {
+    tiltDragging = true;
+    cardStage.setPointerCapture(e.pointerId);
   });
-  document.getElementById("turntableStage").addEventListener("pointermove", e => {
-    if (!ttDragging) return;
-    const dx = e.clientX - ttLastX; ttLastX = e.clientX;
-    ttAngle += dx * 0.9;
+  cardStage.addEventListener("pointermove", e => {
+    if (!tiltDragging) return;
+    const rect = cardStage.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    const rx = (0.5 - py) * 22;
+    const ry = (px - 0.5) * 26;
+    applyTilt(rx, ry, px * 100);
   });
-  ["pointerup", "pointercancel"].forEach(evt => {
-    document.getElementById("turntableStage").addEventListener(evt, () => { ttDragging = false; });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(evt => {
+    cardStage.addEventListener(evt, () => { tiltDragging = false; });
   });
 
   // ---------- Rendering: series list ----------
@@ -859,9 +824,8 @@
     seriesGrid.innerHTML = SERIES.map(series => {
       const total = series.items.length + 1;
       const got = collectedCount(series);
-      const preview = figureSVG(series.items[0], series.bodyType, false);
       return `<button class="series-card" data-series="${series.id}" style="--series-a:${series.accentA}; --series-b:${series.accentB};">
-        <span class="series-figure">${preview}</span>
+        <span class="series-photo-wrap"><img class="series-photo" src="${series.items[0].src}" alt=""></span>
         <span class="series-name">${series.icon} ${series.name}</span>
         <span class="series-progress">已收集 ${got}/${total}</span>
       </button>`;
@@ -886,7 +850,7 @@
       }
       const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
       const cls = entry.isHidden ? "box-tile opened got-hidden" : "box-tile opened";
-      return `<button class="${cls}" data-slot="${entry.slot}" disabled><span class="tile-mini">${item.badge}</span><span class="tile-no">${entry.slot}</span></button>`;
+      return `<button class="${cls}" data-slot="${entry.slot}" disabled><img class="tile-photo" src="${item.src}" alt=""><span class="tile-no">${entry.slot}</span></button>`;
     }).join("");
   }
 
@@ -926,7 +890,7 @@
     closeBtn.classList.add("hidden");
     tearPhase.style.display = "";
     revealPhase.classList.remove("show");
-    stopTurntable();
+    stopTilt();
     overlay.classList.remove("hidden");
     requestAnimationFrame(() => { seal.style.transition = ""; });
   }
@@ -999,11 +963,9 @@
     itemName.textContent = item.name;
     itemSeriesName.textContent = `${currentSeries.icon} ${currentSeries.name}`;
 
-    const figItem = entry.isHidden
-      ? { primary: item.primary || "#ffe37a", secondary: item.secondary || "#c79a2b", badge: item.badge }
-      : item;
-    turntableFigure.innerHTML = figureSVG(figItem, currentSeries.bodyType, !!entry.isHidden);
-    startTurntable();
+    cardPhoto.src = item.src;
+    cardTilt.className = entry.isHidden ? "card-tilt is-hidden" : "card-tilt";
+    startTilt();
 
     if (entry.isHidden) { launchConfetti(true); playFanfare(); }
     else { launchConfetti(false); playChime(); }
@@ -1020,7 +982,7 @@
 
   function handleClose() {
     overlay.classList.add("hidden");
-    stopTurntable();
+    stopTilt();
     const allDone = closeBtn.dataset.allDone === "1";
     currentDrawItem = null;
     if (allDone) showSummary();
@@ -1031,10 +993,9 @@
     summaryText.textContent = `這一盒共拆出 ${hiddenCount} 個隱藏款(理論機率每抽 5%)。看看你拆到了什麼吧!`;
     summaryGrid.innerHTML = currentBox.map(entry => {
       const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
-      const figItem = entry.isHidden ? { primary: "#ffe37a", secondary: "#c79a2b", badge: item.badge } : item;
       const cls = entry.isHidden ? "summary-cell hidden-cell" : "summary-cell";
       return `<div class="${cls}">
-        <span class="sc-figure">${figureSVG(figItem, currentSeries.bodyType, !!entry.isHidden)}</span>
+        <img class="sc-photo" src="${item.src}" alt="">
         <div class="sc-name">${item.name}</div>
       </div>`;
     }).join("");
@@ -1064,11 +1025,11 @@
       const slots = series.items.map((item, idx) => {
         const has = !!rec[String(idx)];
         if (!has) return `<div class="mini-slot locked"><span class="mini-q">?</span></div>`;
-        return `<div class="mini-slot collected"><span class="mini-figure">${figureSVG(item, series.bodyType, false)}</span></div>`;
+        return `<div class="mini-slot collected"><img class="mini-photo" src="${item.src}" alt=""></div>`;
       }).join("");
       const hiddenHas = !!rec["hidden"];
       const hiddenSlot = hiddenHas
-        ? `<div class="mini-slot collected is-hidden-slot"><span class="mini-figure">${figureSVG({ primary: "#ffe37a", secondary: "#c79a2b", badge: series.hidden.badge }, series.bodyType, true)}</span></div>`
+        ? `<div class="mini-slot collected is-hidden-slot"><img class="mini-photo" src="${series.hidden.src}" alt=""></div>`
         : `<div class="mini-slot locked"><span class="mini-q">★</span></div>`;
       return `<div class="collection-series-block">
         <div class="collection-series-title"><span>${series.icon} ${series.name}</span><span>${got}/${total}</span></div>
