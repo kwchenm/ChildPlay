@@ -68,14 +68,55 @@
   .card-level5 .desc { color: #4d7091; }
   .card-blindbox { background: #4a34a0; color: #fff8f0; }
   .card-blindbox .desc { color: #d9c9ff; }
+  .card-pinball { background: #1e1140; color: #fdf6ff; border: 2px solid #ff2fb0; }
+  .card-pinball .desc { color: #b7a3e0; }
+  .card-cupgame { background: #2b0a1c; color: #fdf1e0; border: 2px solid #c79a3e; }
+  .card-cupgame .desc { color: #d9b9a8; }
+  .card-nightrush { background: #171233; color: #f2eeff; border: 2px solid #3de0ff; }
+  .card-nightrush .desc { color: #9c93c9; }
 
-  footer { margin-top: 32px; font-size: 13px; color: #9c7a5e; text-align: center; }
+  .tab-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(14px, 3vw, 17px);
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    transition: transform 0.12s ease;
+  }
+  .tab-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .tab-btn.active { background: #6b3f2a; color: #fff; }
+  .tab-btn:not(.active) { background: #fff; color: #6b3f2a; }
+  #app.on-adult .tab-btn.active { background: #171233; }
+
+  body { background: linear-gradient(160deg, #fff3d6 0%, #cdeeff 50%, #ffe0ec 100%); transition: background 0.3s ease; }
+  #app.on-adult { }
+  body.on-adult { background: radial-gradient(circle at 50% -10%, #150a2a 0%, #0a1024 65%, #05040c 100%); }
+
+  .panel-view[hidden] { display: none !important; }
+
+  footer { margin-top: 32px; font-size: 13px; color: #9c7a5e; text-align: center; transition: color 0.3s ease; }
+  body.on-adult footer { color: #9c93c9; }
 </style>
 </head>
 <body>
 <div id="app">
-  <h1>🎮 ChildPlay 遊戲選單</h1>
-  <div class="subtitle">選一個適合的遊戲開始玩吧!</div>
+  <h1 id="pageTitle">🎮 ChildPlay 遊戲選單</h1>
+  <div class="subtitle" id="pageSubtitle">選一個適合的遊戲開始玩吧!</div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="kidsTabBtn">🧒 兒童遊戲</button>
+    <button class="tab-btn" id="adultTabBtn">🌃 大人遊戲</button>
+  </div>
+
+  <div class="panel-view" id="kidsPanel">
   <div class="cards">
     <a class="game-card card-toddler" href="toddler-match.html">
       <span class="emoji">🎈</span>
@@ -102,8 +143,68 @@
       <span class="title">盲盒收藏樂園・臻藏版</span>
       <span class="desc">5 大精緻系列・每盒 12 抽<br>5% 隱藏款・電影級過場・360° 展示</span>
     </a>
+    <a class="game-card card-pinball" href="dragon-pinball.html">
+      <span class="emoji">🐉</span>
+      <span class="title">巨龍彈珠台</span>
+      <span class="desc">打樁彈珠台・中央巨龍大獎格<br>隨機轉出大獎・彩票持續累積</span>
+    </a>
+    <a class="game-card card-cupgame" href="gift-cup-game.html">
+      <span class="emoji">🎩</span>
+      <span class="title">禮物杯猜猜樂</span>
+      <span class="desc">魔術猜杯遊戲・4 種難度可選<br>過關杯子變多變快・生命值與過關給分</span>
+    </a>
   </div>
-  <footer>點選卡片進入遊戲 🎲</footer>
+  </div>
+
+  <div class="panel-view" id="adultPanel" hidden>
+    <div class="cards">
+      <a class="game-card card-nightrush" href="taipei-night-rush.html">
+        <span class="emoji">🌃</span>
+        <span class="title">台北狂飆夜</span>
+        <span class="desc">原創開放城市駕駛遊戲<br>自由飆車・送貨接關・甩開警察追逐</span>
+      </a>
+    </div>
+  </div>
+
+  <footer id="pageFooter">點選卡片進入遊戲 🎲</footer>
 </div>
+<script>
+(function () {
+  "use strict";
+  var kidsTabBtn = document.getElementById("kidsTabBtn");
+  var adultTabBtn = document.getElementById("adultTabBtn");
+  var kidsPanel = document.getElementById("kidsPanel");
+  var adultPanel = document.getElementById("adultPanel");
+  var pageTitle = document.getElementById("pageTitle");
+  var pageSubtitle = document.getElementById("pageSubtitle");
+  var pageFooter = document.getElementById("pageFooter");
+  var body = document.body;
+
+  function showKids() {
+    kidsTabBtn.classList.add("active");
+    adultTabBtn.classList.remove("active");
+    kidsPanel.hidden = false;
+    adultPanel.hidden = true;
+    body.classList.remove("on-adult");
+    pageTitle.textContent = "🎮 ChildPlay 遊戲選單";
+    pageSubtitle.textContent = "選一個適合的遊戲開始玩吧!";
+    pageFooter.textContent = "點選卡片進入遊戲 🎲";
+  }
+
+  function showAdult() {
+    adultTabBtn.classList.add("active");
+    kidsTabBtn.classList.remove("active");
+    adultPanel.hidden = false;
+    kidsPanel.hidden = true;
+    body.classList.add("on-adult");
+    pageTitle.textContent = "🌃 大人遊戲區";
+    pageSubtitle.textContent = "給大朋友玩的遊戲,切回上方可以回到兒童遊戲";
+    pageFooter.textContent = "點選卡片進入遊戲 🎲";
+  }
+
+  kidsTabBtn.addEventListener("click", showKids);
+  adultTabBtn.addEventListener("click", showAdult);
+})();
+</script>
 </body>
 </html>

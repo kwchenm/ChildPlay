@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>巨龍彈珠台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #150a30;
+    --bg2: #2a0f4a;
+    --panel: #1e1140;
+    --panel-edge: #ff2fb0;
+    --gold: #ffd166;
+    --cyan: #4de8ff;
+    --pink: #ff5cb8;
+    --text: #fdf6ff;
+    --text-dim: #b7a3e0;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: radial-gradient(circle at 50% -10%, var(--bg2) 0%, var(--bg1) 60%, #0a0518 100%);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .home-link {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bg1);
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  }
+
+  .icon-btn {
+    font-size: 20px;
+    background: var(--panel);
+    border: 2px solid var(--panel-edge);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  h1 {
+    font-family: 'Press Start 2P', 'Baloo 2', sans-serif;
+    font-size: clamp(13px, 3.4vw, 18px);
+    margin: 0;
+    text-align: center;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255, 209, 102, 0.6);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-row {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .stat-box {
+    flex: 1;
+    background: var(--panel);
+    border: 2px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 8px 10px;
+    text-align: center;
+    box-shadow: 0 0 14px rgba(255, 47, 176, 0.25) inset;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .stat-value {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 4vw, 20px);
+    color: var(--cyan);
+    text-shadow: 0 0 8px rgba(77, 232, 255, 0.7);
+  }
+
+  .stat-value.gold { color: var(--gold); text-shadow: 0 0 8px rgba(255, 209, 102, 0.7); }
+
+  .board-frame {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(180deg, #2c1350, #150a30);
+    border: 3px solid var(--panel-edge);
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 0 24px rgba(255, 47, 176, 0.35), 0 10px 0 rgba(0,0,0,0.4);
+    position: relative;
+  }
+
+  .dragon-mascot {
+    text-align: center;
+    font-size: clamp(30px, 8vw, 42px);
+    margin-bottom: 2px;
+    animation: dragonBob 2.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 92, 184, 0.7));
+  }
+  @keyframes dragonBob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+  }
+
+  canvas#board {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    background: #0f0826;
+    touch-action: none;
+    cursor: pointer;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 8px 0 4px;
+  }
+
+  .controls {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .coin-btn {
+    font-family: 'Press Start 2P', 'Baloo 2', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--bg1);
+    background: linear-gradient(180deg, var(--gold), #d99b2b);
+    border: none;
+    border-radius: 24px;
+    padding: 14px 26px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #a9741a;
+    animation: pulseCoin 1.4s ease-in-out infinite;
+  }
+  .coin-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #a9741a; }
+  @keyframes pulseCoin {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .coin-btn[hidden] { display: none; }
+
+  footer {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 420px;
+  }
+
+  /* ---- overlays ---- */
+  #confetti-layer, #fireworks-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #confetti-layer { z-index: 50; }
+  #fireworks-layer { z-index: 70; }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    border-radius: 3px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(540deg); opacity: 0.9; }
+  }
+
+  .fw-particle {
+    position: absolute;
+    top: 0; left: 0;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    animation: fwPop 900ms ease-out forwards;
+  }
+  @keyframes fwPop {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+  }
+
+  .float-pop {
+    position: absolute;
+    font-family: 'Press Start 2P', monospace;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--gold);
+    text-shadow: 0 0 6px rgba(255,209,102,0.8);
+    pointer-events: none;
+    animation: popUp 900ms ease-out forwards;
+    z-index: 55;
+  }
+  @keyframes popUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
+  }
+
+  #dragonOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(10, 5, 24, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  #dragonOverlay.show { opacity: 1; pointer-events: auto; }
+
+  .dragon-card {
+    background: linear-gradient(180deg, #2c1350, #1a0c36);
+    border: 3px solid var(--gold);
+    border-radius: 24px;
+    padding: 30px 26px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 209, 102, 0.5);
+    max-width: 320px;
+  }
+
+  .dragon-big { font-size: 56px; margin-bottom: 6px; animation: dragonShake 0.5s ease infinite; }
+  @keyframes dragonShake {
+    0%, 100% { transform: rotate(-4deg) scale(1); }
+    50% { transform: rotate(4deg) scale(1.08); }
+  }
+
+  .dragon-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--pink);
+    margin-bottom: 14px;
+    text-shadow: 0 0 10px rgba(255,92,184,0.8);
+  }
+
+  .dragon-reel {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    color: var(--cyan);
+    background: #0f0826;
+    border-radius: 14px;
+    padding: 18px 10px;
+    margin-bottom: 14px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0 10px rgba(77,232,255,0.8);
+  }
+
+  .dragon-reel.landed { color: var(--gold); text-shadow: 0 0 14px rgba(255,209,102,0.9); }
+
+  .dragon-result {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+  .dragon-result b { color: var(--gold); }
+
+  .milestone-banner {
+    position: fixed;
+    top: 22%;
+    left: 50%;
+    transform: translate(-50%, -10px) scale(0.5);
+    background: linear-gradient(135deg, #ffe08a, #ffb347);
+    padding: 18px 30px;
+    border-radius: 24px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
+    font-size: clamp(16px, 4vw, 24px);
+    font-weight: 800;
+    color: #6b3f2a;
+    z-index: 95;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-align: center;
+    pointer-events: none;
+    max-width: 90vw;
+  }
+  .milestone-banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .milestone-banner .en { display: block; font-size: 0.6em; color: #8a5a2b; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🐉 巨龍彈珠台</h1>
+    <button class="icon-btn" id="muteBtn" title="靜音">🔊</button>
+  </header>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-label">🎟️ 彩票 TICKETS</div>
+      <div class="stat-value gold" id="ticketVal">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">⚪ 剩餘彈珠 BALLS</div>
+      <div class="stat-value" id="ballsVal">15</div>
+    </div>
+  </div>
+
+  <div class="board-frame">
+    <div class="dragon-mascot">🐉</div>
+    <canvas id="board" width="360" height="620"></canvas>
+  </div>
+
+  <div class="hint">點一下彈珠台上方,就會從那個位置掉下一顆彈珠 ✨</div>
+
+  <div class="controls">
+    <button class="coin-btn" id="coinBtn" hidden>🪙 投入代幣,再玩一次!</button>
+  </div>
+
+  <footer>打中中間的巨龍格,就有機會轉出隨機大獎!彩票會持續累積,每滿 1000 張還有額外驚喜 🎉</footer>
+</div>
+
+<div id="confetti-layer"></div>
+<div id="fireworks-layer"></div>
+<div class="milestone-banner" id="milestoneBanner"></div>
+
+<div id="dragonOverlay">
+  <div class="dragon-card">
+    <div class="dragon-big">🐉</div>
+    <div class="dragon-title">巨龍降臨!大獎轉動中</div>
+    <div class="dragon-reel" id="dragonReel">🎰</div>
+    <div class="dragon-result" id="dragonResult"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Canvas / board setup ----------
+  const canvas = document.getElementById("board");
+  const ctx = canvas.getContext("2d");
+  const BOARD_W = 360;
+  const BOARD_H = 620;
+
+  const PEG_TOP = 90;
+  const ROW_GAP = 38;
+  const COL_GAP = 36;
+  const PEG_ROWS = 9;
+  const PEG_R = 5;
+  const BALL_R = 7;
+  const SLOT_TOP = 480;
+  const SLOT_BOTTOM = 604;
+  const SLOT_COUNT = 9;
+  const SLOT_W = BOARD_W / SLOT_COUNT;
+  const GRAVITY = 0.34;
+
+  const SLOT_VALUES = [30, 80, 150, 300, "DRAGON", 300, 150, 80, 30];
+  const SLOT_COLORS = [
+    "#3a2a66", "#2f5f8f", "#2f8f6f", "#8f5f2f",
+    "#c23b5f",
+    "#8f5f2f", "#2f8f6f", "#2f5f8f", "#3a2a66",
+  ];
+
+  const DRAGON_TIERS = [
+    { name: "小獎", en: "Small Prize", amount: 300, weight: 50, emoji: "🎈" },
+    { name: "中獎", en: "Medium Prize", amount: 800, weight: 30, emoji: "🎁" },
+    { name: "大獎", en: "Big Prize", amount: 2000, weight: 15, emoji: "💎" },
+    { name: "超大獎", en: "MEGA Prize", amount: 5000, weight: 5, emoji: "👑" },
+  ];
+
+  // ---------- Pegs ----------
+  const PEGS = [];
+  for (let r = 0; r < PEG_ROWS; r++) {
+    const y = PEG_TOP + r * ROW_GAP;
+    const offset = r % 2 === 1;
+    const count = offset ? 8 : 9;
+    for (let c = 0; c < count; c++) {
+      const x = offset ? COL_GAP * 1.5 + c * COL_GAP : COL_GAP * 1 + c * COL_GAP;
+      PEGS.push({ x, y });
+    }
+  }
+
+  // ---------- State ----------
+  let balls = [];
+  let tickets = 0;
+  let ballsLeft = 15;
+  let muted = false;
+  let lastLaunchTime = 0;
+  let lastPegSoundTime = 0;
+  let lastMilestone = 0;
+  const floatPops = [];
+
+  // ---------- DOM ----------
+  const ticketVal = document.getElementById("ticketVal");
+  const ballsVal = document.getElementById("ballsVal");
+  const coinBtn = document.getElementById("coinBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const confettiLayer = document.getElementById("confetti-layer");
+  const fireworksLayer = document.getElementById("fireworks-layer");
+  const milestoneBanner = document.getElementById("milestoneBanner");
+  const dragonOverlay = document.getElementById("dragonOverlay");
+  const dragonReel = document.getElementById("dragonReel");
+  const dragonResult = document.getElementById("dragonResult");
+
+  // ---------- Audio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+
+  function beep(freq, duration, type, delay, gainVal) {
+    if (muted) return;
+    const ctx2 = getCtx();
+    if (!ctx2) return;
+    const osc = ctx2.createOscillator();
+    const gain = ctx2.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = gainVal != null ? gainVal : 0.15;
+    osc.connect(gain);
+    gain.connect(ctx2.destination);
+    const startAt = ctx2.currentTime + (delay || 0);
+    osc.start(startAt);
+    gain.gain.setValueAtTime(gain.gain.value, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    osc.stop(startAt + duration + 0.02);
+  }
+
+  function playLaunch() {
+    beep(660, 0.08, "triangle", 0, 0.1);
+    beep(880, 0.06, "triangle", 0.05, 0.08);
+  }
+
+  function playPegPing() {
+    const now = Date.now();
+    if (now - lastPegSoundTime < 45) return;
+    lastPegSoundTime = now;
+    beep(1200 + Math.random() * 400, 0.05, "sine", 0, 0.06);
+  }
+
+  function playSlotDing(value) {
+    const base = 440 + value * 1.2;
+    beep(base, 0.14, "triangle", 0, 0.16);
+    beep(base * 1.5, 0.12, "sine", 0.06, 0.12);
+  }
+
+  function playCoinInsert() {
+    beep(1046, 0.06, "square", 0, 0.1);
+    beep(1568, 0.08, "square", 0.07, 0.1);
+  }
+
+  function playDragonFanfare() {
+    beep(523.25, 0.12, "triangle", 0.0, 0.2);
+    beep(659.25, 0.12, "triangle", 0.1, 0.2);
+    beep(783.99, 0.12, "triangle", 0.2, 0.2);
+    beep(1046.5, 0.22, "triangle", 0.3, 0.24);
+    beep(1318.5, 0.16, "sine", 0.46, 0.16);
+    beep(1567.98, 0.2, "sine", 0.56, 0.16);
+  }
+
+  function playFireworkBoom(delay) {
+    beep(90, 0.35, "sine", delay, 0.2);
+    beep(70, 0.4, "sine", delay + 0.03, 0.14);
+    beep(1568, 0.12, "triangle", delay + 0.12, 0.12);
+  }
+
+  // ---------- Helpers ----------
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // ---------- Launching ----------
+  function getCanvasX(clientX) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = BOARD_W / rect.width;
+    return (clientX - rect.left) * scaleX;
+  }
+
+  function launchBallAt(x) {
+    if (ballsLeft <= 0) return;
+    const now = Date.now();
+    if (now - lastLaunchTime < 160) return;
+    lastLaunchTime = now;
+    ballsLeft -= 1;
+    ballsVal.textContent = String(ballsLeft);
+    if (ballsLeft <= 0) coinBtn.hidden = false;
+
+    balls.push({
+      x: clamp(x, BALL_R + 2, BOARD_W - BALL_R - 2),
+      y: 16,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: 1.2,
+      settling: false,
+      slotIndex: -1,
+      dead: false,
+    });
+    playLaunch();
+  }
+
+  canvas.addEventListener("click", (e) => {
+    getCtx();
+    launchBallAt(getCanvasX(e.clientX));
+  });
+
+  canvas.addEventListener(
+    "touchstart",
+    (e) => {
+      getCtx();
+      if (e.touches && e.touches.length) {
+        launchBallAt(getCanvasX(e.touches[0].clientX));
+      }
+      e.preventDefault();
+    },
+    { passive: false }
+  );
+
+  coinBtn.addEventListener("click", () => {
+    getCtx();
+    ballsLeft = 15;
+    ballsVal.textContent = String(ballsLeft);
+    coinBtn.hidden = true;
+    playCoinInsert();
+  });
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  // ---------- Physics update ----------
+  function update() {
+    balls.forEach((ball) => {
+      if (ball.dead) return;
+      if (!ball.settling) {
+        ball.vy += GRAVITY;
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        if (ball.x < BALL_R) {
+          ball.x = BALL_R;
+          ball.vx *= -0.7;
+        }
+        if (ball.x > BOARD_W - BALL_R) {
+          ball.x = BOARD_W - BALL_R;
+          ball.vx *= -0.7;
+        }
+
+        for (let i = 0; i < PEGS.length; i++) {
+          const peg = PEGS[i];
+          const dx = ball.x - peg.x;
+          const dy = ball.y - peg.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = BALL_R + PEG_R;
+          if (dist < minDist && dist > 0.001) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            ball.x = peg.x + nx * minDist;
+            ball.y = peg.y + ny * minDist;
+            const dot = ball.vx * nx + ball.vy * ny;
+            ball.vx = (ball.vx - 2 * dot * nx) * 0.62 + (Math.random() - 0.5) * 0.5;
+            ball.vy = (ball.vy - 2 * dot * ny) * 0.62;
+            playPegPing();
+          }
+        }
+
+        if (ball.y >= SLOT_TOP) {
+          ball.settling = true;
+          ball.slotIndex = clamp(Math.floor(ball.x / SLOT_W), 0, SLOT_COUNT - 1);
+        }
+      } else {
+        const targetX = (ball.slotIndex + 0.5) * SLOT_W;
+        ball.x += (targetX - ball.x) * 0.2;
+        ball.vy += GRAVITY * 0.5;
+        ball.y += ball.vy * 0.5;
+        if (ball.y >= SLOT_BOTTOM - BALL_R) {
+          finalizeBall(ball);
+          ball.dead = true;
+        }
+      }
+    });
+    balls = balls.filter((b) => !b.dead);
+  }
+
+  function finalizeBall(ball) {
+    const value = SLOT_VALUES[ball.slotIndex];
+    const slotCenterX = (ball.slotIndex + 0.5) * SLOT_W;
+    if (value === "DRAGON") {
+      triggerDragonBonus();
+    } else {
+      addTickets(value);
+      spawnFloatPop(slotCenterX, SLOT_BOTTOM - 6, "+" + value);
+      playSlotDing(value);
+    }
+  }
+
+  // ---------- Rendering ----------
+  function render() {
+    ctx.clearRect(0, 0, BOARD_W, BOARD_H);
+
+    // subtle top rail
+    const railGrad = ctx.createLinearGradient(0, 0, 0, 16);
+    railGrad.addColorStop(0, "#ff5cb8");
+    railGrad.addColorStop(1, "rgba(255,92,184,0)");
+    ctx.fillStyle = railGrad;
+    ctx.fillRect(0, 0, BOARD_W, 16);
+
+    // pegs
+    for (let i = 0; i < PEGS.length; i++) {
+      const peg = PEGS[i];
+      ctx.beginPath();
+      ctx.arc(peg.x, peg.y, PEG_R, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(peg.x - 1.5, peg.y - 1.5, 0.5, peg.x, peg.y, PEG_R);
+      grad.addColorStop(0, "#fff6d6");
+      grad.addColorStop(1, "#c9a13a");
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    // slots
+    for (let s = 0; s < SLOT_COUNT; s++) {
+      const x = s * SLOT_W;
+      const isDragon = SLOT_VALUES[s] === "DRAGON";
+      ctx.fillStyle = SLOT_COLORS[s];
+      ctx.fillRect(x + 1, SLOT_TOP, SLOT_W - 2, SLOT_BOTTOM - SLOT_TOP);
+
+      if (isDragon) {
+        const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 220);
+        ctx.fillStyle = "rgba(255, 209, 102, " + (0.15 + pulse * 0.2) + ")";
+        ctx.fillRect(x + 1, SLOT_TOP, SLOT_W - 2, SLOT_BOTTOM - SLOT_TOP);
+      }
+
+      // divider
+      ctx.fillStyle = "rgba(255,255,255,0.15)";
+      ctx.fillRect(x, SLOT_TOP - 6, 2, SLOT_BOTTOM - SLOT_TOP + 6);
+
+      // label
+      ctx.fillStyle = "#fdf6ff";
+      ctx.font = isDragon ? "20px sans-serif" : "bold 13px 'Baloo 2', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const label = isDragon ? "🐉" : String(SLOT_VALUES[s]);
+      ctx.fillText(label, x + SLOT_W / 2, SLOT_BOTTOM - 16);
+    }
+    ctx.fillRect(BOARD_W - 2, SLOT_TOP - 6, 2, SLOT_BOTTOM - SLOT_TOP + 6);
+
+    // balls
+    for (let i = 0; i < balls.length; i++) {
+      const ball = balls[i];
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, BALL_R, 0, Math.PI * 2);
+      const bg = ctx.createRadialGradient(ball.x - 2, ball.y - 2, 0.5, ball.x, ball.y, BALL_R);
+      bg.addColorStop(0, "#ffffff");
+      bg.addColorStop(1, "#9fd8ff");
+      ctx.fillStyle = bg;
+      ctx.fill();
+    }
+  }
+
+  function loop() {
+    update();
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Floating "+points" popups ----------
+  function spawnFloatPop(canvasX, canvasY, text) {
+    const rect = canvas.getBoundingClientRect();
+    const scale = rect.width / BOARD_W;
+    const el = document.createElement("div");
+    el.className = "float-pop";
+    el.textContent = text;
+    el.style.left = rect.left + canvasX * scale - 16 + "px";
+    el.style.top = rect.top + canvasY * scale + window.scrollY - 10 + "px";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+
+  // ---------- Tickets / celebration ----------
+  function addTickets(n) {
+    tickets += n;
+    ticketVal.textContent = String(tickets);
+    spawnConfetti(Math.min(16, Math.max(6, Math.round(n / 40))));
+
+    const milestoneStep = Math.floor(tickets / 1000);
+    if (milestoneStep > lastMilestone) {
+      lastMilestone = milestoneStep;
+      setTimeout(() => milestoneCelebration(milestoneStep * 1000), 300);
+    }
+  }
+
+  function spawnConfetti(count) {
+    const colors = ["#ff5cb8", "#ffd166", "#4de8ff", "#8de29a", "#c9a6ff"];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const size = 6 + Math.random() * 7;
+      piece.style.width = size + "px";
+      piece.style.height = size * 1.6 + "px";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const duration = 1.4 + Math.random() * 1;
+      piece.style.animationDuration = duration + "s";
+      confettiLayer.appendChild(piece);
+      setTimeout(() => piece.remove(), duration * 1000 + 100);
+    }
+  }
+
+  function spawnFirework(x, y, color) {
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement("div");
+      p.className = "fw-particle";
+      const angle = (Math.PI * 2 * i) / count;
+      const dist = 70 + Math.random() * 70;
+      p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+      p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+      p.style.left = x + "px";
+      p.style.top = y + "px";
+      p.style.background = color;
+      fireworksLayer.appendChild(p);
+      setTimeout(() => p.remove(), 950);
+    }
+  }
+
+  function fireworksBurst() {
+    const fwColors = ["#ff5cb8", "#ffd166", "#4de8ff", "#8de29a", "#c9a6ff", "#ffa552"];
+    const bursts = 5;
+    for (let i = 0; i < bursts; i++) {
+      setTimeout(() => {
+        const x = window.innerWidth * (0.15 + Math.random() * 0.7);
+        const y = window.innerHeight * (0.12 + Math.random() * 0.35);
+        spawnFirework(x, y, fwColors[Math.floor(Math.random() * fwColors.length)]);
+        playFireworkBoom(0);
+      }, i * 220);
+    }
+  }
+
+  function milestoneCelebration(totalTickets) {
+    fireworksBurst();
+    milestoneBanner.innerHTML =
+      "🎉 彩票累積突破 " + totalTickets + " 張了! " +
+      '<span class="en">' + totalTickets + " tickets collected!</span>";
+    milestoneBanner.classList.add("show");
+    setTimeout(() => milestoneBanner.classList.remove("show"), 2400);
+  }
+
+  // ---------- Dragon bonus ----------
+  function pickDragonTier() {
+    const total = DRAGON_TIERS.reduce((s, t) => s + t.weight, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < DRAGON_TIERS.length; i++) {
+      const t = DRAGON_TIERS[i];
+      if (r < t.weight) return t;
+      r -= t.weight;
+    }
+    return DRAGON_TIERS[0];
+  }
+
+  function triggerDragonBonus() {
+    dragonOverlay.classList.add("show");
+    dragonReel.classList.remove("landed");
+    dragonResult.textContent = "";
+    const cycle = shuffle(DRAGON_TIERS.concat(DRAGON_TIERS));
+    let idx = 0;
+    beep(300, 0.05, "square", 0, 0.08);
+    const spinInterval = setInterval(() => {
+      const t = cycle[idx % cycle.length];
+      dragonReel.textContent = t.emoji + " " + t.name;
+      beep(300 + (idx % 5) * 60, 0.05, "square", 0, 0.07);
+      idx++;
+    }, 90);
+
+    setTimeout(() => {
+      clearInterval(spinInterval);
+      const finalTier = pickDragonTier();
+      dragonReel.textContent = finalTier.emoji + " " + finalTier.name;
+      dragonReel.classList.add("landed");
+      dragonResult.innerHTML = "獲得 <b>" + finalTier.amount + "</b> 張彩票!";
+      playDragonFanfare();
+      addTickets(finalTier.amount);
+      spawnFloatPop(BOARD_W / 2, SLOT_BOTTOM - 40, "+" + finalTier.amount);
+      fireworksBurst();
+
+      setTimeout(() => {
+        dragonOverlay.classList.remove("show");
+      }, 2200);
+    }, 1500);
+  }
+
+  // Some browsers require a user gesture before audio works.
+  document.body.addEventListener(
+    "click",
+    function unlockAudioOnce() {
+      getCtx();
+      document.body.removeEventListener("click", unlockAudioOnce);
+    },
+    { once: true }
+  );
+
+  // ---------- Init ----------
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
