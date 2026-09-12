@@ -3,244 +3,269 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>盲盒收藏樂園</title>
+<title>盲盒收藏樂園・臻藏版</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --violet: #6c4fd1;
-    --violet-dark: #4a34a0;
-    --pink: #ff8fc7;
-    --cream: #fff8f0;
-    --ink: #2c1650;
-    --gold: #ffe37a;
+    --bg0: #05050a;
+    --bg1: #0e0e1c;
+    --panel-bg: rgba(255,255,255,0.045);
+    --panel-border: rgba(255,255,255,0.12);
+    --gold-a: #f6d992;
+    --gold-b: #b9832c;
+    --text: #f5f1e8;
+    --text-dim: rgba(245,241,232,0.62);
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0; min-height: 100%;
     font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #4a34a0 0%, #2c1650 55%, #150a2b 100%);
-    color: var(--cream);
+    background: radial-gradient(circle at 50% -10%, #1c1a3a 0%, var(--bg1) 45%, var(--bg0) 100%);
+    color: var(--text);
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     overflow-x: hidden;
   }
+  .display-font { font-family: 'Cinzel', 'Baloo 2', serif; }
+
+  #bg-fx { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.55; }
+
   #app {
+    position: relative; z-index: 1;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 18px;
   }
   header {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    gap: 8px;
-    flex-wrap: wrap;
+    width: 100%; max-width: 960px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; gap: 10px; flex-wrap: wrap;
   }
   .home-link {
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--violet-dark);
-    background: var(--gold);
-    border-radius: 20px;
-    padding: 8px 14px;
-    white-space: nowrap;
-    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+    text-decoration: none; font-size: 13px; font-weight: 700; color: #1a1408;
+    background: linear-gradient(135deg, var(--gold-a), var(--gold-b));
+    border-radius: 20px; padding: 9px 16px; white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
   }
   h1 {
-    font-size: clamp(18px, 3.6vw, 26px);
-    margin: 0;
-    color: var(--gold);
-    text-align: center;
-    text-shadow: 0 2px 0 rgba(0,0,0,0.4);
-    flex: 1;
+    font-size: clamp(19px, 3.4vw, 28px);
+    margin: 0; letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #fff6da, var(--gold-a) 40%, var(--gold-b) 80%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-align: center; flex: 1;
   }
   .header-btns { display: flex; gap: 8px; }
   .icon-btn {
-    font-family: inherit;
-    border: 2px solid var(--violet-dark);
-    background: #3a2270;
-    color: var(--gold);
-    border-radius: 20px;
-    padding: 8px 12px;
-    font-size: 15px;
-    cursor: pointer;
-    white-space: nowrap;
+    font-family: inherit; border: 1px solid var(--panel-border);
+    background: var(--panel-bg); backdrop-filter: blur(10px);
+    color: var(--gold-a); border-radius: 20px; padding: 9px 14px;
+    font-size: 14px; cursor: pointer; white-space: nowrap;
   }
 
   .panel {
-    width: 100%;
-    max-width: 900px;
-    background: #241454;
-    border: 2px solid var(--violet-dark);
-    border-radius: 22px;
-    padding: 18px 18px 20px;
-    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
-    margin-bottom: 16px;
+    width: 100%; max-width: 960px;
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 20px 20px 22px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06);
+    margin-bottom: 18px;
   }
-  .panel h2 { margin: 0 0 12px; font-size: 17px; color: var(--gold); }
-  .subtitle { text-align: center; color: #d9c9ff; font-size: 14px; font-weight: 700; margin: 0 0 16px; }
+  .panel h2 { margin: 0 0 14px; font-size: 16px; color: var(--gold-a); letter-spacing: 0.03em; }
+  .subtitle { text-align: center; color: var(--text-dim); font-size: 13.5px; font-weight: 600; margin: 0 0 18px; letter-spacing: 0.02em; }
 
   /* ---- Series select grid ---- */
-  .series-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
-  }
+  .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
   .series-card {
-    border: none;
-    border-radius: 18px;
-    padding: 14px 10px 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.3);
-    transition: transform 0.12s ease;
-    font-family: inherit;
-    color: #fff;
+    position: relative; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 20px; padding: 18px 12px 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    cursor: pointer; font-family: inherit; color: #fff;
+    background: linear-gradient(155deg, var(--series-a), var(--series-b) 80%);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform 0.25s cubic-bezier(.2,.8,.3,1.3), box-shadow 0.25s ease;
   }
-  .series-card:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
-  .series-card .series-figure { width: 78px; height: 100px; }
-  .series-card .series-name { font-size: 14px; font-weight: 800; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.35); }
+  .series-card::before {
+    content: ""; position: absolute; inset: -40% -60%;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.28) 50%, transparent 60%);
+    transform: translateX(-120%); transition: transform 0.7s ease;
+  }
+  .series-card:hover::before { transform: translateX(60%); }
+  .series-card:hover { transform: translateY(-4px); box-shadow: 0 18px 34px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22); }
+  .series-card:active { transform: translateY(1px) scale(0.98); }
+  .series-card .series-figure { width: 84px; height: 108px; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.4)); }
+  .series-card .series-name { font-size: 14.5px; font-weight: 800; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
   .series-card .series-progress {
-    font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.28);
-    border-radius: 10px; padding: 3px 10px;
+    font-size: 11px; font-weight: 700; background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px; padding: 3px 12px;
   }
 
   /* ---- Box view ---- */
-  .box-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-  .box-title { font-size: 18px; font-weight: 800; color: var(--gold); }
+  .box-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .box-title { font-size: 19px; font-weight: 800; color: var(--gold-a); }
   .box-progress-pill {
-    font-weight: 800; background: var(--violet-dark); border: 2px solid #7a5cf0;
-    border-radius: 20px; padding: 7px 14px; font-size: 13px; color: var(--gold);
+    font-weight: 800; background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border);
+    border-radius: 20px; padding: 7px 14px; font-size: 12.5px; color: var(--gold-a);
   }
   .controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   .action-btn {
-    font-family: inherit; font-weight: 800; font-size: 15px; color: var(--ink);
-    background: var(--gold); border: none; border-radius: 24px; padding: 12px 22px;
-    cursor: pointer; box-shadow: 0 4px 0 #c7a83f; transition: transform 0.1s ease;
+    font-family: inherit; font-weight: 800; font-size: 14.5px; color: #241a06;
+    background: linear-gradient(135deg, var(--gold-a), var(--gold-b));
+    border: none; border-radius: 24px; padding: 12px 24px;
+    cursor: pointer; box-shadow: 0 6px 0 #7a591f, 0 10px 20px rgba(0,0,0,0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
-  .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c7a83f; }
-  .action-btn.secondary { background: #3a2270; color: var(--gold); border: 2px solid var(--violet-dark); box-shadow: 0 4px 0 rgba(0,0,0,0.35); }
-  .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .action-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #7a591f, 0 6px 14px rgba(0,0,0,0.4); }
+  .action-btn.secondary {
+    background: var(--panel-bg); color: var(--gold-a); border: 1px solid var(--panel-border);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.35);
+  }
+  .action-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .box-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-    gap: 8px;
-    padding: 4px;
-  }
+  .box-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; padding: 4px; }
   .box-tile {
-    font-family: inherit;
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 14px;
-    border: 2px solid var(--violet-dark);
-    background: linear-gradient(150deg, #7a5cf0 0%, #4a34a0 100%);
-    color: var(--gold);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; font-weight: 800; transition: transform 0.12s ease;
+    font-family: inherit; position: relative; aspect-ratio: 1;
+    border-radius: 16px; border: 1px solid rgba(255,255,255,0.16);
+    background: linear-gradient(155deg, #2c2450 0%, #16112c 100%);
+    color: var(--gold-a); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; font-weight: 800; transition: transform 0.18s cubic-bezier(.2,.8,.3,1.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 16px rgba(0,0,0,0.35);
   }
-  .box-tile::before { content: "🎀"; position:absolute; top:4px; font-size: 12px; }
-  .box-tile:hover:not(:disabled) { transform: scale(1.08); }
+  .box-tile::before {
+    content: ""; position: absolute; top: 6px; left: 6px; right: 6px; height: 40%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.16), transparent);
+    border-radius: 12px 12px 40% 40% / 12px 12px 60% 60%;
+  }
+  .box-tile:hover:not(:disabled) { transform: translateY(-3px) scale(1.05); }
   .box-tile:active:not(:disabled) { transform: scale(0.94); }
-  .box-tile .tile-q { font-size: 22px; }
-  .box-tile.opened { cursor: default; background: #1b0f3d; border-style: dashed; opacity: 0.7; }
-  .box-tile.opened.got-hidden { background: linear-gradient(150deg, #ffe37a, #ff8fc7); border-style: solid; opacity: 1; }
-  .box-tile .tile-mini { font-size: 20px; }
-  .box-tile .tile-no { position: absolute; bottom: 3px; font-size: 9px; opacity: 0.8; }
+  .box-tile .tile-q { font-size: 22px; z-index: 1; }
+  .box-tile.opened { cursor: default; background: rgba(255,255,255,0.03); opacity: 0.55; }
+  .box-tile.opened.got-hidden {
+    background: linear-gradient(155deg, #4a3410, #1c1608);
+    opacity: 1; border-color: var(--gold-a);
+    box-shadow: 0 0 18px rgba(246,217,146,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .box-tile .tile-mini { font-size: 22px; z-index: 1; }
+  .box-tile .tile-no { position: absolute; bottom: 4px; font-size: 9px; opacity: 0.7; z-index: 1; }
 
-  footer { margin-top: 6px; font-size: 12px; color: #cbb8ee; text-align: center; max-width: 760px; opacity: 0.9; }
+  footer { margin-top: 6px; font-size: 11.5px; color: rgba(245,241,232,0.45); text-align: center; max-width: 780px; }
 
   /* ---- Overlay base ---- */
   .overlay {
-    position: fixed; inset: 0; background: rgba(8,3,20,0.86);
+    position: fixed; inset: 0; background: rgba(2,2,6,0.9);
     display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px;
   }
+  .overlay.shaking { animation: shakeIt 0.42s ease; }
+  @keyframes shakeIt {
+    0%, 100% { transform: translate(0,0); }
+    20% { transform: translate(-8px, 4px); }
+    40% { transform: translate(7px, -5px); }
+    60% { transform: translate(-6px, 3px); }
+    80% { transform: translate(5px, -2px); }
+  }
   .close-btn {
-    font-family: inherit; font-weight: 800; font-size: 15px; color: var(--gold);
-    background: transparent; border: 2px solid var(--violet-dark); border-radius: 24px;
-    padding: 11px 24px; cursor: pointer; margin-top: 12px;
+    font-family: inherit; font-weight: 800; font-size: 14.5px; color: var(--gold-a);
+    background: transparent; border: 1px solid var(--panel-border); border-radius: 24px;
+    padding: 11px 26px; cursor: pointer; margin-top: 14px;
   }
 
-  /* ---- Tear phase (seal sticker on a blind box) ---- */
-  .reveal-stage { text-align: center; }
+  .reveal-stage { text-align: center; position: relative; }
+
+  /* ---- Tear phase ---- */
   .drag-hint {
-    font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 14px;
+    font-size: 13.5px; font-weight: 700; color: var(--gold-a); margin-bottom: 16px;
     animation: hintBounce 1.4s ease-in-out infinite; transition: opacity 0.25s ease;
   }
   .drag-hint.faded { opacity: 0; }
   @keyframes hintBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
 
   .box-wrap {
-    position: relative; width: 240px; height: 280px; margin: 0 auto 22px;
-    cursor: grab; touch-action: none; animation: idleWiggle 2.6s ease-in-out infinite;
+    position: relative; width: 250px; height: 290px; margin: 0 auto 22px;
+    cursor: grab; touch-action: none; animation: idleWiggle 2.8s ease-in-out infinite;
   }
   .box-wrap.dragging { animation: none; cursor: grabbing; }
-  @keyframes idleWiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(1.2deg); } }
+  .box-wrap.charging { animation: chargeShake 0.14s ease-in-out infinite; }
+  @keyframes idleWiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(1.1deg); } }
+  @keyframes chargeShake { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(1.5px,-1.5px); } }
 
   .box-cube {
-    position: absolute; inset: 0; border-radius: 20px;
+    position: absolute; inset: 0; border-radius: 22px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 8px; box-shadow: 0 8px 0 rgba(0,0,0,0.3);
-    background: linear-gradient(150deg, var(--box-a, #7a5cf0), var(--box-b, #4a34a0));
-    border: 3px solid rgba(255,255,255,0.25);
+    gap: 8px; box-shadow: 0 14px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+    background: linear-gradient(155deg, var(--box-a, #7a5cf0), var(--box-b, #4a34a0));
+    border: 1px solid rgba(255,255,255,0.3);
+    transition: box-shadow 0.3s ease;
   }
-  .box-cube .box-ribbon-v { position: absolute; top:0; bottom:0; left: 50%; width: 22px; margin-left: -11px; background: rgba(255,255,255,0.35); }
-  .box-cube .box-ribbon-h { position: absolute; left:0; right:0; top: 50%; height: 22px; margin-top: -11px; background: rgba(255,255,255,0.35); }
-  .box-cube .box-icon { font-size: 54px; z-index: 1; }
+  .box-cube.charging { animation: chargePulse 0.5s ease-in-out infinite alternate; }
+  @keyframes chargePulse {
+    from { box-shadow: 0 14px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 20px 4px rgba(255,255,255,0.15); filter: brightness(1); }
+    to { box-shadow: 0 14px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 55px 18px rgba(255,232,170,0.55); filter: brightness(1.35); }
+  }
+  .box-cube .box-ribbon-v { position: absolute; top:0; bottom:0; left: 50%; width: 22px; margin-left: -11px; background: linear-gradient(180deg, var(--gold-a), var(--gold-b)); opacity: 0.9; }
+  .box-cube .box-ribbon-h { position: absolute; left:0; right:0; top: 50%; height: 22px; margin-top: -11px; background: linear-gradient(90deg, var(--gold-a), var(--gold-b)); opacity: 0.9; }
+  .box-cube .box-icon { font-size: 52px; z-index: 1; }
   .box-cube .box-caption { font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); z-index: 1; }
 
   .seal {
-    position: absolute; inset: 0; border-radius: 20px;
-    background: repeating-linear-gradient(135deg, #fff8f0 0 10px, #f0d9ff 10px 20px);
-    border: 3px solid var(--pink);
+    position: absolute; inset: 0; border-radius: 22px;
+    background: repeating-linear-gradient(135deg, #fdf6e3 0 10px, #f2dfae 10px 20px);
+    border: 1px solid rgba(0,0,0,0.15);
     transition: clip-path 0.4s cubic-bezier(.4,.6,.4,1);
-    box-shadow: 0 8px 0 rgba(0,0,0,0.3);
-    clip-path: circle(420px at 0% 100%);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    clip-path: circle(440px at 0% 100%);
   }
   .seal .seal-glyph {
     position: absolute; left: 24%; top: 76%; transform: translate(-50%, -50%);
-    font-size: 40px; font-weight: 800; color: var(--pink); opacity: 0.85;
+    font-size: 42px; font-weight: 800; color: var(--gold-b); opacity: 0.9;
   }
   .corner-hint {
-    position: absolute; top: 2px; right: 2px; font-size: 24px; z-index: 5;
+    position: absolute; top: 4px; right: 4px; font-size: 24px; z-index: 5;
     animation: cornerBounce 1.2s ease-in-out infinite; transition: opacity 0.25s ease; pointer-events: none;
   }
   .corner-hint.faded { opacity: 0; }
   @keyframes cornerBounce { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5px, 5px); } }
 
+  .vignette {
+    position: absolute; inset: -100px; border-radius: 50%;
+    background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.92) 68%);
+    opacity: 0; transition: opacity 1.1s ease; pointer-events: none; z-index: 4;
+  }
+  .vignette.on { opacity: 1; }
+
   /* ---- Reveal / 360 turntable phase ---- */
-  #revealPhase { display: none; }
-  #revealPhase.show { display: block; }
+  #revealPhase { display: none; opacity: 0; transform: translateY(14px) scale(0.94); }
+  #revealPhase.show { display: block; animation: revealIn 0.55s cubic-bezier(.2,.9,.25,1.3) forwards; }
+  @keyframes revealIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+
   .rarity-badge {
-    display: inline-block; font-size: 14px; font-weight: 800; padding: 5px 16px;
-    border-radius: 14px; background: var(--violet-dark); color: var(--gold); margin-bottom: 6px;
+    display: inline-block; font-size: 13.5px; font-weight: 800; padding: 6px 18px;
+    border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid var(--panel-border);
+    color: var(--gold-a); margin-bottom: 8px; letter-spacing: 0.04em;
   }
   .rarity-badge.hidden-rarity {
     background: linear-gradient(90deg, #ffe37a, #ff8fc7, #8fd6ff, #b98fff);
-    color: #2c1650;
+    color: #1c1030; border: none;
+    box-shadow: 0 0 22px rgba(255,220,140,0.6);
+    animation: badgeGlow 1.6s ease-in-out infinite;
   }
-  .turntable-stage { perspective: 900px; width: 210px; height: 260px; margin: 6px auto 0; }
-  .turntable-figure {
-    width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform;
+  @keyframes badgeGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
+
+  .turntable-stage { perspective: 950px; width: 220px; height: 270px; margin: 6px auto 0; }
+  .turntable-figure { width: 100%; height: 100%; transform-style: preserve-3d; will-change: transform; }
+  .figure-svg { width: 100%; height: 100%; filter: drop-shadow(0 14px 16px rgba(0,0,0,0.45)); }
+  .figure-svg.is-hidden { filter: drop-shadow(0 0 22px rgba(255,215,100,0.95)) drop-shadow(0 14px 16px rgba(0,0,0,0.45)); }
+  .pedestal {
+    width: 170px; height: 24px; border-radius: 50%; margin: -8px auto 0;
+    background: radial-gradient(ellipse at center, rgba(255,225,160,0.45), rgba(0,0,0,0.1) 72%);
   }
-  .figure-svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
-  .figure-svg.is-hidden { filter: drop-shadow(0 0 18px rgba(255,215,100,0.9)) drop-shadow(0 10px 14px rgba(0,0,0,0.35)); }
-  .pedestal { width: 160px; height: 22px; border-radius: 50%; margin: -6px auto 0;
-    background: radial-gradient(ellipse at center, rgba(255,255,255,0.4), rgba(0,0,0,0.1) 70%); }
-  .drag-rotate-hint { font-size: 12px; color: #d9c9ff; margin-top: 6px; }
-  .item-name { font-size: 18px; font-weight: 800; margin-top: 10px; color: #fff; }
-  .item-series { font-size: 12px; color: #d9c9ff; margin-top: 2px; }
+  .drag-rotate-hint { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+  .item-name { font-size: 19px; font-weight: 800; margin-top: 12px; color: #fff; letter-spacing: 0.02em; }
+  .item-series { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
   .tw { animation: twinkle 1.6s ease-in-out infinite; transform-origin: center; }
   .tw2 { animation-delay: 0.4s; } .tw3 { animation-delay: 0.8s; }
   @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.25); } }
@@ -248,51 +273,55 @@
   @keyframes ringSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
   /* ---- Summary overlay ---- */
-  .summary-panel { max-width: 460px; }
-  .summary-panel h2 { color: var(--gold); font-size: 22px; }
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 10px; }
-  .summary-cell { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px 4px; text-align: center; }
-  .summary-cell.hidden-cell { background: linear-gradient(150deg, #ffe37a, #ff8fc7); color: #2c1650; }
-  .summary-cell .sc-figure { width: 44px; height: 56px; margin: 0 auto; }
-  .summary-cell .sc-name { font-size: 10px; font-weight: 700; margin-top: 2px; line-height: 1.2; }
+  .summary-panel { max-width: 480px; }
+  .summary-panel h2 { color: var(--gold-a); font-size: 21px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(94px, 1fr)); gap: 9px; margin-top: 10px; }
+  .summary-cell { background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); border-radius: 14px; padding: 9px 4px; text-align: center; }
+  .summary-cell.hidden-cell { background: linear-gradient(155deg, #4a3410, #1c1608); border-color: var(--gold-a); box-shadow: 0 0 14px rgba(246,217,146,0.4); }
+  .summary-cell .sc-figure { width: 46px; height: 58px; margin: 0 auto; }
+  .summary-cell .sc-name { font-size: 10px; font-weight: 700; margin-top: 3px; line-height: 1.25; color: var(--text-dim); }
 
   /* ---- Collection (圖鑑) overlay ---- */
-  .collection-panel { max-width: 900px; max-height: 88vh; overflow-y: auto; }
-  .collection-series-block { margin-bottom: 18px; }
-  .collection-series-title { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .collection-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
+  .collection-panel { max-width: 960px; max-height: 88vh; overflow-y: auto; }
+  .collection-series-block { margin-bottom: 20px; }
+  .collection-series-title { font-size: 14px; font-weight: 800; color: var(--gold-a); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .collection-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 7px; }
   .mini-slot {
-    aspect-ratio: 1; border-radius: 10px; background: rgba(0,0,0,0.25);
+    aspect-ratio: 1; border-radius: 12px; background: rgba(255,255,255,0.03);
     display: flex; align-items: center; justify-content: center; font-size: 20px;
-    border: 2px solid rgba(255,255,255,0.08); position: relative;
+    border: 1px solid rgba(255,255,255,0.08); position: relative;
   }
-  .mini-slot.collected { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
-  .mini-slot.collected.is-hidden-slot { background: linear-gradient(150deg, #ffe37a, #ff8fc7); border-color: #fff; }
-  .mini-slot .mini-figure { width: 34px; height: 44px; }
-  .mini-slot.locked .mini-q { color: rgba(255,255,255,0.35); font-weight: 800; }
+  .mini-slot.collected { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.28); }
+  .mini-slot.collected.is-hidden-slot { background: linear-gradient(155deg, #4a3410, #1c1608); border-color: var(--gold-a); box-shadow: 0 0 12px rgba(246,217,146,0.4); }
+  .mini-slot .mini-figure { width: 36px; height: 46px; }
+  .mini-slot.locked .mini-q { color: rgba(255,255,255,0.28); font-weight: 800; }
 
   [hidden], .hidden { display: none !important; }
-
   #fx-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 600; }
+  #flash-layer { position: fixed; inset: 0; opacity: 0; pointer-events: none; z-index: 590; background: #fff; }
+  #flash-layer.flash { animation: flashPulse 0.55s ease; }
+  @keyframes flashPulse { 0% { opacity: 0; } 25% { opacity: 0.7; } 100% { opacity: 0; } }
 </style>
 </head>
 <body>
+<canvas id="bg-fx"></canvas>
 <canvas id="fx-canvas"></canvas>
+<div id="flash-layer"></div>
 
 <div id="app">
   <header>
     <a class="home-link" href="index.html">🏠 回選單</a>
-    <h1>🎁 盲盒收藏樂園</h1>
+    <h1 class="display-font">✦ 盲盒收藏樂園 ✦</h1>
     <div class="header-btns">
       <button class="icon-btn" id="collectionBtn" title="收藏圖鑑">📖 圖鑑</button>
       <button class="icon-btn" id="muteBtn" title="靜音切換">🔊</button>
     </div>
   </header>
-  <div class="subtitle">10 大系列・每盒 12 抽・每抽有 5% 機率開出隱藏款!</div>
+  <div class="subtitle">5 大臻藏系列・每盒 12 抽・每抽 5% 機率降臨隱藏款</div>
 
   <!-- Series select view -->
   <div class="panel" id="seriesListView">
-    <h2>🎪 選一個系列開始拆盲盒</h2>
+    <h2>🎪 選一個系列,開啟你的珍藏之旅</h2>
     <div class="series-grid" id="seriesGrid"></div>
   </div>
 
@@ -302,7 +331,7 @@
       <span class="box-title" id="boxTitle"></span>
       <span class="box-progress-pill" id="boxProgressPill"></span>
     </div>
-    <div class="controls" style="margin-bottom: 14px;">
+    <div class="controls" style="margin-bottom: 16px;">
       <button class="action-btn" id="randomOpenBtn">🎲 隨機拆一個</button>
       <button class="action-btn secondary" id="newBoxBtn">🔁 開新的一盒</button>
       <button class="action-btn secondary" id="backToListBtn">↩️ 返回系列列表</button>
@@ -311,11 +340,11 @@
   </div>
 
   <footer>
-    盲盒收藏樂園為模擬遊戲,所有系列與角色皆為原創示意設計(靈感取材自熱門動漫類型,但造型、姓名皆為原創繪製),不涉及任何真實版權角色圖像,亦不涉及真實購買或付費抽獎。純 HTML/CSS/JavaScript 製作,音效由 Web Audio API 即時合成,圖案由 SVG 即時繪製,無需安裝、無外部圖檔或音檔。
+    盲盒收藏樂園為模擬遊戲,所有系列與角色皆為原創示意設計(靈感取材自熱門動漫類型,但造型、姓名皆為原創繪製),不涉及任何真實版權角色圖像,亦不涉及真實購買或付費抽獎。純 HTML/CSS/JavaScript 製作,音效由 Web Audio API 分層即時合成,圖案由 SVG 即時繪製,無需安裝、無外部圖檔或音檔。
   </footer>
 </div>
 
-<!-- Tear + Reveal overlay -->
+<!-- Tear + Charge + Reveal overlay -->
 <div class="overlay hidden" id="overlay">
   <div class="reveal-stage">
     <div id="tearPhase">
@@ -327,6 +356,7 @@
           <span class="box-caption" id="boxCaption">神秘盲盒</span>
         </div>
         <div class="seal" id="seal"><span class="seal-glyph">封</span></div>
+        <div class="vignette" id="vignette"></div>
         <div class="corner-hint" id="cornerHint">👆</div>
       </div>
     </div>
@@ -348,7 +378,7 @@
 <div class="overlay hidden" id="summaryOverlay">
   <div class="panel summary-panel">
     <h2>🎊 這一盒 12 抽已經全部拆完!</h2>
-    <p style="color:#d9c9ff; font-size:14px;" id="summaryText"></p>
+    <p style="color:var(--text-dim); font-size:13.5px;" id="summaryText"></p>
     <div class="summary-grid" id="summaryGrid"></div>
     <div class="controls" style="margin-top: 16px;">
       <button class="action-btn" id="summaryNewBoxBtn">🔁 再開一盒(同系列)</button>
@@ -361,7 +391,7 @@
 <div class="overlay hidden" id="collectionOverlay">
   <div class="panel collection-panel">
     <h2>📖 收藏圖鑑</h2>
-    <p style="color:#d9c9ff; font-size:13px; margin-top:-6px;">已收集的款式會顯示全彩造型,金粉底色代表隱藏款。</p>
+    <p style="color:var(--text-dim); font-size:13px; margin-top:-6px;">已收集的款式會顯示全彩造型,金框金光代表隱藏款。</p>
     <div id="collectionBody"></div>
     <div class="controls" style="margin-top: 14px;">
       <button class="action-btn secondary" id="collectionCloseBtn">關閉圖鑑</button>
@@ -373,75 +403,47 @@
 (function () {
   "use strict";
 
-  // ---------- Series / item data ----------
+  // ---------- Series / item data (5 curated series) ----------
   const RAW_SERIES = [
-    { name: "元素小精靈", icon: "⚡", bodyType: "ears-tri",
+    { name: "元素小精靈", icon: "⚡", bodyType: "ears-tri", accentA: "#ffcf5c", accentB: "#7a4b00",
       items: [
         ["火焰仔", "🔥"], ["水滴仔", "💧"], ["藤蔓仔", "🌿"], ["電光仔", "⚡"],
         ["岩石仔", "🪨"], ["冰霜仔", "❄️"], ["微風仔", "🌪️"], ["光耀仔", "✨"],
         ["闇影仔", "🌑"], ["星塵仔", "💫"], ["甜心仔", "💖"], ["磁鐵仔", "🧲"]
       ], hiddenName: "傳說虹光聖靈", hiddenBadge: "🌈" },
-    { name: "魔法旅人:精靈藥師", icon: "🧙", bodyType: "ears-long",
+    { name: "魔法旅人:精靈藥師", icon: "🧙", bodyType: "ears-long", accentA: "#9fc0ff", accentB: "#1c2b66",
       items: [
         ["藥草魔女", "🌱"], ["沉默劍聖", "⚔️"], ["星辰占星師", "🔭"], ["冰霜法師", "🧊"],
         ["治癒神官", "➕"], ["森林弓手", "🏹"], ["煉金術士", "⚗️"], ["幻術詩人", "🎭"],
         ["雷光騎士", "⚡"], ["龍語者", "🐉"], ["時間旅者", "⏳"], ["沉眠賢者", "💤"]
       ], hiddenName: "千年魔法使者", hiddenBadge: "✨" },
-    { name: "鬼獵者:呼吸劍士", icon: "🗡️", bodyType: "headband",
+    { name: "鬼獵者:呼吸劍士", icon: "🗡️", bodyType: "headband", accentA: "#ff8080", accentB: "#5c0f14",
       items: [
         ["火之呼吸", "🔥"], ["水之呼吸", "💧"], ["雷之呼吸", "⚡"], ["風之呼吸", "🌪️"],
         ["岩之呼吸", "🪨"], ["蟲之呼吸", "🐛"], ["花之呼吸", "🌸"], ["戀之呼吸", "💗"],
         ["蛇之呼吸", "🐍"], ["音之呼吸", "🎵"], ["霞之呼吸", "🌫️"], ["月之呼吸", "🌙"]
       ], hiddenName: "日之呼吸・傳說劍士", hiddenBadge: "☀️" },
-    { name: "經典童話樂園", icon: "👑", bodyType: "ears-round",
+    { name: "經典童話樂園", icon: "👑", bodyType: "ears-round", accentA: "#ffb3d1", accentB: "#7a2749",
       items: [
         ["森林公主", "👑"], ["玻璃鞋精靈", "👠"], ["魔法南瓜車", "🎃"], ["勇敢船長", "⚓"],
         ["小紅斗篷", "🧣"], ["森林裁縫", "🪡"], ["音樂盒仙子", "🎶"], ["溫柔巨人", "🌳"],
         ["海洋人魚", "🧜"], ["沉睡花仙", "💤"], ["木偶男孩", "🪵"], ["魔鏡守衛", "🪞"]
       ], hiddenName: "童話女王・星光加冕", hiddenBadge: "👑" },
-    { name: "大海賊寶藏隊", icon: "🏴‍☠️", bodyType: "hat-tricorn",
+    { name: "大海賊寶藏隊", icon: "🏴‍☠️", bodyType: "hat-tricorn", accentA: "#6be3cb", accentB: "#0b4a44",
       items: [
         ["草帽船長", "⚓"], ["劍豪副手", "⚔️"], ["天才航海士", "🧭"], ["廚師拳王", "🍳"],
         ["狙擊神槍手", "🎯"], ["潛水醫生", "💊"], ["樂師音符", "🎸"], ["考古學家", "📜"],
         ["骷髏音樂家", "💀"], ["馴鹿醫生", "🦌"], ["忍者影子", "🥷"], ["巨人舵手", "🚢"]
-      ], hiddenName: "傳說船長・世界秘寶", hiddenBadge: "👑" },
-    { name: "咒術鬥士:結界師", icon: "🌀", bodyType: "collar-talisman",
-      items: [
-        ["領域展開師", "🌀"], ["呪具劍士", "🗡️"], ["咒符師", "📜"], ["冰咒法師", "❄️"],
-        ["影子操偶師", "🎎"], ["拳鬥咒術士", "👊"], ["千年結界師", "🛡️"], ["蟲毒使者", "🐛"],
-        ["雷咒武士", "⚡"], ["特級咒靈", "👹"], ["學生會長", "🎓"], ["神秘轉學生", "❓"]
-      ], hiddenName: "最強咒術師・無下限", hiddenBadge: "✨" },
-    { name: "惡魔獵人:鏈鋸小隊", icon: "⛓️", bodyType: "horns-devil",
-      items: [
-        ["鏈鋸惡魔", "⛓️"], ["血斧惡魔", "🪓"], ["蜘蛛惡魔", "🕷️"], ["冰霜惡魔", "❄️"],
-        ["手槍惡魔", "🔫"], ["蝙蝠惡魔", "🦇"], ["暗夜惡魔", "🌑"], ["電鋸貓咪", "🐾"],
-        ["未來惡魔", "🔮"], ["掌控惡魔", "✋"], ["惡魔獵人少女", "🗡️"], ["天使武器", "👼"]
-      ], hiddenName: "支配之王・傳說惡魔", hiddenBadge: "👑" },
-    { name: "巨人獵人:調查兵團", icon: "🕊️", bodyType: "wings-cloak",
-      items: [
-        ["調查兵團隊長", "🎖️"], ["立體機動戰士", "⚙️"], ["巨人化少年", "🔥"], ["情報參謀", "📋"],
-        ["城牆守衛", "🛡️"], ["憲兵團間諜", "🕵️"], ["巨人研究員", "🔬"], ["鎧之戰士", "🛡️"],
-        ["超大型巨人", "💥"], ["始祖血脈者", "🩸"], ["自由之翼", "🕊️"], ["地鳴之聲", "🌍"]
-      ], hiddenName: "傳說九大巨人・自由結局", hiddenBadge: "🕊️" },
-    { name: "間諜家族:偽裝任務", icon: "🕴️", bodyType: "hat-fedora",
-      items: [
-        ["偽裝爸爸", "🕴️"], ["讀心少女", "👧"], ["爆彈殺手媽媽", "💣"], ["隱藏身份特工", "🎭"],
-        ["情報販子", "📠"], ["學院面試官", "🎓"], ["秘密通訊員", "📻"], ["變裝專家", "👘"],
-        ["忠犬夥伴", "🐕"], ["雙面間諜", "🔍"], ["暗號分析師", "🔐"], ["假面舞會伴侶", "💃"]
-      ], hiddenName: "終極任務・世界和平計畫", hiddenBadge: "🕊️" },
-    { name: "森林精靈物語", icon: "🌳", bodyType: "crown-leaf",
-      items: [
-        ["橡實小精靈", "🌰"], ["苔蘚守護者", "🍃"], ["螢火蟲使者", "✨"], ["露珠妖精", "💧"],
-        ["貓巴士夥伴", "🚌"], ["風之使者", "🌬️"], ["森林大王獸", "🌳"], ["煤炭小精靈", "⚫"],
-        ["花瓣舞者", "🌸"], ["雨後彩虹靈", "🌈"], ["月夜貓頭鷹", "🦉"], ["古樹低語者", "🌲"]
-      ], hiddenName: "森林之主・千年神木靈", hiddenBadge: "🌳" }
+      ], hiddenName: "傳說船長・世界秘寶", hiddenBadge: "👑" }
   ];
 
   const HIDDEN_CHANCE = 0.05;
+  const CHARGE_MS_NORMAL = 950;
+  const CHARGE_MS_HIDDEN = 2000;
 
   function paletteFor(seriesIdx, itemIdx, total) {
-    const hue = Math.round((seriesIdx * 37 + itemIdx * (360 / total)) % 360);
-    return { primary: `hsl(${hue} 68% 58%)`, secondary: `hsl(${hue} 55% 34%)` };
+    const hue = Math.round((seriesIdx * 41 + itemIdx * (360 / total)) % 360);
+    return { primary: `hsl(${hue} 62% 48%)`, secondary: `hsl(${hue} 50% 26%)` };
   }
 
   const SERIES = RAW_SERIES.map((s, sIdx) => {
@@ -449,20 +451,19 @@
       const pal = paletteFor(sIdx, iIdx, s.items.length);
       return { name, badge, primary: pal.primary, secondary: pal.secondary };
     });
-    const accentPal = paletteFor(sIdx, 0, s.items.length);
     return {
       id: "s" + sIdx,
       name: s.name,
       icon: s.icon,
       bodyType: s.bodyType,
-      accentA: `hsl(${(sIdx * 37) % 360} 70% 62%)`,
-      accentB: `hsl(${(sIdx * 37) % 360} 55% 30%)`,
+      accentA: s.accentA,
+      accentB: s.accentB,
       items,
       hidden: { name: s.hiddenName, badge: s.hiddenBadge }
     };
   });
 
-  // ---------- SVG chibi figure renderer ----------
+  // ---------- SVG chibi figure renderer (placeholder art; swap-ready for real photo turntables) ----------
   let svgUidCounter = 0;
   function accessoryMarkup(bodyType, fillPrimary, strokeColor) {
     switch (bodyType) {
@@ -476,24 +477,9 @@
         return `<circle cx="62" cy="42" r="24" fill="${strokeColor}"/><circle cx="138" cy="42" r="24" fill="${strokeColor}"/>`;
       case "hat-tricorn":
         return `<path d="M48 60 Q100 8 152 60 Q100 38 48 60 Z" fill="${strokeColor}"/>`;
-      case "horns-devil":
-        return `<polygon points="78,60 70,22 92,54" fill="${strokeColor}"/><polygon points="122,60 130,22 108,54" fill="${strokeColor}"/>`;
-      case "hat-fedora":
-        return `<ellipse cx="100" cy="58" rx="46" ry="10" fill="${strokeColor}"/><rect x="72" y="28" width="56" height="32" rx="10" fill="${strokeColor}"/><rect x="72" y="44" width="56" height="8" fill="${fillPrimary}"/>`;
-      case "crown-leaf":
-        return `<ellipse cx="80" cy="34" rx="16" ry="9" fill="${strokeColor}" transform="rotate(-25 80 34)"/><ellipse cx="100" cy="22" rx="16" ry="9" fill="${strokeColor}"/><ellipse cx="120" cy="34" rx="16" ry="9" fill="${strokeColor}" transform="rotate(25 120 34)"/>`;
       default:
         return "";
     }
-  }
-  function wingsOrCollarMarkup(bodyType, fillPrimary, strokeColor) {
-    if (bodyType === "wings-cloak") {
-      return `<path d="M58 132 Q6 110 18 172 Q44 156 60 150 Z" fill="${strokeColor}" opacity="0.85"/><path d="M142 132 Q194 110 182 172 Q156 156 140 150 Z" fill="${strokeColor}" opacity="0.85"/>`;
-    }
-    if (bodyType === "collar-talisman") {
-      return `<rect x="76" y="116" width="14" height="32" rx="2" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2" transform="rotate(-14 83 132)"/><rect x="110" y="116" width="14" height="32" rx="2" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2" transform="rotate(14 117 132)"/>`;
-    }
-    return "";
   }
 
   function figureSVG(item, bodyType, isHidden) {
@@ -503,10 +489,12 @@
     const grad = isHidden ? `<linearGradient id="g${uid}" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stop-color="#ffe37a"/><stop offset="30%" stop-color="#ff8fc7"/>
         <stop offset="60%" stop-color="#8fd6ff"/><stop offset="100%" stop-color="#b98fff"/>
-      </linearGradient>` : "";
-    const fillPrimary = isHidden ? `url(#g${uid})` : primary;
+      </linearGradient>` : `<radialGradient id="g${uid}" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="${primary}" stop-opacity="1"/>
+        <stop offset="100%" stop-color="${secondary}" stop-opacity="1"/>
+      </radialGradient>`;
+    const fillPrimary = `url(#g${uid})`;
     const strokeColor = isHidden ? "#ffd76a" : secondary;
-    const behindBody = wingsOrCollarMarkup(bodyType, fillPrimary, strokeColor);
     const aboveHead = accessoryMarkup(bodyType, fillPrimary, strokeColor);
     const sparkles = isHidden ? `
       <g class="sparkle-ring"><circle cx="100" cy="150" r="92" fill="none" stroke="#ffe37a" stroke-width="2" stroke-dasharray="6 10" opacity="0.7"/></g>
@@ -516,16 +504,15 @@
       <text x="166" y="206" font-size="20" class="tw tw2">✨</text>` : "";
     return `<svg viewBox="0 0 200 260" class="figure-svg${isHidden ? " is-hidden" : ""}">
       <defs>${grad}</defs>
-      <ellipse cx="100" cy="242" rx="58" ry="12" fill="rgba(0,0,0,0.18)"/>
-      ${behindBody}
+      <ellipse cx="100" cy="242" rx="58" ry="12" fill="rgba(0,0,0,0.35)"/>
       <path d="M100 108 C150 108 168 150 160 200 C154 238 130 250 100 250 C70 250 46 238 40 200 C32 150 50 108 100 108 Z" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
       <circle cx="100" cy="90" r="40" fill="${fillPrimary}" stroke="${strokeColor}" stroke-width="3"/>
       ${aboveHead}
-      <ellipse cx="82" cy="90" rx="6" ry="8" fill="#2c1650"/>
-      <ellipse cx="118" cy="90" rx="6" ry="8" fill="#2c1650"/>
-      <circle cx="70" cy="102" r="7" fill="#ff9ec7" opacity="0.6"/>
-      <circle cx="130" cy="102" r="7" fill="#ff9ec7" opacity="0.6"/>
-      <path d="M88 106 Q100 114 112 106" stroke="#2c1650" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="82" cy="90" rx="6" ry="8" fill="#1a1024"/>
+      <ellipse cx="118" cy="90" rx="6" ry="8" fill="#1a1024"/>
+      <circle cx="70" cy="102" r="7" fill="#ff9ec7" opacity="0.55"/>
+      <circle cx="130" cy="102" r="7" fill="#ff9ec7" opacity="0.55"/>
+      <path d="M88 106 Q100 114 112 106" stroke="#1a1024" stroke-width="3" fill="none" stroke-linecap="round"/>
       <circle cx="100" cy="168" r="20" fill="#fff8f0" stroke="${strokeColor}" stroke-width="2"/>
       <text x="100" y="176" font-size="20" text-anchor="middle">${item.badge}</text>
       ${sparkles}
@@ -533,7 +520,7 @@
   }
 
   // ---------- Collection persistence ----------
-  const STORAGE_KEY = "blindbox_collection_v1";
+  const STORAGE_KEY = "blindbox_collection_v2";
   let collection = {};
   (function loadCollection() {
     try {
@@ -556,8 +543,8 @@
 
   // ---------- Box / draw state ----------
   let currentSeries = null;
-  let currentBox = null; // array of 12 { slotIdx, isHidden, itemRef, opened }
-  let currentDrawItem = null; // item currently in tear/reveal overlay
+  let currentBox = null;
+  let currentDrawItem = null;
   let muted = false;
 
   function shuffle(arr) {
@@ -567,20 +554,11 @@
     }
     return arr;
   }
-
   function buildBox(series) {
     const order = shuffle(series.items.map((_, i) => i));
-    return order.map((itemIdx, slot) => ({
-      slot: slot + 1,
-      itemIdx,
-      isHidden: Math.random() < HIDDEN_CHANCE,
-      opened: false
-    }));
+    return order.map((itemIdx, slot) => ({ slot: slot + 1, itemIdx, isHidden: Math.random() < HIDDEN_CHANCE, opened: false }));
   }
-
-  function resolveItem(entry) {
-    return currentSeries.items[entry.itemIdx];
-  }
+  function resolveItem(entry) { return currentSeries.items[entry.itemIdx]; }
 
   // ---------- DOM refs ----------
   const seriesGrid = document.getElementById("seriesGrid");
@@ -600,6 +578,7 @@
   const boxCube = document.getElementById("boxCube");
   const boxCaption = document.getElementById("boxCaption");
   const seal = document.getElementById("seal");
+  const vignette = document.getElementById("vignette");
   const dragHint = document.getElementById("dragHint");
   const cornerHint = document.getElementById("cornerHint");
   const closeBtn = document.getElementById("closeBtn");
@@ -619,8 +598,9 @@
   const collectionBody = document.getElementById("collectionBody");
   const collectionCloseBtn = document.getElementById("collectionCloseBtn");
   const muteBtn = document.getElementById("muteBtn");
+  const flashLayer = document.getElementById("flash-layer");
 
-  // ---------- Audio (Web Audio API, synthesized, no files) ----------
+  // ---------- Audio (Web Audio API, layered synthesis, no files) ----------
   let audioCtx = null;
   function getCtx() {
     if (!audioCtx) {
@@ -651,6 +631,22 @@
     osc.connect(g); g.connect(ctx.destination);
     osc.start(t0); osc.stop(t0 + dur + 0.02);
   }
+  function noiseClick(delay, gainVal, freq, dur) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + delay;
+    const buf = createNoiseBuffer(ctx, dur || 0.06);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const band = ctx.createBiquadFilter();
+    band.type = "bandpass"; band.frequency.value = freq || 1200; band.Q.value = 1.1;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gainVal || 0.2, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + (dur || 0.06));
+    src.connect(band); band.connect(g); g.connect(ctx.destination);
+    src.start(t0); src.stop(t0 + (dur || 0.06) + 0.02);
+  }
   function playTear(gainVal) {
     if (muted) return;
     const ctx = getCtx();
@@ -667,21 +663,6 @@
     src.connect(band); band.connect(g); g.connect(ctx.destination);
     src.start(t0); src.stop(t0 + 0.3);
   }
-  function playPop() {
-    if (muted) return;
-    const ctx = getCtx();
-    if (!ctx) return;
-    const t0 = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(300, t0);
-    osc.frequency.exponentialRampToValueAtTime(900, t0 + 0.12);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.22, t0);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
-    osc.connect(g); g.connect(ctx.destination);
-    osc.start(t0); osc.stop(t0 + 0.18);
-  }
   function playChime() {
     tone(659.25, 0, 0.18, "sine", 0.16);
     tone(880, 0.12, 0.24, "sine", 0.16);
@@ -691,8 +672,92 @@
     notes.forEach((f, i) => tone(f, i * 0.13, 0.3, "triangle", 0.2));
     tone(1567.98, notes.length * 0.13 + 0.05, 0.55, "triangle", 0.22);
   }
+  function playSubSwell(durationSec) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(50, t0);
+    osc.frequency.exponentialRampToValueAtTime(130, t0 + durationSec);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.exponentialRampToValueAtTime(0.28, t0 + durationSec * 0.85);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + durationSec + 0.15);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + durationSec + 0.2);
+  }
+  // Layered "drumroll" build-up: click rate + pitch accelerate toward the burst.
+  let chargeTimers = [];
+  function playChargeRoll(durationMs, hidden) {
+    chargeTimers.forEach(id => clearTimeout(id));
+    chargeTimers = [];
+    if (hidden) playSubSwell(durationMs / 1000);
+    const steps = hidden ? 26 : 14;
+    for (let i = 0; i < steps; i++) {
+      const p = i / steps;
+      const t = durationMs * (p * p);
+      const freq = 700 + p * (hidden ? 2600 : 1400);
+      const gain = 0.05 + p * (hidden ? 0.22 : 0.14);
+      const id = setTimeout(() => noiseClick(0, gain, freq, 0.045), t);
+      chargeTimers.push(id);
+    }
+  }
+  function playBurst(hidden) {
+    if (muted) return;
+    const ctx = getCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime;
+    const buf = createNoiseBuffer(ctx, 0.5);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass"; hp.frequency.setValueAtTime(200, t0);
+    hp.frequency.exponentialRampToValueAtTime(5000, t0 + 0.35);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(hidden ? 0.4 : 0.26, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.5);
+    src.connect(hp); hp.connect(g); g.connect(ctx.destination);
+    src.start(t0); src.stop(t0 + 0.52);
+    if (hidden) tone(1046.5, 0, 0.4, "triangle", 0.22);
+  }
 
-  // ---------- Confetti canvas ----------
+  // ---------- Ambient background particles ----------
+  const bgCanvas = document.getElementById("bg-fx");
+  const bgCtx = bgCanvas.getContext("2d");
+  let bgParticles = [];
+  function resizeBg() {
+    bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+    bgParticles = [];
+    const count = Math.round((window.innerWidth * window.innerHeight) / 26000);
+    for (let i = 0; i < count; i++) {
+      bgParticles.push({
+        x: Math.random() * bgCanvas.width, y: Math.random() * bgCanvas.height,
+        r: 0.6 + Math.random() * 1.8, s: 0.08 + Math.random() * 0.18,
+        a: 0.15 + Math.random() * 0.35, phase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+  window.addEventListener("resize", resizeBg);
+  resizeBg();
+  function stepBg() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    const now = performance.now() / 1000;
+    bgParticles.forEach(p => {
+      p.y -= p.s;
+      if (p.y < -5) { p.y = bgCanvas.height + 5; p.x = Math.random() * bgCanvas.width; }
+      const twinkle = 0.6 + 0.4 * Math.sin(now * 1.4 + p.phase);
+      bgCtx.globalAlpha = p.a * twinkle;
+      bgCtx.fillStyle = "#f6d992";
+      bgCtx.beginPath(); bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2); bgCtx.fill();
+    });
+    bgCtx.globalAlpha = 1;
+    requestAnimationFrame(stepBg);
+  }
+  requestAnimationFrame(stepBg);
+
+  // ---------- Confetti / burst canvas ----------
   const fxCanvas = document.getElementById("fx-canvas");
   const fxCtx = fxCanvas.getContext("2d");
   function resizeCanvas() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
@@ -709,13 +774,25 @@
       particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 0, maxLife: 50 + Math.random() * 30, color, size: 2 + Math.random() * 2 });
     }
   }
+  function spawnRays(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count;
+      const speed = 9 + Math.random() * 5;
+      particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 0, maxLife: 22 + Math.random() * 8, color, size: 3.5, ray: true });
+    }
+  }
   function stepParticles() {
     fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
     particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.99; p.life++;
+      p.x += p.vx; p.y += p.vy; p.vy += p.ray ? 0 : 0.05; p.vx *= p.ray ? 0.9 : 0.99; p.vy *= p.ray ? 0.9 : 1; p.life++;
       const alpha = Math.max(0, 1 - p.life / p.maxLife);
       fxCtx.globalAlpha = alpha; fxCtx.fillStyle = p.color;
-      fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fxCtx.fill();
+      if (p.ray) {
+        fxCtx.save(); fxCtx.translate(p.x, p.y); fxCtx.rotate(Math.atan2(p.vy, p.vx));
+        fxCtx.fillRect(-14, -1.5, 28, 3); fxCtx.restore();
+      } else {
+        fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fxCtx.fill();
+      }
     });
     fxCtx.globalAlpha = 1;
     particles = particles.filter(p => p.life < p.maxLife);
@@ -733,8 +810,19 @@
       }, i * 220 + Math.random() * 100);
     }
   }
+  function launchBurstRays(hidden) {
+    const cx = fxCanvas.width / 2, cy = fxCanvas.height * 0.42;
+    spawnRays(cx, cy, hidden ? 28 : 14, hidden ? "#ffe37a" : "#ffffff");
+    ensureFxLoop();
+  }
+  function flashScreen(tint) {
+    flashLayer.style.background = tint || "#fff";
+    flashLayer.classList.remove("flash");
+    void flashLayer.offsetWidth;
+    flashLayer.classList.add("flash");
+  }
 
-  // ---------- Turntable (JS-driven 360 rotation) ----------
+  // ---------- Turntable (JS-driven 360 rotation; swap-ready for real photo sequences) ----------
   let ttAngle = 0;
   let ttDragging = false;
   let ttLastX = 0;
@@ -752,10 +840,7 @@
     if (ttRafId) cancelAnimationFrame(ttRafId);
     ttRafId = requestAnimationFrame(ttTick);
   }
-  function stopTurntable() {
-    if (ttRafId) cancelAnimationFrame(ttRafId);
-    ttRafId = null;
-  }
+  function stopTurntable() { if (ttRafId) cancelAnimationFrame(ttRafId); ttRafId = null; }
   document.getElementById("turntableStage").addEventListener("pointerdown", e => {
     ttDragging = true; ttLastX = e.clientX;
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -775,7 +860,7 @@
       const total = series.items.length + 1;
       const got = collectedCount(series);
       const preview = figureSVG(series.items[0], series.bodyType, false);
-      return `<button class="series-card" data-series="${series.id}" style="background: linear-gradient(150deg, ${series.accentA}, ${series.accentB});">
+      return `<button class="series-card" data-series="${series.id}" style="--series-a:${series.accentA}; --series-b:${series.accentB};">
         <span class="series-figure">${preview}</span>
         <span class="series-name">${series.icon} ${series.name}</span>
         <span class="series-progress">已收集 ${got}/${total}</span>
@@ -805,10 +890,10 @@
     }).join("");
   }
 
-  // ---------- Tear + reveal flow ----------
+  // ---------- Tear + charge + reveal flow ----------
   const DRAG_MAX = 140;
   const COMPLETE_THRESHOLD = 0.65;
-  const TEAR_MAX_RADIUS = Math.hypot(240, 280) * 1.05;
+  const TEAR_MAX_RADIUS = Math.hypot(250, 290) * 1.05;
   let dragState = null;
   let settling = false;
 
@@ -833,7 +918,9 @@
     boxCaption.textContent = currentSeries.name;
     seal.style.transition = "none";
     applyTearProgress(0);
-    boxWrap.classList.remove("dragging");
+    boxWrap.classList.remove("dragging", "charging");
+    boxCube.classList.remove("charging");
+    vignette.classList.remove("on");
     dragHint.classList.remove("faded");
     cornerHint.classList.remove("faded");
     closeBtn.classList.add("hidden");
@@ -868,8 +955,7 @@
       settling = true;
       snapTear(1);
       playTear(0.32);
-      playPop();
-      setTimeout(finalizeReveal, 420);
+      setTimeout(startCharge, 380);
     } else {
       snapTear(0);
       dragHint.classList.remove("faded");
@@ -877,15 +963,38 @@
     }
   }
 
-  function finalizeReveal() {
-    settling = false;
+  function startCharge() {
     const entry = currentDrawItem;
+    const duration = entry.isHidden ? CHARGE_MS_HIDDEN : CHARGE_MS_NORMAL;
+    boxWrap.classList.add("charging");
+    boxCube.classList.add("charging");
+    vignette.classList.add("on");
+    playChargeRoll(duration, entry.isHidden);
+    setTimeout(() => burstAndReveal(entry), duration);
+  }
+
+  function burstAndReveal(entry) {
+    boxWrap.classList.remove("charging");
+    boxCube.classList.remove("charging");
+    playBurst(entry.isHidden);
+    flashScreen(entry.isHidden ? "#ffe9b0" : "#fff");
+    launchBurstRays(entry.isHidden);
+    if (entry.isHidden) overlay.classList.add("shaking");
+    setTimeout(() => { overlay.classList.remove("shaking"); }, 450);
+    setTimeout(() => finalizeReveal(entry), 160);
+  }
+
+  function finalizeReveal(entry) {
+    settling = false;
     entry.opened = true;
     const item = entry.isHidden ? currentSeries.hidden : resolveItem(entry);
 
+    vignette.classList.remove("on");
     tearPhase.style.display = "none";
+    revealPhase.classList.remove("show");
+    void revealPhase.offsetWidth;
     revealPhase.classList.add("show");
-    rarityBadge.textContent = entry.isHidden ? "🌟 隱藏款!" : "普通款";
+    rarityBadge.textContent = entry.isHidden ? "🌟 隱藏款降臨!" : "普通款";
     rarityBadge.className = entry.isHidden ? "rarity-badge hidden-rarity" : "rarity-badge";
     itemName.textContent = item.name;
     itemSeriesName.textContent = `${currentSeries.icon} ${currentSeries.name}`;
