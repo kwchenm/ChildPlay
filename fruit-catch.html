@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>接水果大挑戰</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky1: #bdeaff;
+    --sky2: #eafff0;
+    --sun: #ffe08a;
+    --ground: #7dc36b;
+    --ground-dark: #5da44d;
+    --panel: #ffffff;
+    --ink: #4a3320;
+    --ink-dim: #8a6f52;
+    --accent: #ff5c5c;
+    --gold: #ffb347;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 70%, #fff6d6 100%);
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .home-link {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b3f2a;
+    background: #fff;
+    border-radius: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+  }
+
+  h1 {
+    font-size: clamp(17px, 4vw, 22px);
+    margin: 0;
+    text-align: center;
+    color: var(--accent);
+    text-shadow: 1px 1px 0 #fff;
+  }
+
+  .icon-btn {
+    font-size: 18px;
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .icon-btn:active { transform: scale(0.9); }
+
+  .panel {
+    width: 100%;
+    max-width: 480px;
+    background: var(--panel);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+  }
+
+  /* ---- Level select ---- */
+  .select-screen { text-align: center; }
+  .select-emoji { font-size: 46px; margin-bottom: 4px; }
+  .select-screen h2 { font-size: clamp(17px, 4vw, 21px); margin: 0 0 6px; color: var(--ink); }
+  .select-screen p { color: var(--ink-dim); font-size: 13.5px; margin: 0 0 14px; }
+
+  .highscore-tag {
+    display: inline-block;
+    background: #fff3d6;
+    border: 2px solid var(--gold);
+    border-radius: 14px;
+    padding: 6px 16px;
+    font-weight: 800;
+    color: #8a5a1e;
+    margin-bottom: 16px;
+  }
+
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .level-btn {
+    font-family: inherit;
+    font-weight: 800;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+  }
+  .level-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+  .level-btn .lv-num { font-size: 18px; }
+  .level-btn .lv-tag { font-size: 10px; opacity: 0.9; }
+
+  /* ---- Game screen ---- */
+  .hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .hud-item {
+    background: #fff8ea;
+    border: 2px solid #ffe4b0;
+    border-radius: 12px;
+    padding: 6px 10px;
+    text-align: center;
+    flex: 1;
+    min-width: 66px;
+  }
+  .hud-label { font-size: 9.5px; color: var(--ink-dim); }
+  .hud-value { font-weight: 800; font-size: 17px; color: var(--ink); }
+  .hud-value.time { color: var(--accent); }
+  .hud-value.time.urgent { animation: pulseUrgent 0.5s ease infinite; }
+  @keyframes pulseUrgent { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+
+  .play-area {
+    position: relative;
+    width: 100%;
+    height: min(60vh, 460px);
+    min-height: 320px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #bdeaff 0%, #eafff0 78%, var(--ground) 78%, var(--ground-dark) 100%);
+    border: 3px solid #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  }
+
+  .sun {
+    position: absolute;
+    top: 6%;
+    right: 8%;
+    font-size: 30px;
+    opacity: 0.9;
+  }
+
+  .fruit {
+    position: absolute;
+    font-size: clamp(24px, 6vw, 32px);
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.25));
+  }
+
+  .basket {
+    position: absolute;
+    bottom: 4%;
+    font-size: clamp(38px, 9vw, 50px);
+    transform: translate(-50%, 0);
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+  }
+
+  .score-pop {
+    position: absolute;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--gold);
+    text-shadow: 0 0 4px rgba(0,0,0,0.3);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: scorePop 700ms ease-out forwards;
+  }
+  @keyframes scorePop {
+    0% { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -140%); }
+  }
+
+  .controls {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+  }
+  .move-btn {
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 16px;
+    width: 64px;
+    height: 56px;
+    font-size: 26px;
+    cursor: pointer;
+    color: var(--ink);
+    touch-action: none;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.1);
+  }
+  .move-btn:active, .move-btn.pressed { background: var(--sun); }
+
+  .hint { text-align: center; font-size: 12px; color: var(--ink-dim); margin-top: 6px; }
+
+  /* ---- End of level screen ---- */
+  .end-screen { text-align: center; }
+  .end-emoji { font-size: 46px; margin-bottom: 6px; }
+  .end-screen h2 { font-size: clamp(18px, 4vw, 22px); margin: 0 0 10px; color: var(--accent); }
+  .end-stats { font-size: 15px; color: var(--ink-dim); margin-bottom: 18px; line-height: 1.8; }
+  .end-stats b { color: var(--ink); }
+  .end-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .end-btn {
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 15px;
+    border: none;
+    border-radius: 22px;
+    padding: 12px 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  }
+  .end-btn.primary { background: var(--accent); color: #fff; }
+  .end-btn.secondary { background: #fff3d6; color: #8a5a1e; }
+  .end-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+
+  footer { margin-top: 16px; font-size: 12px; color: var(--ink-dim); text-align: center; max-width: 480px; }
+
+  [hidden] { display: none !important; }
+
+  /* ---- shared celebration overlays ---- */
+  #confetti-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
+  .confetti-piece { position: absolute; top: -20px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: 0.9; } }
+
+  .celebrate-banner {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -20px) scale(0.6);
+    background: #fff;
+    padding: 16px 30px;
+    border-radius: 26px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    font-size: clamp(20px, 5vw, 30px);
+    font-weight: 800;
+    color: var(--accent);
+    z-index: 70;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    text-align: center;
+    pointer-events: none;
+  }
+  .celebrate-banner.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .celebrate-banner .en { display: block; font-size: 0.55em; color: var(--ink-dim); }
+
+  /* ---- Circus high-score celebration ---- */
+  #circusOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(20, 10, 30, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+  }
+  #circusOverlay.show { opacity: 1; }
+
+  .circus-banner {
+    position: absolute;
+    top: 32%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.4);
+    background: linear-gradient(135deg, #ff5c5c, #ffb347);
+    border: 4px dashed #fff;
+    border-radius: 24px;
+    padding: 20px 26px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255, 179, 71, 0.7);
+    animation: circusPop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes circusPop {
+    to { transform: translate(-50%, -50%) scale(1); }
+  }
+  .circus-banner .title {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+  }
+  .circus-banner .sub {
+    font-size: 14px;
+    color: #fff7e0;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .circus-performer {
+    position: absolute;
+    top: -80px;
+    font-size: 34px;
+    animation: circusBounce 2.4s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+  }
+  @keyframes circusBounce {
+    0% { top: -80px; transform: scale(0.6) rotate(0deg); opacity: 0; }
+    8% { opacity: 1; }
+    35% { top: 62%; transform: scale(1.15) rotate(15deg); }
+    50% { top: 48%; transform: scale(1) rotate(-10deg); }
+    65% { top: 60%; transform: scale(1.08) rotate(8deg); }
+    78% { top: 52%; transform: scale(1) rotate(-5deg); }
+    92% { opacity: 1; }
+    100% { top: 55%; opacity: 0; transform: scale(0.9) rotate(0deg); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="home-link" href="index.html">🏠 選遊戲</a>
+    <h1>🍉 接水果大挑戰</h1>
+    <button class="icon-btn" id="muteBtn" title="靜音">🔊</button>
+  </header>
+
+  <div class="panel">
+    <!-- Level select -->
+    <div class="select-screen" id="selectScreen">
+      <div class="select-emoji">🧺🍎🍌</div>
+      <h2>選一個關卡開始接水果吧!</h2>
+      <p>用左右按鈕或方向鍵移動籃子,接住掉下來的水果得分。每關限時 30 秒,關卡越大水果掉得越快、越密集!</p>
+      <div class="highscore-tag" id="highscoreTag">🏆 歷史最高分:0</div>
+      <div class="level-grid" id="levelGrid"></div>
+    </div>
+
+    <!-- Game screen -->
+    <div id="gameScreen" hidden>
+      <div class="hud">
+        <div class="hud-item">
+          <div class="hud-label">關卡</div>
+          <div class="hud-value" id="levelVal">1</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">⏱️ 時間</div>
+          <div class="hud-value time" id="timeVal">30</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">🌟 分數</div>
+          <div class="hud-value" id="scoreVal">0</div>
+        </div>
+      </div>
+
+      <div class="play-area" id="playArea">
+        <div class="sun">☀️</div>
+        <div class="basket" id="basket" style="left:50%;">🧺</div>
+      </div>
+
+      <div class="controls">
+        <button class="move-btn" id="btnLeft">◀</button>
+        <button class="move-btn" id="btnRight">▶</button>
+      </div>
+      <div class="hint">方向鍵 ◀ ▶ 也可以移動籃子</div>
+    </div>
+
+    <!-- End of level screen -->
+    <div class="end-screen" id="endScreen" hidden>
+      <div class="end-emoji">🎪</div>
+      <h2 id="endTitle">關卡完成!</h2>
+      <div class="end-stats">
+        本關得分:<b id="endScore">0</b> 分<br>
+        歷史最高分:<b id="endHighscore">0</b> 分
+      </div>
+      <div class="end-actions">
+        <button class="end-btn primary" id="replayBtn">🔁 再玩一次</button>
+        <button class="end-btn secondary" id="backBtn">🏠 選關卡</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>接水果練習手眼協調與反應力,水果掉落沒接到也不扣分,盡量接越多越好 🎠</footer>
+</div>
+
+<div id="confetti-layer"></div>
+<div class="celebrate-banner" id="banner"></div>
+<div id="circusOverlay"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  const HIGHSCORE_KEY = "childplay_fruit_catch_highscore";
+  const LEVEL_TIME = 30;
+
+  const LEVELS = [];
+  for (let i = 1; i <= 10; i++) {
+    LEVELS.push({
+      level: i,
+      fallSpeed: 26 + (i - 1) * 5, // % of play-area height per second
+      spawnInterval: Math.max(420, 1100 - (i - 1) * 80),
+    });
+  }
+  const LEVEL_TAGS = ["🐢", "🐢", "🚶", "🚶", "🏃", "🏃", "⚡", "⚡", "🔥", "🔥"];
+  const LEVEL_COLORS = [
+    "#6fcf6f", "#6fcf6f", "#8bd66a", "#c9d66a",
+    "#e0b84a", "#e0a04a", "#e07d4a", "#e0604a",
+    "#e0454a", "#c22f4a",
+  ];
+
+  const FRUITS = [
+    { emoji: "🍎", points: 10, weight: 14 },
+    { emoji: "🍌", points: 10, weight: 14 },
+    { emoji: "🍊", points: 10, weight: 12 },
+    { emoji: "🥝", points: 15, weight: 10 },
+    { emoji: "🍇", points: 15, weight: 10 },
+    { emoji: "🍓", points: 15, weight: 10 },
+    { emoji: "🍑", points: 15, weight: 10 },
+    { emoji: "🍉", points: 20, weight: 8 },
+    { emoji: "🍍", points: 50, weight: 4 },
+  ];
+  const FRUIT_WEIGHT_TOTAL = FRUITS.reduce((s, f) => s + f.weight, 0);
+
+  const CIRCUS_EMOJI = ["🤡", "🎪", "🎈", "🎉", "🍿", "🎠", "🐘", "⭐", "🎊", "🥳"];
+
+  // ---------- DOM ----------
+  const selectScreen = document.getElementById("selectScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  const endScreen = document.getElementById("endScreen");
+  const levelGrid = document.getElementById("levelGrid");
+  const highscoreTag = document.getElementById("highscoreTag");
+  const levelVal = document.getElementById("levelVal");
+  const timeVal = document.getElementById("timeVal");
+  const scoreVal = document.getElementById("scoreVal");
+  const playArea = document.getElementById("playArea");
+  const basketEl = document.getElementById("basket");
+  const btnLeft = document.getElementById("btnLeft");
+  const btnRight = document.getElementById("btnRight");
+  const endTitle = document.getElementById("endTitle");
+  const endScore = document.getElementById("endScore");
+  const endHighscore = document.getElementById("endHighscore");
+  const replayBtn = document.getElementById("replayBtn");
+  const backBtn = document.getElementById("backBtn");
+  const muteBtn = document.getElementById("muteBtn");
+  const confettiLayer = document.getElementById("confetti-layer");
+  const banner = document.getElementById("banner");
+  const circusOverlay = document.getElementById("circusOverlay");
+
+  // ---------- State ----------
+  let muted = false;
+  let highscore = 0;
+  let currentLevel = 1;
+  let score = 0;
+  let timeLeft = LEVEL_TIME;
+  let running = false;
+  let spawnAcc = 0;
+  let lastTime = 0;
+  let basketPct = 50;
+  let fruits = []; // { el, x, y, points, resolved }
+  const keys = { left: false, right: false };
+
+  try {
+    const saved = parseInt(localStorage.getItem(HIGHSCORE_KEY), 10);
+    if (!isNaN(saved)) highscore = saved;
+  } catch (e) { /* localStorage unavailable, ignore */ }
+
+  // ---------- Audio ----------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+  function beep(freq, duration, type, delay, gainVal) {
+    if (muted) return;
+    const ctx2 = getCtx();
+    if (!ctx2) return;
+    const osc = ctx2.createOscillator();
+    const gain = ctx2.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.value = gainVal != null ? gainVal : 0.15;
+    osc.connect(gain);
+    gain.connect(ctx2.destination);
+    const startAt = ctx2.currentTime + (delay || 0);
+    osc.start(startAt);
+    gain.gain.setValueAtTime(gain.gain.value, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    osc.stop(startAt + duration + 0.02);
+  }
+  function playCatch(points) {
+    const base = 500 + points * 4;
+    beep(base, 0.09, "triangle", 0, 0.14);
+    beep(base * 1.5, 0.08, "triangle", 0.05, 0.1);
+  }
+  function playLevelClear() {
+    beep(523.25, 0.1, "triangle", 0, 0.16);
+    beep(659.25, 0.1, "triangle", 0.09, 0.16);
+    beep(783.99, 0.1, "triangle", 0.18, 0.18);
+    beep(1046.5, 0.2, "triangle", 0.27, 0.2);
+  }
+  function playFanfare() {
+    const notes = [523.25, 523.25, 523.25, 659.25, 783.99, 1046.5, 880, 1046.5];
+    notes.forEach((f, i) => beep(f, 0.14, "triangle", i * 0.13, 0.18));
+    beep(1568, 0.3, "sine", notes.length * 0.13, 0.14);
+  }
+
+  // ---------- Helpers ----------
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function pickFruit() {
+    let r = Math.random() * FRUIT_WEIGHT_TOTAL;
+    for (let i = 0; i < FRUITS.length; i++) {
+      if (r < FRUITS[i].weight) return FRUITS[i];
+      r -= FRUITS[i].weight;
+    }
+    return FRUITS[0];
+  }
+
+  // ---------- Level select ----------
+  function renderLevelGrid() {
+    levelGrid.innerHTML = "";
+    LEVELS.forEach((lv) => {
+      const btn = document.createElement("button");
+      btn.className = "level-btn";
+      btn.style.background = LEVEL_COLORS[lv.level - 1];
+      btn.innerHTML =
+        '<span class="lv-num">' + lv.level + "</span>" +
+        '<span class="lv-tag">' + LEVEL_TAGS[lv.level - 1] + "</span>";
+      btn.addEventListener("click", () => startLevel(lv.level));
+      levelGrid.appendChild(btn);
+    });
+  }
+  function updateHighscoreTag() {
+    highscoreTag.textContent = "🏆 歷史最高分:" + highscore;
+  }
+
+  // ---------- Game flow ----------
+  function startLevel(levelNum) {
+    getCtx();
+    currentLevel = levelNum;
+    score = 0;
+    timeLeft = LEVEL_TIME;
+    basketPct = 50;
+    fruits.forEach((f) => f.el.remove());
+    fruits = [];
+    spawnAcc = 0;
+    lastTime = 0;
+    scoreVal.textContent = "0";
+    levelVal.textContent = String(levelNum);
+    timeVal.textContent = String(LEVEL_TIME);
+    timeVal.classList.remove("urgent");
+    basketEl.style.left = "50%";
+
+    selectScreen.hidden = true;
+    endScreen.hidden = true;
+    gameScreen.hidden = false;
+    running = true;
+    requestAnimationFrame(tick);
+  }
+
+  function endLevel() {
+    running = false;
+    fruits.forEach((f) => f.el.remove());
+    fruits = [];
+
+    let isNewHighscore = false;
+    if (score > highscore) {
+      highscore = score;
+      isNewHighscore = true;
+      try { localStorage.setItem(HIGHSCORE_KEY, String(highscore)); } catch (e) { /* ignore */ }
+    }
+    updateHighscoreTag();
+
+    endTitle.textContent = isNewHighscore ? "🎉 破紀錄了!" : "關卡完成!";
+    endScore.textContent = String(score);
+    endHighscore.textContent = String(highscore);
+
+    gameScreen.hidden = true;
+    endScreen.hidden = false;
+
+    playLevelClear();
+    celebrateLevelClear();
+
+    if (isNewHighscore) {
+      setTimeout(circusCelebration, 500);
+    }
+  }
+
+  replayBtn.addEventListener("click", () => startLevel(currentLevel));
+  backBtn.addEventListener("click", () => {
+    endScreen.hidden = true;
+    selectScreen.hidden = false;
+  });
+
+  // ---------- Input ----------
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "ArrowLeft" || e.code === "KeyA") { keys.left = true; e.preventDefault(); }
+    if (e.code === "ArrowRight" || e.code === "KeyD") { keys.right = true; e.preventDefault(); }
+  });
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "ArrowLeft" || e.code === "KeyA") { keys.left = false; e.preventDefault(); }
+    if (e.code === "ArrowRight" || e.code === "KeyD") { keys.right = false; e.preventDefault(); }
+  });
+  function bindMoveButton(el, key) {
+    const set = (v) => (e) => { keys[key] = v; el.classList.toggle("pressed", v); if (e) e.preventDefault(); };
+    el.addEventListener("pointerdown", set(true));
+    el.addEventListener("pointerup", set(false));
+    el.addEventListener("pointerleave", set(false));
+    el.addEventListener("pointercancel", set(false));
+  }
+  bindMoveButton(btnLeft, "left");
+  bindMoveButton(btnRight, "right");
+
+  // ---------- Spawning & update ----------
+  function spawnFruit() {
+    const f = pickFruit();
+    const el = document.createElement("div");
+    el.className = "fruit";
+    el.textContent = f.emoji;
+    playArea.appendChild(el);
+    fruits.push({
+      el,
+      x: 8 + Math.random() * 84,
+      y: -4,
+      points: f.points,
+      resolved: false,
+    });
+  }
+
+  function spawnScorePop(xPct, yPct, text) {
+    const el = document.createElement("div");
+    el.className = "score-pop";
+    el.textContent = text;
+    el.style.left = xPct + "%";
+    el.style.top = yPct + "%";
+    playArea.appendChild(el);
+    setTimeout(() => el.remove(), 720);
+  }
+
+  function tick(now) {
+    if (!running) return;
+    const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 1 / 60;
+    lastTime = now;
+
+    timeLeft -= dt;
+    if (timeLeft <= 0) {
+      timeLeft = 0;
+      timeVal.textContent = "0";
+      endLevel();
+      return;
+    }
+    timeVal.textContent = String(Math.ceil(timeLeft));
+    timeVal.classList.toggle("urgent", timeLeft <= 5);
+
+    if (keys.left) basketPct -= 78 * dt;
+    if (keys.right) basketPct += 78 * dt;
+    basketPct = clamp(basketPct, 6, 94);
+    basketEl.style.left = basketPct + "%";
+
+    const cfg = LEVELS[currentLevel - 1];
+    spawnAcc += dt * 1000;
+    if (spawnAcc >= cfg.spawnInterval) {
+      spawnAcc = 0;
+      spawnFruit();
+    }
+
+    for (let i = 0; i < fruits.length; i++) {
+      const f = fruits[i];
+      if (f.resolved) continue;
+      f.y += cfg.fallSpeed * dt;
+      f.el.style.left = f.x + "%";
+      f.el.style.top = f.y + "%";
+
+      if (f.y >= 78 && f.y <= 92) {
+        if (Math.abs(f.x - basketPct) < 9) {
+          f.resolved = true;
+          score += f.points;
+          scoreVal.textContent = String(score);
+          spawnScorePop(f.x, f.y, "+" + f.points);
+          playCatch(f.points);
+          f.el.remove();
+        }
+      }
+      if (f.y >= 100) {
+        f.resolved = true;
+        f.el.remove();
+      }
+    }
+    fruits = fruits.filter((f) => !f.resolved);
+
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Celebrations ----------
+  function spawnConfetti(count) {
+    const colors = ["#ff5c5c", "#ffb347", "#6fcf6f", "#4dabf7", "#c9a6ff", "#ffd166"];
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const size = 6 + Math.random() * 8;
+      piece.style.width = size + "px";
+      piece.style.height = size * 1.6 + "px";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const duration = 1.5 + Math.random() * 1.1;
+      piece.style.animationDuration = duration + "s";
+      confettiLayer.appendChild(piece);
+      setTimeout(() => piece.remove(), duration * 1000 + 100);
+    }
+  }
+
+  function celebrateLevelClear() {
+    banner.innerHTML = "🎉 得分 " + score + " 分! <span class=\"en\">Level cleared!</span>";
+    banner.classList.add("show");
+    setTimeout(() => banner.classList.remove("show"), 1400);
+    spawnConfetti(24);
+  }
+
+  function circusCelebration() {
+    circusOverlay.innerHTML = "";
+    circusOverlay.classList.add("show");
+
+    const bannerEl = document.createElement("div");
+    bannerEl.className = "circus-banner";
+    bannerEl.innerHTML =
+      '<div class="title">🎪 新紀錄!TA-DA! 🎪</div>' +
+      '<div class="sub">New High Score: ' + highscore + "</div>";
+    circusOverlay.appendChild(bannerEl);
+
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement("div");
+      el.className = "circus-performer";
+      el.textContent = CIRCUS_EMOJI[Math.floor(Math.random() * CIRCUS_EMOJI.length)];
+      el.style.left = (5 + Math.random() * 88) + "%";
+      el.style.animationDelay = (Math.random() * 0.6) + "s";
+      circusOverlay.appendChild(el);
+    }
+
+    spawnConfetti(40);
+    playFanfare();
+
+    setTimeout(() => circusOverlay.classList.remove("show"), 3200);
+  }
+
+  muteBtn.addEventListener("click", () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+  });
+
+  document.body.addEventListener(
+    "click",
+    function unlockAudioOnce() {
+      getCtx();
+      document.body.removeEventListener("click", unlockAudioOnce);
+    },
+    { once: true }
+  );
+
+  // ---------- Init ----------
+  renderLevelGrid();
+  updateHighscoreTag();
+})();
+</script>
+</body>
+</html>
