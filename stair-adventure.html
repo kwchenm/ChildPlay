@@ -224,6 +224,10 @@
   var ROW_GAP = 15;           // target vertical spacing (%) between spawned platforms
   var MAX_X_SHIFT = 42;       // max horizontal wander (%) between consecutive spawns
   var INVULN_MS = 650;
+  var SUPPORT_MARGIN = 6;     // horizontal forgiveness (%) added to a platform's width for both
+                               // landing on it and staying on it - must match, or the character can
+                               // get caught by the generous landing zone then immediately judged as
+                               // unsupported by a stricter "still standing" check, flickering in place.
   var RAMP_PER_SEC = 0.55;    // %/sec the shaft speeds up for every second survived in a level
   var RAMP_CAP_MULT = 2.0;    // the time-based ramp never exceeds this multiple of the level's base speed
 
@@ -545,7 +549,7 @@
     if (state.charState === "resting") {
       if (!state.restingPlatform || state.platforms.indexOf(state.restingPlatform) === -1) {
         state.charState = "falling";
-      } else if (Math.abs(state.charX - state.restingPlatform.x) > state.restingPlatform.w / 2) {
+      } else if (Math.abs(state.charX - state.restingPlatform.x) > state.restingPlatform.w / 2 + SUPPORT_MARGIN) {
         // Walked past the edge of the platform - there's nothing underfoot any more,
         // so gravity takes over immediately instead of letting the character glide
         // sideways in mid-air.
@@ -570,7 +574,7 @@
         if (pl === state.lastPlatform && now < state.lastPlatformUntil) continue;
         var topY = platformTopY(pl);
         if (prevY <= topY + LANDING_BAND && state.charY >= topY - LANDING_BAND) {
-          var halfW = pl.w / 2 + 6;
+          var halfW = pl.w / 2 + SUPPORT_MARGIN;
           if (Math.abs(state.charX - pl.x) < halfW) {
             if (pl.type === "hazard") {
               if (!isInvulnerable(now)) {
