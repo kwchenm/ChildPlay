@@ -533,18 +533,27 @@
     var prevY = state.charY;
     var gameEnded = false;
 
+    function detachFromPlatform() {
+      state.charState = "falling";
+      // Remember the platform we just left so the landing check below doesn't
+      // immediately re-land on it while it's still within the landing band.
+      state.lastPlatform = state.restingPlatform;
+      state.lastPlatformUntil = now + 500;
+      state.restingPlatform = null;
+    }
+
     if (state.charState === "resting") {
       if (!state.restingPlatform || state.platforms.indexOf(state.restingPlatform) === -1) {
         state.charState = "falling";
+      } else if (Math.abs(state.charX - state.restingPlatform.x) > state.restingPlatform.w / 2) {
+        // Walked past the edge of the platform - there's nothing underfoot any more,
+        // so gravity takes over immediately instead of letting the character glide
+        // sideways in mid-air.
+        detachFromPlatform();
       } else {
         state.charY = platformTopY(state.restingPlatform);
         if (state.charY < DETACH_Y) {
-          state.charState = "falling";
-          // Remember the platform we just left so the landing check below doesn't
-          // immediately re-land on it while it's still within the landing band.
-          state.lastPlatform = state.restingPlatform;
-          state.lastPlatformUntil = now + 500;
-          state.restingPlatform = null;
+          detachFromPlatform();
         }
       }
     }
