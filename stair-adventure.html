@@ -52,42 +52,45 @@
   #stage {
     position: relative; width: 100%; aspect-ratio: 3 / 4; max-height: 62vh;
     border-radius: 22px; overflow: hidden; border: 4px solid #b98a52;
-    background: linear-gradient(180deg, #cdeeff 0%, #fef6e0 100%);
+    background:
+      repeating-linear-gradient(135deg, rgba(231,200,145,0.35) 0px, rgba(231,200,145,0.35) 34px, rgba(216,180,119,0.35) 34px, rgba(216,180,119,0.35) 68px),
+      linear-gradient(180deg, #cdeeff 0%, #fef6e0 100%);
     box-shadow: 0 8px 0 rgba(0,0,0,0.15);
     touch-action: none;
   }
+  #stage.danger #dangerLine { opacity: 1; }
+  #dangerLine {
+    position: absolute; left: 0; width: 100%; height: 6%; bottom: 0;
+    background: repeating-linear-gradient(45deg, #e05252, #e05252 10px, #b93a3a 10px, #b93a3a 20px);
+    opacity: 0.55; transition: opacity 0.2s ease;
+  }
 
-  .stair-row {
-    position: absolute; left: 0; width: 100%; height: 10%;
-    display: flex; transform: translateY(-50%);
-  }
-  .stair-cell {
-    flex: 1; margin: 0 2%; border-radius: 10px;
+  .platform {
+    position: absolute; height: 8%; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 26px; position: relative;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    font-size: 22px; box-shadow: 0 4px 0 rgba(0,0,0,0.18);
+    transform: translate(-50%, -50%);
   }
-  .stair-cell.safe { background: #d8a35c; }
-  .stair-cell.hazard { background: #e07a5f; }
-  .stair-cell.gap { background: transparent; box-shadow: none; }
-  .stair-row.current .stair-cell { opacity: 0.35; }
+  .platform.safe { background: linear-gradient(180deg, #e3b56f, #c98f45); }
+  .platform.hazard { background: linear-gradient(180deg, #ef8a6e, #d85c3d); }
 
   #character {
-    position: absolute; font-size: 40px; line-height: 1;
+    position: absolute; font-size: 42px; line-height: 1;
     transform: translate(-50%, -50%);
-    transition: top 0.24s ease, left 0.18s ease;
     filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3));
     z-index: 5;
   }
-  #character.hurt { animation: shake 0.35s; }
-  @keyframes shake { 0%,100% { margin-left: 0; } 25% { margin-left: -8px; } 75% { margin-left: 8px; } }
+  #character.squish { animation: squish 0.22s ease; }
+  @keyframes squish {
+    0% { transform: translate(-50%, -50%) scale(1, 1); }
+    40% { transform: translate(-50%, -50%) scale(1.25, 0.75); }
+    100% { transform: translate(-50%, -50%) scale(1, 1); }
+  }
+  #character.hurt-blink { animation: blink 0.15s steps(1) 4; }
+  @keyframes blink { 50% { opacity: 0.25; } }
   #stage.flash-hurt::after {
     content: ""; position: absolute; inset: 0; background: rgba(220,60,60,0.35);
     animation: flashfade 0.35s ease-out forwards; pointer-events: none;
-  }
-  #stage.flash-good::after {
-    content: ""; position: absolute; inset: 0; background: rgba(80,200,120,0.25);
-    animation: flashfade 0.3s ease-out forwards; pointer-events: none;
   }
   @keyframes flashfade { from { opacity: 1; } to { opacity: 0; } }
 
@@ -137,7 +140,7 @@
   <div class="screen" id="levelSelectScreen">
     <a class="backlink" href="index.html">⬅ 回遊戲選單</a>
     <h1>🪜 下樓梯大冒險</h1>
-    <div class="subtitle">左右移動選安全的樓梯往下走!❤️ 30 條命,關卡越高走得越快</div>
+    <div class="subtitle">左右移動閃避障礙、踩穩階梯往下掉!❤️ 30 條命,關卡越高掉得越快</div>
     <div class="highscore-badge">🏆 歷史最高分:<span id="highscoreVal">0</span></div>
     <div class="level-grid" id="levelGrid"></div>
   </div>
@@ -148,14 +151,16 @@
       <div class="hud-item" id="hudLevel">第 1 關</div>
       <div class="hud-item hud-lives" id="hudLives">❤️ x30</div>
       <div class="hud-item" id="hudScore">⭐ 0</div>
-      <div class="hud-item" id="hudDepth">🪜 0/20</div>
+      <div class="hud-item" id="hudDepth">🪜 0/15</div>
     </div>
-    <div id="stage"></div>
+    <div id="stage">
+      <div id="dangerLine"></div>
+    </div>
     <div class="controls">
       <button class="ctrl-btn" id="btnLeft">◀</button>
       <button class="ctrl-btn" id="btnRight">▶</button>
     </div>
-    <div class="kb-hint">或使用鍵盤方向鍵 ← →・每隔一小段時間會自動往下走一階</div>
+    <div class="kb-hint">按住鍵盤方向鍵 ← → 或按鈕移動,角色會自動往下掉</div>
   </div>
 
 </div>
@@ -165,29 +170,30 @@
   "use strict";
 
   var HIGHSCORE_KEY = "childplay_stair_highscore";
-  var LANES = 4;
-  var LANE_X = [16, 39, 61, 84];
-  var ROWS_VISIBLE = 8;
-  var ROW_TOP = 8, ROW_BOTTOM = 92;
-  var TARGET_DEPTH = 20;
-
-  function rowY(idx) {
-    return ROW_TOP + (idx * (ROW_BOTTOM - ROW_TOP) / (ROWS_VISIBLE - 1));
-  }
+  var TARGET_LANDINGS = 15;
+  var CHAR_SPEED = 78;        // %/sec horizontal
+  var DETACH_Y = 26;          // screen % above which a resting platform releases the character
+  var DANGER_Y = 94;          // screen % - falling past this costs a life
+  var LANDING_BAND = 3;       // screen % proximity band for landing detection
+  var RESCUE_Y = 46;          // screen % to reset the character to after a fall/hit
+  var START_PLATFORM_Y = 60;
+  var PLATFORM_SAFE_W = 26;
+  var PLATFORM_HAZARD_W = 20;
+  var ROW_GAP = 15;           // target vertical spacing (%) between spawned platforms
+  var MAX_X_SHIFT = 42;       // max horizontal wander (%) between consecutive spawns
+  var INVULN_MS = 650;
 
   var LEVELS = [];
   for (var i = 1; i <= 10; i++) {
     LEVELS.push({
       level: i,
-      stepInterval: Math.max(650, 1450 - (i - 1) * 90),
-      hazardChance: Math.min(0.30, 0.12 + (i - 1) * 0.02),
-      gapChance: Math.min(0.20, 0.07 + (i - 1) * 0.014)
+      scrollSpeed: 15 + (i - 1) * 2.3,
+      fallMultiplier: 2.1,
+      hazardChance: Math.min(0.34, 0.13 + (i - 1) * 0.022)
     });
   }
   var LEVEL_TAGS = ["超慢速","慢速","慢中速","中速","中速+","偏快","快速","快速+","超快速","極限速"];
   var LEVEL_COLORS = ["#7dc36b","#6bc3a0","#5eb3c9","#5e97c9","#6b7fd6","#8a6bd6","#b06bd6","#d66bb0","#d68a6b","#d65e5e"];
-
-  var HAZARD_EMOJI = "🪨";
 
   function getHighscore() {
     try {
@@ -223,7 +229,7 @@
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   }
-  function playStepSound() { beep(700, 0.1, "triangle", 0, 0.13); }
+  function playLandSound() { beep(620, 0.09, "triangle", 0, 0.12); }
   function playHazardSound() { beep(180, 0.22, "sawtooth", 0, 0.15); }
   function playLevelClearFanfare() {
     var notes = [523, 659, 784, 1046];
@@ -267,7 +273,6 @@
 
   highscoreVal.textContent = getHighscore();
 
-  // Build level grid
   LEVELS.forEach(function (cfg, idx) {
     var btn = document.createElement("button");
     btn.className = "level-btn";
@@ -280,8 +285,9 @@
   // ---- Game state ----
   var state = null;
   var rafId = null;
+  var leftHeld = false, rightHeld = false;
 
-  function clampLane(v) { return Math.max(0, Math.min(LANES - 1, v)); }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
   function showGameScreen() {
     levelSelectScreen.classList.add("hidden");
@@ -293,92 +299,79 @@
     highscoreVal.textContent = getHighscore();
   }
 
-  function generateRow(cfg) {
-    var lanes = [];
-    for (var l = 0; l < LANES; l++) {
-      var r = Math.random();
-      if (r < cfg.gapChance) lanes.push("gap");
-      else if (r < cfg.gapChance + cfg.hazardChance) lanes.push("hazard");
-      else lanes.push("safe");
-    }
-    if (lanes.indexOf("safe") === -1) {
-      lanes[Math.floor(Math.random() * LANES)] = "safe";
-    }
-    return { lanes: lanes };
+  function makePlatformEl(type) {
+    var el = document.createElement("div");
+    el.className = "platform " + type;
+    el.style.width = (type === "safe" ? PLATFORM_SAFE_W : PLATFORM_HAZARD_W) + "%";
+    if (type === "hazard") el.textContent = "🪨";
+    stage.appendChild(el);
+    return el;
   }
 
-  function allSafeRow() {
-    return { lanes: ["safe", "safe", "safe", "safe"] };
+  function spawnPlatform() {
+    var isHazard = Math.random() < state.cfg.hazardChance;
+    var type = isHazard ? "hazard" : "safe";
+    var prevX = state.lastSpawnX;
+    var x = clamp(prevX + (Math.random() * 2 - 1) * MAX_X_SHIFT, 12, 88);
+    var el = makePlatformEl(type);
+    var p = { x: x, y: 106, w: isHazard ? PLATFORM_HAZARD_W : PLATFORM_SAFE_W, type: type, el: el };
+    el.style.left = x + "%";
+    el.style.top = p.y + "%";
+    state.platforms.push(p);
+    state.lastSpawnX = x;
   }
 
-  function buildStageDom() {
-    stage.innerHTML = "";
-    state.rowEls = [];
-    for (var i = 0; i < ROWS_VISIBLE; i++) {
-      var rowEl = document.createElement("div");
-      rowEl.className = "stair-row";
-      rowEl.style.top = rowY(i) + "%";
-      for (var l = 0; l < LANES; l++) {
-        var cell = document.createElement("div");
-        cell.className = "stair-cell";
-        rowEl.appendChild(cell);
-      }
-      stage.appendChild(rowEl);
-      state.rowEls.push(rowEl);
-    }
-    state.characterEl = document.createElement("div");
-    state.characterEl.id = "character";
-    state.characterEl.textContent = "🧒";
-    stage.appendChild(state.characterEl);
-  }
-
-  function renderRows() {
-    for (var i = 0; i < ROWS_VISIBLE; i++) {
-      var row = state.rows[i];
-      var rowEl = state.rowEls[i];
-      rowEl.classList.toggle("current", i === state.charRowIdx);
-      for (var l = 0; l < LANES; l++) {
-        var cell = rowEl.children[l];
-        var type = row.lanes[l];
-        cell.className = "stair-cell " + type;
-        cell.textContent = type === "hazard" ? HAZARD_EMOJI : "";
-      }
-    }
-  }
-
-  function renderCharacter() {
-    state.characterEl.style.top = rowY(state.charRowIdx) + "%";
-    state.characterEl.style.left = LANE_X[state.charLane] + "%";
+  function removePlatform(p) {
+    if (p.el && p.el.parentNode) p.el.parentNode.removeChild(p.el);
+    var idx = state.platforms.indexOf(p);
+    if (idx >= 0) state.platforms.splice(idx, 1);
   }
 
   function startLevel(levelNum) {
     if (rafId) cancelAnimationFrame(rafId);
+    if (state && state.platforms) state.platforms.forEach(removePlatform);
 
-    var rows = [allSafeRow()];
+    stage.querySelectorAll(".platform").forEach(function (el) { el.remove(); });
+    var characterEl = document.createElement("div");
+    characterEl.id = "character";
+    characterEl.textContent = "🧒";
+    stage.appendChild(characterEl);
+
     var cfg = LEVELS[levelNum - 1];
-    for (var i = 1; i < ROWS_VISIBLE; i++) rows.push(generateRow(cfg));
-
     state = {
       level: levelNum,
       cfg: cfg,
       lives: 30,
       score: 0,
-      depth: 0,
-      rows: rows,
-      charRowIdx: 0,
-      charLane: 1,
-      stepAcc: 0,
+      landings: 0,
+      charX: 50,
+      charY: START_PLATFORM_Y - 14,
+      charState: "falling", // "falling" | "resting"
+      restingPlatform: null,
+      lastPlatform: null,
+      lastPlatformUntil: 0,
+      invulnUntil: 0,
+      platforms: [],
+      spawnAcc: 0,
+      lastSpawnX: 50,
       lastTime: null,
       running: true,
       ended: false,
-      rowEls: null,
-      characterEl: null
+      characterEl: characterEl
     };
-    buildStageDom();
-    renderRows();
+
+    // Guaranteed easy starting platform just below spawn point
+    var startEl = makePlatformEl("safe");
+    var startPlatform = { x: 50, y: START_PLATFORM_Y, w: PLATFORM_SAFE_W, type: "safe", el: startEl };
+    startEl.style.left = "50%";
+    startEl.style.top = START_PLATFORM_Y + "%";
+    state.platforms.push(startPlatform);
+    state.lastSpawnX = 50;
+
     renderCharacter();
     showGameScreen();
     updateHUD();
+    stage.classList.remove("danger");
     rafId = requestAnimationFrame(tick);
   }
 
@@ -389,70 +382,144 @@
     if (state.lives <= 5) hudLives.classList.add("crit");
     else if (state.lives <= 12) hudLives.classList.add("low");
     hudScore.textContent = "⭐ " + state.score;
-    hudDepth.textContent = "🪜 " + state.depth + "/" + TARGET_DEPTH;
+    hudDepth.textContent = "🪜 " + state.landings + "/" + TARGET_LANDINGS;
   }
 
-  function flashStage(good) {
-    stage.classList.remove("flash-hurt", "flash-good");
+  function renderCharacter() {
+    state.characterEl.style.left = state.charX + "%";
+    state.characterEl.style.top = state.charY + "%";
+  }
+
+  function flashHurt() {
+    stage.classList.remove("flash-hurt");
     void stage.offsetWidth;
-    stage.classList.add(good ? "flash-good" : "flash-hurt");
-    if (!good) {
-      state.characterEl.classList.remove("hurt");
-      void state.characterEl.offsetWidth;
-      state.characterEl.classList.add("hurt");
-    }
+    stage.classList.add("flash-hurt");
+    state.characterEl.classList.remove("hurt-blink");
+    void state.characterEl.offsetWidth;
+    state.characterEl.classList.add("hurt-blink");
+  }
+  function squishLand() {
+    state.characterEl.classList.remove("squish");
+    void state.characterEl.offsetWidth;
+    state.characterEl.classList.add("squish");
   }
 
-  function stepDown() {
-    var nextIdx = state.charRowIdx + 1;
-    var laneType = state.rows[nextIdx].lanes[state.charLane];
+  function isInvulnerable(now) { return now < state.invulnUntil; }
 
-    if (laneType === "hazard" || laneType === "gap") {
-      state.lives -= 1;
-      playHazardSound();
-      flashStage(false);
-    } else {
-      state.score += 10;
-      playStepSound();
-      flashStage(true);
-    }
-
-    state.charRowIdx = nextIdx;
-    state.depth += 1;
-
-    if (state.charRowIdx === ROWS_VISIBLE - 1) {
-      state.rows.shift();
-      state.rows.push(generateRow(state.cfg));
-      state.charRowIdx -= 1;
-    }
-
-    renderRows();
-    renderCharacter();
-    updateHUD();
-
+  function takeHit(now) {
+    state.lives -= 1;
+    state.invulnUntil = now + INVULN_MS;
+    playHazardSound();
+    flashHurt();
     if (state.lives <= 0) {
       state.lives = 0;
       updateHUD();
-      return endLevel(false);
+      return true;
     }
-    if (state.depth >= TARGET_DEPTH) {
-      return endLevel(true);
-    }
+    return false;
   }
 
   function tick(now) {
     if (!state || !state.running) return;
     if (state.lastTime == null) state.lastTime = now;
-    var dt = now - state.lastTime;
+    var dt = (now - state.lastTime) / 1000;
     state.lastTime = now;
-    if (dt > 200) dt = 200;
+    if (dt > 0.08) dt = 0.08;
 
-    state.stepAcc += dt;
-    if (state.stepAcc >= state.cfg.stepInterval) {
-      state.stepAcc = 0;
-      stepDown();
-      if (!state.running) return;
+    // horizontal movement
+    if (leftHeld) state.charX -= CHAR_SPEED * dt;
+    if (rightHeld) state.charX += CHAR_SPEED * dt;
+    state.charX = clamp(state.charX, 6, 94);
+
+    // scroll all platforms upward
+    var toRemove = [];
+    for (var i = 0; i < state.platforms.length; i++) {
+      var p = state.platforms[i];
+      p.y -= state.cfg.scrollSpeed * dt;
+      p.el.style.top = p.y + "%";
+      if (p.y < -10) toRemove.push(p);
     }
+    toRemove.forEach(removePlatform);
+
+    // spawn new platforms as the shaft continues
+    var spawnInterval = (ROW_GAP / state.cfg.scrollSpeed) * 1000;
+    state.spawnAcc += dt * 1000;
+    if (state.spawnAcc >= spawnInterval) {
+      state.spawnAcc = 0;
+      spawnPlatform();
+    }
+
+    var prevY = state.charY;
+    var gameEnded = false;
+
+    if (state.charState === "resting") {
+      if (!state.restingPlatform || state.platforms.indexOf(state.restingPlatform) === -1) {
+        state.charState = "falling";
+      } else {
+        state.charY = state.restingPlatform.y;
+        if (state.charY < DETACH_Y) {
+          state.charState = "falling";
+          // Remember the platform we just left so the landing check below doesn't
+          // immediately re-land on it while it's still within the landing band.
+          state.lastPlatform = state.restingPlatform;
+          state.lastPlatformUntil = now + 500;
+          state.restingPlatform = null;
+        }
+      }
+    }
+
+    if (state.charState === "falling") {
+      state.charY += state.cfg.scrollSpeed * state.cfg.fallMultiplier * dt;
+
+      // Landing check: both the character and the platform move every frame, so instead of
+      // testing for an exact crossing between two frames (which can slip through when the
+      // platform's own motion shifts the target out of range), land whenever the character
+      // is falling downward and comes within a small band of a platform's current position.
+      for (var j = 0; j < state.platforms.length; j++) {
+        var pl = state.platforms[j];
+        if (pl === state.lastPlatform && now < state.lastPlatformUntil) continue;
+        if (prevY <= pl.y + LANDING_BAND && state.charY >= pl.y - LANDING_BAND) {
+          var halfW = pl.w / 2 + 6;
+          if (Math.abs(state.charX - pl.x) < halfW) {
+            if (pl.type === "hazard") {
+              if (!isInvulnerable(now)) {
+                if (takeHit(now)) { gameEnded = true; break; }
+              }
+              state.charState = "falling";
+            } else {
+              state.charState = "resting";
+              state.restingPlatform = pl;
+              state.charY = pl.y;
+              if (!isInvulnerable(now)) {
+                state.score += 10;
+                state.landings += 1;
+                playLandSound();
+                squishLand();
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (!gameEnded && state.charY >= DANGER_Y && state.charState === "falling") {
+      if (!isInvulnerable(now)) {
+        if (takeHit(now)) { gameEnded = true; }
+      }
+      if (!gameEnded) {
+        state.charY = RESCUE_Y;
+        state.charState = "falling";
+      }
+    }
+
+    stage.classList.toggle("danger", state.charY > DANGER_Y - 12 && state.charState === "falling");
+
+    renderCharacter();
+    updateHUD();
+
+    if (gameEnded) { return endLevel(false); }
+    if (state.landings >= TARGET_LANDINGS) { return endLevel(true); }
 
     rafId = requestAnimationFrame(tick);
   }
@@ -514,24 +581,27 @@
   }
 
   // ---- Controls ----
-  var lastLaneMove = 0;
-  function moveLane(delta) {
-    if (!state || !state.running) return;
-    var now = Date.now();
-    if (now - lastLaneMove < 110) return;
-    lastLaneMove = now;
-    state.charLane = clampLane(state.charLane + delta);
-    renderCharacter();
-  }
+  function setLeft(v) { leftHeld = v; }
+  function setRight(v) { rightHeld = v; }
 
   document.addEventListener("keydown", function (e) {
     if (gameScreen.classList.contains("hidden")) return;
-    if (e.code === "ArrowLeft" || e.code === "KeyA") { moveLane(-1); e.preventDefault(); }
-    if (e.code === "ArrowRight" || e.code === "KeyD") { moveLane(1); e.preventDefault(); }
+    if (e.code === "ArrowLeft" || e.code === "KeyA") { setLeft(true); e.preventDefault(); }
+    if (e.code === "ArrowRight" || e.code === "KeyD") { setRight(true); e.preventDefault(); }
+  });
+  document.addEventListener("keyup", function (e) {
+    if (e.code === "ArrowLeft" || e.code === "KeyA") setLeft(false);
+    if (e.code === "ArrowRight" || e.code === "KeyD") setRight(false);
   });
 
-  btnLeft.addEventListener("pointerdown", function (e) { e.preventDefault(); moveLane(-1); });
-  btnRight.addEventListener("pointerdown", function (e) { e.preventDefault(); moveLane(1); });
+  function bindHold(btn, setter) {
+    btn.addEventListener("pointerdown", function (e) { e.preventDefault(); setter(true); });
+    btn.addEventListener("pointerup", function () { setter(false); });
+    btn.addEventListener("pointerleave", function () { setter(false); });
+    btn.addEventListener("pointercancel", function () { setter(false); });
+  }
+  bindHold(btnLeft, setLeft);
+  bindHold(btnRight, setRight);
 
   backToSelect.addEventListener("click", function (e) {
     e.preventDefault();
