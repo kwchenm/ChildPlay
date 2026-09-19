@@ -75,16 +75,56 @@
   .platform.hazard { background: linear-gradient(180deg, #ef8a6e, #d85c3d); }
 
   #character {
-    position: absolute; font-size: 42px; line-height: 1;
-    transform: translate(-50%, -50%);
+    position: absolute; width: 32px; height: 52px;
+    transform: translate(-50%, -100%);
     filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3));
     z-index: 5;
   }
-  #character.squish { animation: squish 0.22s ease; }
+  #character .c-wrap { position: relative; width: 100%; height: 100%; transition: transform 0.15s ease; }
+  #character.lean-left .c-wrap { transform: rotate(-9deg); }
+  #character.lean-right .c-wrap { transform: rotate(9deg); }
+
+  #character .c-head {
+    position: absolute; top: 0; left: 50%; width: 20px; height: 20px; margin-left: -10px;
+    border-radius: 50%; background: #ffd39b; border: 2px solid #6b3f2a;
+  }
+  #character .c-head::before, #character .c-head::after {
+    content: ""; position: absolute; top: 8px; width: 3px; height: 3px;
+    background: #3a2a1a; border-radius: 50%;
+  }
+  #character .c-head::before { left: 5px; }
+  #character .c-head::after { right: 5px; }
+  #character .c-body {
+    position: absolute; top: 17px; left: 50%; width: 16px; height: 18px; margin-left: -8px;
+    border-radius: 6px; background: #4c8bf5;
+  }
+  #character .c-arm {
+    position: absolute; top: 18px; width: 6px; height: 15px; border-radius: 4px;
+    background: #ffd39b; transform-origin: top center; transform: rotate(0deg);
+  }
+  #character .c-arm-left { left: 1px; }
+  #character .c-arm-right { right: 1px; }
+  #character .c-leg {
+    position: absolute; top: 33px; width: 7px; height: 18px; border-radius: 4px;
+    background: #3a5a8f; transform-origin: top center; transform: rotate(0deg);
+  }
+  #character .c-leg-left { left: 7px; }
+  #character .c-leg-right { right: 7px; }
+
+  @keyframes swing-a { 0%,100% { transform: rotate(-30deg); } 50% { transform: rotate(30deg); } }
+  @keyframes swing-b { 0%,100% { transform: rotate(30deg); } 50% { transform: rotate(-30deg); } }
+  #character.walking .c-arm-left, #character.walking .c-leg-right { animation: swing-a 0.3s ease-in-out infinite; }
+  #character.walking .c-arm-right, #character.walking .c-leg-left { animation: swing-b 0.3s ease-in-out infinite; }
+  #character.falling .c-arm-left { transform: rotate(-55deg); }
+  #character.falling .c-arm-right { transform: rotate(55deg); }
+  #character.falling .c-leg-left { transform: rotate(18deg); }
+  #character.falling .c-leg-right { transform: rotate(-18deg); }
+
+  #character.squish .c-wrap { animation: squish 0.22s ease; }
   @keyframes squish {
-    0% { transform: translate(-50%, -50%) scale(1, 1); }
-    40% { transform: translate(-50%, -50%) scale(1.25, 0.75); }
-    100% { transform: translate(-50%, -50%) scale(1, 1); }
+    0% { transform: scale(1, 1); }
+    40% { transform: scale(1.25, 0.75); }
+    100% { transform: scale(1, 1); }
   }
   #character.hurt-blink { animation: blink 0.15s steps(1) 4; }
   @keyframes blink { 50% { opacity: 0.25; } }
@@ -179,9 +219,15 @@
   var START_PLATFORM_Y = 60;
   var PLATFORM_SAFE_W = 26;
   var PLATFORM_HAZARD_W = 20;
+  var PLATFORM_H = 8;         // matches the .platform CSS height (%), used to find its top surface
+  var PLATFORM_HALF_H = PLATFORM_H / 2;
   var ROW_GAP = 15;           // target vertical spacing (%) between spawned platforms
   var MAX_X_SHIFT = 42;       // max horizontal wander (%) between consecutive spawns
   var INVULN_MS = 650;
+  var RAMP_PER_SEC = 0.55;    // %/sec the shaft speeds up for every second survived in a level
+  var RAMP_CAP_MULT = 2.0;    // the time-based ramp never exceeds this multiple of the level's base speed
+
+  function platformTopY(pl) { return pl.y - PLATFORM_HALF_H; }
 
   var LEVELS = [];
   for (var i = 1; i <= 10; i++) {
@@ -231,6 +277,18 @@
   }
   function playLandSound() { beep(620, 0.09, "triangle", 0, 0.12); }
   function playHazardSound() { beep(180, 0.22, "sawtooth", 0, 0.15); }
+  function speakOuch() {
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance("嗚啊");
+      u.lang = "zh-TW";
+      u.rate = 1.15;
+      u.pitch = 1.05;
+      u.volume = 1;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
   function playLevelClearFanfare() {
     var notes = [523, 659, 784, 1046];
     notes.forEach(function (f, idx) { beep(f, 0.22, "triangle", idx * 0.13, 0.16); });
@@ -334,7 +392,15 @@
     stage.querySelectorAll(".platform").forEach(function (el) { el.remove(); });
     var characterEl = document.createElement("div");
     characterEl.id = "character";
-    characterEl.textContent = "🧒";
+    characterEl.innerHTML =
+      '<div class="c-wrap">' +
+        '<div class="c-arm c-arm-left"></div>' +
+        '<div class="c-arm c-arm-right"></div>' +
+        '<div class="c-body"></div>' +
+        '<div class="c-head"></div>' +
+        '<div class="c-leg c-leg-left"></div>' +
+        '<div class="c-leg c-leg-right"></div>' +
+      '</div>';
     stage.appendChild(characterEl);
 
     var cfg = LEVELS[levelNum - 1];
@@ -344,6 +410,7 @@
       lives: 30,
       score: 0,
       landings: 0,
+      elapsed: 0,
       charX: 50,
       charY: START_PLATFORM_Y - 14,
       charState: "falling", // "falling" | "resting"
@@ -386,8 +453,13 @@
   }
 
   function renderCharacter() {
-    state.characterEl.style.left = state.charX + "%";
-    state.characterEl.style.top = state.charY + "%";
+    var el = state.characterEl;
+    el.style.left = state.charX + "%";
+    el.style.top = state.charY + "%";
+    el.classList.toggle("walking", leftHeld || rightHeld);
+    el.classList.toggle("falling", state.charState === "falling" && !leftHeld && !rightHeld);
+    el.classList.toggle("lean-left", leftHeld && !rightHeld);
+    el.classList.toggle("lean-right", rightHeld && !leftHeld);
   }
 
   function flashHurt() {
@@ -410,6 +482,7 @@
     state.lives -= 1;
     state.invulnUntil = now + INVULN_MS;
     playHazardSound();
+    speakOuch();
     flashHurt();
     if (state.lives <= 0) {
       state.lives = 0;
@@ -426,6 +499,14 @@
     state.lastTime = now;
     if (dt > 0.08) dt = 0.08;
 
+    // The shaft speeds up the longer a level runs, independent of player movement, so the
+    // pace keeps climbing on its own and builds tension the way the original NS-SHAFT does.
+    state.elapsed += dt;
+    var effSpeed = Math.min(
+      state.cfg.scrollSpeed * RAMP_CAP_MULT,
+      state.cfg.scrollSpeed + RAMP_PER_SEC * state.elapsed
+    );
+
     // horizontal movement
     if (leftHeld) state.charX -= CHAR_SPEED * dt;
     if (rightHeld) state.charX += CHAR_SPEED * dt;
@@ -435,14 +516,14 @@
     var toRemove = [];
     for (var i = 0; i < state.platforms.length; i++) {
       var p = state.platforms[i];
-      p.y -= state.cfg.scrollSpeed * dt;
+      p.y -= effSpeed * dt;
       p.el.style.top = p.y + "%";
       if (p.y < -10) toRemove.push(p);
     }
     toRemove.forEach(removePlatform);
 
     // spawn new platforms as the shaft continues
-    var spawnInterval = (ROW_GAP / state.cfg.scrollSpeed) * 1000;
+    var spawnInterval = (ROW_GAP / effSpeed) * 1000;
     state.spawnAcc += dt * 1000;
     if (state.spawnAcc >= spawnInterval) {
       state.spawnAcc = 0;
@@ -456,7 +537,7 @@
       if (!state.restingPlatform || state.platforms.indexOf(state.restingPlatform) === -1) {
         state.charState = "falling";
       } else {
-        state.charY = state.restingPlatform.y;
+        state.charY = platformTopY(state.restingPlatform);
         if (state.charY < DETACH_Y) {
           state.charState = "falling";
           // Remember the platform we just left so the landing check below doesn't
@@ -469,16 +550,17 @@
     }
 
     if (state.charState === "falling") {
-      state.charY += state.cfg.scrollSpeed * state.cfg.fallMultiplier * dt;
+      state.charY += effSpeed * state.cfg.fallMultiplier * dt;
 
       // Landing check: both the character and the platform move every frame, so instead of
       // testing for an exact crossing between two frames (which can slip through when the
       // platform's own motion shifts the target out of range), land whenever the character
-      // is falling downward and comes within a small band of a platform's current position.
+      // is falling downward and comes within a small band of the platform's top surface.
       for (var j = 0; j < state.platforms.length; j++) {
         var pl = state.platforms[j];
         if (pl === state.lastPlatform && now < state.lastPlatformUntil) continue;
-        if (prevY <= pl.y + LANDING_BAND && state.charY >= pl.y - LANDING_BAND) {
+        var topY = platformTopY(pl);
+        if (prevY <= topY + LANDING_BAND && state.charY >= topY - LANDING_BAND) {
           var halfW = pl.w / 2 + 6;
           if (Math.abs(state.charX - pl.x) < halfW) {
             if (pl.type === "hazard") {
@@ -489,7 +571,7 @@
             } else {
               state.charState = "resting";
               state.restingPlatform = pl;
-              state.charY = pl.y;
+              state.charY = topY;
               if (!isInvulnerable(now)) {
                 state.score += 10;
                 state.landings += 1;
