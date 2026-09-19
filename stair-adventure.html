@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>下樓梯大冒險 - ChildPlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: 'Baloo 2', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(160deg, #fff3d6 0%, #cdeeff 50%, #ffe0ec 100%);
+    overflow-x: hidden;
+    user-select: none;
+  }
+  #app { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 18px; }
+  .screen { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; }
+  .hidden { display: none !important; }
+
+  h1 { font-size: clamp(22px, 5vw, 32px); color: #6b3f2a; text-shadow: 2px 2px 0 #fff8ea; margin: 4px 0 4px; text-align: center; }
+  .subtitle { color: #9c7a5e; font-weight: 700; margin-bottom: 18px; text-align: center; font-size: 14px; }
+  .backlink { align-self: flex-start; color: #6b3f2a; font-weight: 800; text-decoration: none; margin-bottom: 6px; font-size: 14px; }
+  .backlink:active { opacity: 0.6; }
+
+  .highscore-badge {
+    background: #fff8ea; border: 2px solid #f0c987; border-radius: 20px;
+    padding: 6px 18px; font-weight: 800; color: #a9711f; margin-bottom: 16px; font-size: 15px;
+  }
+
+  .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; }
+  .level-btn {
+    border: none; border-radius: 16px; padding: 14px 4px; font-family: inherit;
+    font-weight: 800; font-size: 16px; color: #fff; cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.18); display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .level-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .level-btn .tag { font-size: 11px; font-weight: 700; opacity: 0.9; }
+
+  /* --- Game screen --- */
+  .hud {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-weight: 800; color: #6b3f2a; font-size: 15px; flex-wrap: wrap; gap: 6px;
+  }
+  .hud-item { background: #fff8ea; border-radius: 14px; padding: 6px 12px; box-shadow: 0 3px 0 rgba(0,0,0,0.08); }
+  .hud-lives.low { color: #c0392b; }
+  .hud-lives.crit { color: #c0392b; animation: pulse 0.6s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+  #stage {
+    position: relative; width: 100%; aspect-ratio: 3 / 4; max-height: 62vh;
+    border-radius: 22px; overflow: hidden; border: 4px solid #b98a52;
+    background:
+      repeating-linear-gradient(135deg, #e7c891 0px, #e7c891 34px, #d8b477 34px, #d8b477 68px),
+      linear-gradient(180deg, #cdeeff 0%, #fef6e0 100%);
+    box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    touch-action: none;
+  }
+  #stage::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .fall-item {
+    position: absolute; font-size: 34px; transform: translate(-50%, -50%);
+    filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.25)); pointer-events: none; line-height: 1;
+  }
+  #character {
+    position: absolute; bottom: 6%; font-size: 46px; transform: translate(-50%, 0);
+    filter: drop-shadow(2px 3px 2px rgba(0,0,0,0.3)); transition: transform 0.1s ease; line-height: 1;
+  }
+  #character.hurt { animation: shake 0.35s; }
+  @keyframes shake { 0%,100% { margin-left: 0; } 25% { margin-left: -8px; } 75% { margin-left: 8px; } }
+  #stage.flash-hurt::after {
+    content: ""; position: absolute; inset: 0; background: rgba(220,60,60,0.35);
+    animation: flashfade 0.35s ease-out forwards;
+  }
+  @keyframes flashfade { from { opacity: 1; } to { opacity: 0; } }
+
+  .controls { display: flex; justify-content: center; gap: 40px; margin-top: 16px; }
+  .ctrl-btn {
+    width: 78px; height: 78px; border-radius: 50%; border: none;
+    background: #6b3f2a; color: #fff; font-size: 30px; box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .ctrl-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.2); }
+  .kb-hint { text-align: center; color: #9c7a5e; font-size: 12px; margin-top: 8px; font-weight: 700; }
+
+  /* --- End overlay --- */
+  #endOverlay {
+    position: fixed; inset: 0; background: rgba(30, 20, 10, 0.55);
+    display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .end-card {
+    background: #fff8ea; border-radius: 26px; padding: 30px 26px; max-width: 380px; width: 100%;
+    text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+  }
+  .end-card h2 { margin: 0 0 6px; color: #6b3f2a; font-size: 26px; }
+  .end-card .score-line { font-size: 18px; font-weight: 800; color: #a9711f; margin: 10px 0; }
+  .end-card .newrecord { color: #d84315; font-weight: 800; margin-bottom: 8px; }
+  .end-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .end-btn {
+    border: none; border-radius: 16px; padding: 14px; font-family: inherit; font-weight: 800;
+    font-size: 16px; cursor: pointer; box-shadow: 0 5px 0 rgba(0,0,0,0.18); color: #fff;
+  }
+  .end-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.18); }
+  .btn-primary { background: #4caf50; }
+  .btn-secondary { background: #6b8fc9; }
+  .btn-tertiary { background: #b98a52; }
+
+  .confetti-piece {
+    position: fixed; top: -20px; width: 10px; height: 14px; z-index: 60; pointer-events: none;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    to { transform: translateY(105vh) rotate(600deg); opacity: 0.9; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="screen" id="levelSelectScreen">
+    <a class="backlink" href="index.html">⬅ 回遊戲選單</a>
+    <h1>🪜 下樓梯大冒險</h1>
+    <div class="subtitle">左右移動閃避障礙、接住星星!❤️ 30 條命,關卡越高速度越快</div>
+    <div class="highscore-badge">🏆 歷史最高分:<span id="highscoreVal">0</span></div>
+    <div class="level-grid" id="levelGrid"></div>
+  </div>
+
+  <div class="screen hidden" id="gameScreen">
+    <a class="backlink" href="#" id="backToSelect">⬅ 返回選關卡</a>
+    <div class="hud">
+      <div class="hud-item" id="hudLevel">第 1 關</div>
+      <div class="hud-item hud-lives" id="hudLives">❤️ x30</div>
+      <div class="hud-item" id="hudScore">⭐ 0</div>
+      <div class="hud-item" id="hudTimer">⏱ 30</div>
+    </div>
+    <div id="stage">
+      <div id="character">🧒</div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="btnLeft">◀</button>
+      <button class="ctrl-btn" id="btnRight">▶</button>
+    </div>
+    <div class="kb-hint">或使用鍵盤方向鍵 ← →</div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var HIGHSCORE_KEY = "childplay_stair_highscore";
+
+  var LEVELS = [];
+  for (var i = 1; i <= 10; i++) {
+    LEVELS.push({
+      level: i,
+      fallSpeed: 18 + (i - 1) * 3.5,
+      spawnInterval: Math.max(450, 900 - (i - 1) * 50),
+      hazardChance: Math.min(0.42, 0.20 + (i - 1) * 0.025)
+    });
+  }
+  var LEVEL_TAGS = ["超慢速","慢速","慢中速","中速","中速+","偏快","快速","快速+","超快速","極限速"];
+  var LEVEL_COLORS = ["#7dc36b","#6bc3a0","#5eb3c9","#5e97c9","#6b7fd6","#8a6bd6","#b06bd6","#d66bb0","#d68a6b","#d65e5e"];
+
+  var HAZARDS = ["🪨", "📦", "🧹", "🪣", "🍌"];
+  var COLLECTIBLES = [
+    { emoji: "⭐", points: 10, weight: 70 },
+    { emoji: "🌟", points: 20, weight: 22 },
+    { emoji: "💎", points: 50, weight: 8 }
+  ];
+  var COLLECT_TOTAL_WEIGHT = COLLECTIBLES.reduce(function (s, c) { return s + c.weight; }, 0);
+
+  function pickCollectible() {
+    var r = Math.random() * COLLECT_TOTAL_WEIGHT;
+    for (var i = 0; i < COLLECTIBLES.length; i++) {
+      r -= COLLECTIBLES[i].weight;
+      if (r <= 0) return COLLECTIBLES[i];
+    }
+    return COLLECTIBLES[0];
+  }
+
+  function getHighscore() {
+    try {
+      var v = parseInt(localStorage.getItem(HIGHSCORE_KEY), 10);
+      return isNaN(v) ? 0 : v;
+    } catch (e) { return 0; }
+  }
+  function setHighscore(v) {
+    try { localStorage.setItem(HIGHSCORE_KEY, String(v)); } catch (e) {}
+  }
+
+  // ---- Audio ----
+  var audioCtx = null;
+  function ctx() {
+    if (!audioCtx) {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+  function beep(freq, dur, type, delay, vol) {
+    var ac = ctx();
+    if (!ac) return;
+    var t0 = ac.currentTime + (delay || 0);
+    var osc = ac.createOscillator();
+    var gain = ac.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(vol == null ? 0.18 : vol, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(gain).connect(ac.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+  function playCatchSound() { beep(880, 0.12, "triangle", 0, 0.15); beep(1320, 0.14, "triangle", 0.06, 0.13); }
+  function playHazardSound() { beep(180, 0.22, "sawtooth", 0, 0.15); }
+  function playLevelClearFanfare() {
+    var notes = [523, 659, 784, 1046];
+    notes.forEach(function (f, idx) { beep(f, 0.22, "triangle", idx * 0.13, 0.16); });
+  }
+  function playGameOverSound() {
+    beep(300, 0.25, "sawtooth", 0, 0.15);
+    beep(200, 0.3, "sawtooth", 0.2, 0.15);
+  }
+
+  function spawnConfetti(n) {
+    var colors = ["#ff6b6b","#feca57","#48dbfb","#1dd1a1","#ff9ff3","#a29bfe"];
+    for (var i = 0; i < n; i++) {
+      (function () {
+        var el = document.createElement("div");
+        el.className = "confetti-piece";
+        el.style.left = (Math.random() * 100) + "vw";
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        var dur = 1.6 + Math.random() * 1.2;
+        el.style.animationDuration = dur + "s";
+        el.style.opacity = "1";
+        document.body.appendChild(el);
+        setTimeout(function () { el.remove(); }, dur * 1000 + 100);
+      })();
+    }
+  }
+
+  // ---- DOM refs ----
+  var levelSelectScreen = document.getElementById("levelSelectScreen");
+  var gameScreen = document.getElementById("gameScreen");
+  var levelGrid = document.getElementById("levelGrid");
+  var highscoreVal = document.getElementById("highscoreVal");
+  var stage = document.getElementById("stage");
+  var character = document.getElementById("character");
+  var hudLevel = document.getElementById("hudLevel");
+  var hudLives = document.getElementById("hudLives");
+  var hudScore = document.getElementById("hudScore");
+  var hudTimer = document.getElementById("hudTimer");
+  var btnLeft = document.getElementById("btnLeft");
+  var btnRight = document.getElementById("btnRight");
+  var backToSelect = document.getElementById("backToSelect");
+
+  highscoreVal.textContent = getHighscore();
+
+  // Build level grid
+  LEVELS.forEach(function (cfg, idx) {
+    var btn = document.createElement("button");
+    btn.className = "level-btn";
+    btn.style.background = LEVEL_COLORS[idx];
+    btn.innerHTML = "第" + cfg.level + "關<span class=\"tag\">" + LEVEL_TAGS[idx] + "</span>";
+    btn.addEventListener("click", function () { startLevel(cfg.level); });
+    levelGrid.appendChild(btn);
+  });
+
+  // ---- Game state ----
+  var state = null;
+  var rafId = null;
+  var leftHeld = false, rightHeld = false;
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function showGameScreen() {
+    levelSelectScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+  }
+  function showLevelSelectScreen() {
+    gameScreen.classList.add("hidden");
+    levelSelectScreen.classList.remove("hidden");
+    highscoreVal.textContent = getHighscore();
+  }
+
+  function startLevel(levelNum) {
+    if (rafId) cancelAnimationFrame(rafId);
+    var items = state ? state.items : [];
+    items.forEach(function (it) { if (it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el); });
+
+    state = {
+      level: levelNum,
+      cfg: LEVELS[levelNum - 1],
+      lives: 30,
+      score: 0,
+      timeLeft: 30,
+      charPct: 50,
+      spawnAcc: 0,
+      items: [],
+      lastTime: null,
+      running: true,
+      ended: false
+    };
+    character.style.left = state.charPct + "%";
+    character.classList.remove("hurt");
+    showGameScreen();
+    updateHUD();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function updateHUD() {
+    hudLevel.textContent = "第 " + state.level + " 關";
+    hudLives.textContent = "❤️ x" + state.lives;
+    hudLives.classList.remove("low", "crit");
+    if (state.lives <= 5) hudLives.classList.add("crit");
+    else if (state.lives <= 12) hudLives.classList.add("low");
+    hudScore.textContent = "⭐ " + state.score;
+    hudTimer.textContent = "⏱ " + Math.ceil(state.timeLeft);
+  }
+
+  function spawnItem() {
+    var isHazard = Math.random() < state.cfg.hazardChance;
+    var x = 8 + Math.random() * 84;
+    var el = document.createElement("div");
+    el.className = "fall-item";
+    var item;
+    if (isHazard) {
+      var emoji = HAZARDS[Math.floor(Math.random() * HAZARDS.length)];
+      el.textContent = emoji;
+      item = { type: "hazard", emoji: emoji, points: 0, x: x, y: -6, el: el, resolved: false };
+    } else {
+      var c = pickCollectible();
+      el.textContent = c.emoji;
+      item = { type: "collectible", emoji: c.emoji, points: c.points, x: x, y: -6, el: el, resolved: false };
+    }
+    el.style.left = x + "%";
+    el.style.top = item.y + "%";
+    stage.appendChild(el);
+    state.items.push(item);
+  }
+
+  function removeItem(item) {
+    if (item.el && item.el.parentNode) item.el.parentNode.removeChild(item.el);
+    var idx = state.items.indexOf(item);
+    if (idx >= 0) state.items.splice(idx, 1);
+  }
+
+  function flashHurt() {
+    stage.classList.remove("flash-hurt");
+    void stage.offsetWidth;
+    stage.classList.add("flash-hurt");
+    character.classList.remove("hurt");
+    void character.offsetWidth;
+    character.classList.add("hurt");
+  }
+
+  function tick(now) {
+    if (!state || !state.running) return;
+    if (state.lastTime == null) state.lastTime = now;
+    var dt = (now - state.lastTime) / 1000;
+    state.lastTime = now;
+    if (dt > 0.1) dt = 0.1;
+
+    state.timeLeft -= dt;
+    if (state.timeLeft <= 0) {
+      state.timeLeft = 0;
+      updateHUD();
+      return endLevel(true);
+    }
+
+    if (leftHeld) state.charPct -= 75 * dt;
+    if (rightHeld) state.charPct += 75 * dt;
+    state.charPct = clamp(state.charPct, 6, 94);
+    character.style.left = state.charPct + "%";
+
+    state.spawnAcc += dt * 1000;
+    if (state.spawnAcc >= state.cfg.spawnInterval) {
+      state.spawnAcc = 0;
+      spawnItem();
+    }
+
+    var toRemove = [];
+    for (var i = 0; i < state.items.length; i++) {
+      var it = state.items[i];
+      it.y += state.cfg.fallSpeed * dt;
+      it.el.style.top = it.y + "%";
+      if (!it.resolved && it.y >= 76 && it.y <= 92 && Math.abs(it.x - state.charPct) < 9) {
+        it.resolved = true;
+        if (it.type === "hazard") {
+          state.lives -= 1;
+          playHazardSound();
+          flashHurt();
+          toRemove.push(it);
+          if (state.lives <= 0) {
+            state.lives = 0;
+            updateHUD();
+            toRemove.forEach(removeItem);
+            return endLevel(false);
+          }
+        } else {
+          state.score += it.points;
+          playCatchSound();
+          toRemove.push(it);
+        }
+      } else if (it.y >= 102) {
+        toRemove.push(it);
+      }
+    }
+    toRemove.forEach(removeItem);
+
+    updateHUD();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function endLevel(cleared) {
+    if (!state || state.ended) return;
+    state.ended = true;
+    state.running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+
+    var isNewRecord = state.score > getHighscore();
+    if (isNewRecord) setHighscore(state.score);
+
+    var overlay = document.createElement("div");
+    overlay.id = "endOverlay";
+    var card = document.createElement("div");
+    card.className = "end-card";
+
+    var title = cleared ? "🎉 過關了!" : "💪 再接再厲!";
+    var html = "<h2>" + title + "</h2>";
+    html += "<div class=\"score-line\">本關得分:" + state.score + " 分</div>";
+    html += "<div class=\"score-line\">🏆 歷史最高分:" + getHighscore() + "</div>";
+    if (isNewRecord) html += "<div class=\"newrecord\">🌟 新紀錄!</div>";
+    card.innerHTML = html;
+
+    var actions = document.createElement("div");
+    actions.className = "end-actions";
+
+    var retryBtn = document.createElement("button");
+    retryBtn.className = "end-btn btn-primary";
+    retryBtn.textContent = "🔁 再玩一次";
+    retryBtn.addEventListener("click", function () { overlay.remove(); startLevel(state.level); });
+    actions.appendChild(retryBtn);
+
+    if (cleared && state.level < 10) {
+      var nextBtn = document.createElement("button");
+      nextBtn.className = "end-btn btn-secondary";
+      nextBtn.textContent = "➡ 下一關";
+      nextBtn.addEventListener("click", function () { overlay.remove(); startLevel(state.level + 1); });
+      actions.appendChild(nextBtn);
+    }
+
+    var selectBtn = document.createElement("button");
+    selectBtn.className = "end-btn btn-tertiary";
+    selectBtn.textContent = "📋 選關卡";
+    selectBtn.addEventListener("click", function () { overlay.remove(); showLevelSelectScreen(); });
+    actions.appendChild(selectBtn);
+
+    card.appendChild(actions);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    if (cleared) {
+      playLevelClearFanfare();
+      spawnConfetti(36);
+    } else {
+      playGameOverSound();
+    }
+  }
+
+  // ---- Controls ----
+  function setLeft(v) { leftHeld = v; }
+  function setRight(v) { rightHeld = v; }
+
+  document.addEventListener("keydown", function (e) {
+    if (gameScreen.classList.contains("hidden")) return;
+    if (e.code === "ArrowLeft" || e.code === "KeyA") { setLeft(true); e.preventDefault(); }
+    if (e.code === "ArrowRight" || e.code === "KeyD") { setRight(true); e.preventDefault(); }
+  });
+  document.addEventListener("keyup", function (e) {
+    if (e.code === "ArrowLeft" || e.code === "KeyA") setLeft(false);
+    if (e.code === "ArrowRight" || e.code === "KeyD") setRight(false);
+  });
+
+  function bindHold(btn, setter) {
+    btn.addEventListener("pointerdown", function (e) { e.preventDefault(); setter(true); });
+    btn.addEventListener("pointerup", function () { setter(false); });
+    btn.addEventListener("pointerleave", function () { setter(false); });
+    btn.addEventListener("pointercancel", function () { setter(false); });
+  }
+  bindHold(btnLeft, setLeft);
+  bindHold(btnRight, setRight);
+
+  backToSelect.addEventListener("click", function (e) {
+    e.preventDefault();
+    if (state) { state.running = false; }
+    if (rafId) cancelAnimationFrame(rafId);
+    var existingOverlay = document.getElementById("endOverlay");
+    if (existingOverlay) existingOverlay.remove();
+    showLevelSelectScreen();
+  });
+
+})();
+</script>
+</body>
+</html>
